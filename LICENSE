@@ -1,0 +1,52 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Tuo Zhang and Takuro Kobashi
+Graduate School of Environmental Studies, Tohoku University, Sendai, Japan
+
+This work — comprising the PLEXOS model databases and the input data files in this
+repository — is licensed under the Creative Commons Attribution 4.0 International
+License.
+
+You are free to:
+
+  Share  — copy and redistribute the material in any medium or format
+  Adapt  — remix, transform, and build upon the material for any purpose,
+           even commercially
+
+under the following terms:
+
+  Attribution — You must give appropriate credit, provide a link to the license,
+  and indicate if changes were made. You may do so in any reasonable manner, but
+  not in any way that suggests the licensor endorses you or your use.
+
+  No additional restrictions — You may not apply legal terms or technological
+  measures that legally restrict others from doing anything the license permits.
+
+The full legal code is available at:
+
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+A human-readable summary is available at:
+
+  https://creativecommons.org/licenses/by/4.0/
+
+NOTE ON THIRD-PARTY CONTENT
+
+This licence covers the model databases and derived data files authored by the
+copyright holders. It does not extend to:
+
+  - The PLEXOS software (Energy Exemplar), which is commercial and is not
+    distributed in this repository.
+  - Underlying source data obtained from third parties, including Japan
+    Meteorological Agency observations, METI and MLIT statistics, Tohoku
+    Electric Power system data, and Renewables.ninja capacity factors. Those
+    remain subject to the terms of their respective providers; the files here
+    are derived products.
+
+DISCLAIMER
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE
+FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE WORK OR THE USE OR OTHER DEALINGS IN THE WORK.
