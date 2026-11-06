@@ -1,0 +1,497 @@
+# 登记表 params/h2.yaml -> model.py（739 行版本）映射与核对，D2 = src/default_D2_args.txt
+# 生成：2026-10-28；计算脚本：params/mapping/scripts/h2/check_h2_map.py（结果 h2_map_results.json）
+# 参数解析顺序按 model.py L634 复现：argparse 默认 -> PRESET_PLEXOS（L622-631）-> D2 命令行。
+# 通用记号：hu = 1e-3（--unit-scaling 默认 True，L204，氢以 t 计）；a_el = --h2-electrolysis-mwh-per-kg；
+#   d = 1.03^-(y-2025)；δ_el = 1 + el_degradation*(el_stack_life-1)/2；δ_fc 同理。
+# 统计：match 43，mismatch 1，doc_only 4，not_in_code 0，cannot_verify 0（共 48 条）。
+
+# ---------------- A. 造价 ----------------
+- id: h2_el_capex
+  registry_value: {2025: 120, 2030: 52, 2040: 40, 2050: 30}
+  d2_arg: "--capex-electrolyzer 2025:65904,2030:28558.4,2040:21968,2050:16476"
+  code: "model.py L64-65 解析；L75 nv = _interp(pts,y)*1000*1（JPY/块）；L82 v = d*(nv+extra)；L464-465 costs = ann/1e6/bsc（bsc=1），buildvar*costs 进目标"
+  enters: "objective: 建设年每块投资现值（PLEXOS 方法，scale_annuity）"
+  effective_value: "D2 每块造价 ÷ 549.2 kW = 120/52/40/30 kJPY/kW，2025–2050 逐年插值与登记表相对误差 < 1e-6"
+  verdict: match
+  check: "check_h2_map.py §A：parse_kv(--capex-electrolyzer)/549.2 与 _interp(registry) 逐年比较；check_h2_costs.py 全额单位成本一致"
+  notes: "登记表本条 unit/notes/code_now 仍写'按 530 kW/块换算为 63,600 …'，已过时（D2 与 h2_el_block_kw_basis 均为 549.2，65,904 kJPY/块）。按链路口径 491.2 kW 折算为 134.2 kJPY/kW。"
+
+- id: h2_fc_capex
+  registry_value: {2025: 180, 2030: 150, 2040: 113, 2050: 113}
+  d2_arg: "--capex-fuelcell 2025:180,2030:150,2040:113,2050:113"
+  code: "model.py L67 col fuelcell 系数 UNIT_KW['fuelcell']=10000（L110）；L75 nv = kJPY/kW*1000*10000；L82；L464 /bsc（bsc=10，结果仍为每块 10 MW 的造价按 MW 分摊）"
+  enters: "objective: 建设年每块（10 MW）投资现值"
+  effective_value: "180/150/113/113 kJPY/kW，逐年一致（2035 = 131.5）"
+  verdict: match
+  check: "check_h2_map.py §A；check_h2_costs.py"
+  notes: "登记表 code_now 中'另含原稿 FO&M 永续现值 320.2 kJPY/kW'已过时：D2 有 --h2-fom 后，L77-82 整体替换现值，原稿 9,600 円/kW·年不再进入（已核实原稿现值 = d·造价 + d·9,600×10,000/0.03 ≈ +0.07 %）。"
+
+- id: h2_tank_capex
+  registry_value: {2025: 112, 2030: 96, 2040: 63, 2050: 54}
+  d2_arg: "--capex-tank 2025:112000,2030:96000,2040:63000,2050:54000"
+  code: "model.py L67 col tank 系数 1；L75 nv = kJPY/t*1000；L82；L464（bsc=1）"
+  enters: "objective: 建设年每块（1 t）投资现值"
+  effective_value: "112/96/63/54 kJPY/kg（= kJPY/t ÷ 1000），逐年一致（2035 = 79.5）"
+  verdict: match
+  check: "check_h2_map.py §A"
+  notes: ""
+
+# ---------------- B. FO&M ----------------
+- id: h2_el_fom
+  registry_value: 0.02
+  d2_arg: "--h2-fom electrolyzer:0.02,fuelcell:0.03,tank:0.005"
+  code: "model.py L68 fom = parse_kv(args.h2_fom)；L80 extra = nv*fom/.03（永续，按建设年造价）；L82 v = d*(nv+extra)"
+  enters: "objective: 每块投资现值中的 FO&M 永续部分"
+  effective_value: "去掉 --h2-stack-repl 后反算 (PV/d/nv − 1)×0.03 = 0.02000（2025–2050 全部年份）"
+  verdict: match
+  check: "check_h2_map.py §A：scale_annuity(h2_stack_repl=None) 反算"
+  notes: "登记表 code_now/model_entry（'PLEXOS 方法下没有入口'）与 notes（'需要作者决定'）已过时。永续 2 % = 造价的 66.7 %。"
+
+- id: h2_fc_fom
+  registry_value: 0.03
+  d2_arg: "--h2-fom …,fuelcell:0.03,…"
+  code: "model.py L68、L80、L82（同上）"
+  enters: "objective: FO&M 永续部分"
+  effective_value: "反算 0.03000（全部年份）；原稿 9,600 円/kW·年不再计入"
+  verdict: match
+  check: "check_h2_map.py §A"
+  notes: "登记表 code_now 过时。"
+
+- id: h2_tank_fom
+  registry_value: 0.005
+  d2_arg: "--h2-fom …,tank:0.005"
+  code: "model.py L68、L80、L82"
+  enters: "objective: FO&M 永续部分"
+  effective_value: "反算 0.00500（全部年份）"
+  verdict: match
+  check: "check_h2_map.py §A"
+  notes: "登记表 code_now（'FO&M Charge = 0'）过时。"
+
+# ---------------- C. 寿命与换堆 ----------------
+- id: h2_el_system_life
+  registry_value: {2025: 20, 2030: 25, 2040: 30, 2050: 35}
+  d2_arg: null
+  code: "EL_LIFE_PATH L125、tech_life() L128-133 只在年金法（L153-170、L440-444）调用；D2 investment_method = plexos（PRESET_PLEXOS L631），scale_annuity（L56-85）不含寿命；装机按 L446-448 累加、不退役"
+  enters: "不进入 D2"
+  effective_value: "无（D2 中设备永不退役，也不计系统更换成本）"
+  verdict: doc_only
+  check: "check_h2_map.py §C：args.investment_method == 'plexos'，ast 确认 scale_annuity 中无 tech_life"
+  notes: "登记表决定写'正文写明寿命在期内不起作用'，但按登记表寿命，2025–2027 年建成的电解槽在 2050 年前已到寿命（2025 + 20 = 2045），模型仍让其免费服役到 2050 及永续。原稿电解槽本无寿命，问题是新登记值带来的。"
+
+- id: h2_fc_system_life
+  registry_value: 20
+  d2_arg: null
+  code: "tech_life() L128-133（仅年金法）；D2 PLEXOS 方法不使用；原稿 S2_parameters.json Technical/Economic Life = 30 也未被代码读取"
+  enters: "不进入 D2"
+  effective_value: "无"
+  verdict: doc_only
+  check: "同上"
+  notes: "按 20 年，2025–2030 年建成的燃料电池在 2050 年前到寿命，模型不计系统更换（只计每 10 年 20 % 的换堆）。D2_模型设定.md §5'2025–2050 年间没有机组达到 30 年'的论证只对 30 年寿命成立。"
+
+- id: h2_tank_life
+  registry_value: 30
+  d2_arg: null
+  code: "tech_life()（仅年金法）"
+  enters: "不进入 D2"
+  effective_value: "无；30 年下 2025 年建成的储罐也不会在 2050 年前到寿命"
+  verdict: doc_only
+  check: "同上"
+  notes: "2050 年后的更换不计成本（永续不对称），已在 D2 §5 记录。"
+
+- id: h2_el_stack_life
+  registry_value: 40
+  d2_arg: "--el-stack-life 40；--h2-stack-repl electrolyzer:0.11:40"
+  code: "model.py L347 age = (40−1)/2 = 19.5；L81 换堆间隔 L = 40"
+  enters: "electrolyzer 链路效率（L348，约束中的转换系数）；objective: 换堆永续现值"
+  effective_value: "40（老化平均年龄 19.5 年；换堆间隔 40 年，两处一致）"
+  verdict: match
+  check: "check_h2_map.py §C"
+  notes: "登记表 code_now（'--el-stack-life 15'）过时。"
+
+- id: h2_fc_stack_life
+  registry_value: 10
+  d2_arg: "--fc-stack-life 10；--h2-stack-repl fuelcell:0.20:10"
+  code: "model.py L350 age = 4.5；L81 L = 10"
+  enters: "fuelcell 链路效率；objective: 换堆永续现值"
+  effective_value: "10（两处一致）"
+  verdict: match
+  check: "check_h2_map.py §C"
+  notes: ""
+
+- id: h2_el_stack_replacement_cost
+  registry_value: {share: 0.11, interval_years: 40}
+  d2_arg: "--h2-stack-repl electrolyzer:0.11:40"
+  code: "model.py L69 stk = parse_kv；L81 extra += nv*0.11/(1.03^40 − 1)"
+  enters: "objective: 每块投资现值中的换堆永续部分"
+  effective_value: "去掉 --h2-fom 后反算 PV/d/nv − 1 = 0.048629 = 0.11/(1.03^40−1)，全部年份一致"
+  verdict: match
+  check: "check_h2_map.py §A"
+  notes: "第一次换堆在 y+40，即全在 2050 年后。登记表 code_now 过时。"
+
+- id: h2_fc_stack_replacement_cost
+  registry_value: {share: 0.20, interval_years: 10}
+  d2_arg: "--h2-stack-repl fuelcell:0.20:10"
+  code: "model.py L81"
+  enters: "objective: 换堆永续部分"
+  effective_value: "反算 0.581537 = 0.20/(1.03^10−1)，全部年份一致"
+  verdict: match
+  check: "check_h2_map.py §A"
+  notes: "登记表 code_now 过时。"
+
+# ---------------- D. 电解耗电 ----------------
+- id: h2_el_sec_reference_53
+  registry_value: 53.0
+  d2_arg: null
+  code: "PRESET_PLEXOS h2_electrolysis_mwh_per_kg = .053（L628）被 D2 --h2-electrolysis-mwh-per-kg 0.04912 覆盖"
+  enters: "不进入 D2"
+  effective_value: "无（只是 a_lin = 47.12 的推导依据）"
+  verdict: doc_only
+  check: "check_h2_map.py：解析后 args.h2_electrolysis_mwh_per_kg = 0.04912"
+  notes: ""
+
+- id: h2_el_compression_energy
+  registry_value: 2.0
+  d2_arg: "--h2-electrolysis-mwh-per-kg 0.04912（合并项）"
+  code: "model.py L334 a_el；L339/L348 efficiency = hu/(a_el·δ_el)"
+  enters: "electrolyzer 链路效率（氢平衡约束）"
+  effective_value: "代码中不能单独分离；49.12 − 47.12 = 2.0；乘老化后实际 2.0×1.0468 = 2.09 kWh/kg"
+  verdict: match
+  check: "check_h2_map.py §D：a_el×1000 = 47.12 + 2.0"
+  notes: "登记表 notes 中'压缩电耗也随之放大 4.2 %'应为 4.68 %（δ_el 已变）。"
+
+- id: h2_el_linear_coeff
+  registry_value: 49.12
+  d2_arg: "--h2-electrolysis-mwh-per-kg 0.04912"
+  code: "model.py L334 a_el = 0.04912 MWh/kg；L339 efficiency = hu/a_el（t/MWh）；L348 老化覆盖；L475 容量 = 块数×10×a_el×可用率"
+  enters: "electrolyzer 链路效率与容量约束（L477）"
+  effective_value: "49.12 kWh/kg（= 0.04912 MWh/kg ×1000）"
+  verdict: match
+  check: "check_h2_map.py §D"
+  notes: ""
+
+- id: h2_el_sec_basis
+  registry_value: {linear_coeff: 49.12, full_load_system: 54.92}
+  d2_arg: "--h2-electrolysis-mwh-per-kg 0.04912 --el-curve=0.35:0.1057,0.5185:0.2038 --el-noload 0.02 --el-degradation 0.0024 --el-stack-life 40"
+  code: "model.py L519-525 extra ≥ 0.02u + s_j(p − b_j·(u−su))；L348 效率；SEC(x) = a_el·δ_el·(1 + extra(x)/x)"
+  enters: "氢平衡与电平衡（el_eff_aux 链路，L352-355、L516-525）"
+  effective_value: "未老化：x=0.35 51.93，0.50 52.64，0.70 53.12，1.00 54.92 kWh/kg；老化（δ_el = 1.0468）：x=0.35 54.36，1.00 57.49"
+  verdict: match
+  check: "check_h2_map.py §D：按约束公式逐负荷率计算"
+  notes: "value 一致；sensitivity.as_coded_aged_lifetime_avg（54.11/57.23）按旧 δ = 1.042 计算，已过时，应为 54.36/57.49。"
+
+- id: h2_el_full_load_input_factor
+  registry_value: 1.1181
+  d2_arg: "由 --el-noload 与 --el-curve 派生"
+  code: "派生：1 + 0.02 + max_j s_j(1 − b_j)（L519-525 在 x = 1）"
+  enters: "无独立入口（派生量）"
+  effective_value: "1.11813"
+  verdict: match
+  check: "check_h2_map.py §D"
+  notes: ""
+
+- id: h2_el_noload
+  registry_value: 0.02
+  d2_arg: "--el-noload 0.02（需 --h2-uc）"
+  code: "model.py L519 base = 0.02·electrolyzer_committed；L521 extra ≥ base；L520 无 --h2-uc 时报错"
+  enters: "constraint: el_eff_noload / el_eff_piece_j（附加耗电，经 el_eff_aux 进入电平衡）"
+  effective_value: "0.02 MW/MW 投运链路容量（u 以链路 MW 计，含启动中容量），= 满负荷总输入的 1.79 %"
+  verdict: match
+  check: "check_h2_map.py §D"
+  notes: "口径与登记表 unit（链路 MW）一致。"
+
+- id: h2_el_partload_curve
+  registry_value: {breakpoints: [0.35, 0.70], extra_slope_kwh_per_kg: [5.19, 4.82], cli: "0.35:0.1057,0.5185:0.2038"}
+  d2_arg: "--el-curve=0.35:0.1057,0.5185:0.2038"
+  code: "model.py L522-525；ref = u − su（L524，--model-fixes、--h2-uc 且 h2_startup_hours > 0）"
+  enters: "constraint: el_eff_piece_0/1"
+  effective_value: "斜率 0.1057×49.12 = 5.192、(0.2038−0.1057)×49.12 = 4.819 kWh/kg；两段交点 x = 0.7001"
+  verdict: match
+  check: "check_h2_map.py §D"
+  notes: "事后统计 L703-707 仍以装机容量 Cv 为参照（只影响 summary 诊断量），已在登记表 notes 记录。曲线 MW/MW 斜率不随老化缩放，按 kWh/kg 计随 δ_el 放大。"
+
+- id: h2_el_water_vom
+  registry_value: 4
+  d2_arg: null
+  code: "model.py L339 marginal_cost = (4/a_el)/1e6 百万円/MWh 链路输入（硬编码，不读 S2_parameters.json 的 VO&M Charge = 4）"
+  enters: "objective: 电解槽链路运行费（按 snapshot 权重贴现）"
+  effective_value: "81.43 円/MWh 输入；每 MWh 实际产氢 1/(a_el·δ_el) kg，故 = 4×δ_el = 4.187 円/kg H2"
+  verdict: mismatch
+  check: "check_h2_map.py §D：4/a_el × a_el·δ_el"
+  notes: "差 +0.187 円/kg（+4.7 %）。原因：费用按未老化 a_el 换算到 MWh，而老化（L348）使每 kg 耗电增加 δ_el。影响可忽略：多计部分为电解槽水费总额的 (δ_el−1)/δ_el = 4.5 %，约 0.004 円/kWh 输入。若要严格 4 円/kg，改为 marginal_cost = 4/(a_el·δ_el)/1e6。登记表 model_entry 'L323' 应为 L339。"
+
+# ---------------- E. 老化 ----------------
+- id: h2_el_degradation
+  registry_value: 0.0024
+  d2_arg: "--el-degradation 0.0024 --el-stack-life 40 --degradation-average"
+  code: "model.py L346-348 efficiency_t = hu/(a_el·(1 + 0.0024·19.5))"
+  enters: "electrolyzer 链路效率（氢平衡约束）"
+  effective_value: "0.0024/年；寿命平均系数 δ_el = 1.0468"
+  verdict: match
+  check: "check_h2_map.py §C"
+  notes: "登记表 code_now（0.006、1.042）与 notes（'应为 1.017–1.033'）已过时。新值 1.0468 比旧值 1.042 还大，因为电堆寿命从 15 年改为 40 年、平均年龄从 7 年变为 19.5 年；按小时计（80,000 h × 0.12 %/1,000 h ÷ 2 = 4.8 %）是自洽的，但正文若沿用'约 +4 %'需更新。"
+
+- id: h2_fc_degradation
+  registry_value: 0.006
+  d2_arg: "--fc-degradation 0.006 --fc-stack-life 10 --degradation-average"
+  code: "model.py L349-351 efficiency_t = 1/(fk·(1 + 0.006·4.5))"
+  enters: "fuelcell 链路效率"
+  effective_value: "δ_fc = 1.027 → 62.24 kg/MWh（48.2 % LHV）"
+  verdict: match
+  check: "check_h2_map.py §C"
+  notes: ""
+
+- id: h2_degradation_method
+  registry_value: lifetime_average
+  d2_arg: "--degradation-average"
+  code: "model.py L347、L350 age = (stack_life − 1)/2"
+  enters: "链路效率"
+  effective_value: "lifetime_average；平均年龄 电解槽 19.5 年、燃料电池 4.5 年"
+  verdict: match
+  check: "check_h2_map.py §C"
+  notes: "登记表 unit 写'电解槽 7 年'，已过时（应为 19.5 年）。老化乘在整条链路（含压缩、不含空载/曲线附加项），与登记表 notes 一致。"
+
+# ---------------- F. 运行约束 ----------------
+- id: h2_uc_enabled
+  registry_value: true
+  d2_arg: "--h2-uc"
+  code: "model.py L487-515（u、su 变量与约束）"
+  enters: "constraints: *_p_le_committed、*_min_load、*_committed_le_capacity、*_startup_def"
+  effective_value: "true"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_el_min_load
+  registry_value: 0.20
+  d2_arg: "--el-min-load 0.2"
+  code: "model.py L501 p ≥ 0.2·(u − su/hw)"
+  enters: "constraint: electrolyzer_min_load"
+  effective_value: "0.2 × 投运且已产氢的链路容量"
+  verdict: match
+  check: "resolved args"
+  notes: "口径与登记表 unit（committed productive capacity）一致。"
+
+- id: h2_el_startup_hours
+  registry_value: 1
+  d2_arg: "--h2-startup-hours 1"
+  code: "model.py L497 sh_k；L500-501 p ≤ u − su/hw"
+  enters: "constraint: electrolyzer_p_le_committed"
+  effective_value: "1 h（type=int；>1 也只按 1 h 实现）"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_el_standby_power
+  registry_value: 0
+  d2_arg: "--el-standby-power 0"
+  code: "model.py L490-496（s_k = 0 时不建 standby 变量）；L356 h2_aux 不建"
+  enters: "无（为 0）"
+  effective_value: "0"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_el_startup_energy
+  registry_value: 0
+  d2_arg: "--el-startup-energy 0"
+  code: "model.py L491、L507（e_k = 0）；L356 h2_aux 不建"
+  enters: "无（为 0）"
+  effective_value: "0"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_el_startup_cost
+  registry_value: 0
+  d2_arg: "--el-startup-cost 0"
+  code: "model.py L510、L515"
+  enters: "objective（系数 0）"
+  effective_value: "0"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_el_ramp
+  registry_value: 1.0
+  d2_arg: "--el-ramp 1"
+  code: "model.py L511-514 |Δp| ≤ 1·C"
+  enters: "constraint: electrolyzer_ramp_up/down（冗余：0 ≤ p ≤ C 时恒成立）"
+  effective_value: "1.0（不限制）"
+  verdict: match
+  check: "resolved args；冗余性由 0 ≤ p ≤ u ≤ C 推出"
+  notes: "传 2 可省去冗余约束。"
+
+- id: h2_fc_min_load
+  registry_value: 0.2
+  d2_arg: "--fc-min-load 0.2"
+  code: "model.py L504 p_fc ≥ 0.2·u（fc_startup_hours = 0）"
+  enters: "constraint: fuelcell_min_load（u 无成本，不起作用）"
+  effective_value: "0.2"
+  verdict: match
+  check: "resolved args"
+  notes: "p_fc 与 u 均以 t/h 氢输入计，比例不受单位影响。"
+
+- id: h2_fc_startup_hours
+  registry_value: 0
+  d2_arg: "--fc-startup-hours 0"
+  code: "model.py L497（fc_startup_hours = 0 非 None）→ L503-504"
+  enters: "constraint: fuelcell_p_le_committed（无启动损失）"
+  effective_value: "0"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_fc_ramp
+  registry_value: 1.0
+  d2_arg: "--fc-ramp 1"
+  code: "model.py L511-514"
+  enters: "constraint（冗余）"
+  effective_value: "1.0"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_fc_standby_startup
+  registry_value: {standby: 0, startup_energy: 0, startup_cost: 0}
+  d2_arg: null
+  code: "argparse 默认 --fc-standby-power 0、--fc-startup-energy 0、--fc-startup-cost 0（L634；PRESET_PLEXOS 未设）；L490-510"
+  enters: "无（均为 0）"
+  effective_value: "{0, 0, 0}"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+# ---------------- G. 可用率 ----------------
+- id: h2_el_availability
+  registry_value: 0.97
+  d2_arg: "--el-availability 0.97"
+  code: "model.py L473、L475 C = 块数×10 kg/h×a_el×0.97；L477、L505"
+  enters: "constraint: electrolyzer_year_capacity、electrolyzer_committed_le_capacity（每小时容量降额）"
+  effective_value: "0.97 → 0.4765 MW 链路/块；老化后实际产氢 10×0.97/1.0468 = 9.27 kg/h/块"
+  verdict: match
+  check: "check_h2_map.py §F"
+  notes: "作用于容量（含投运容量 u），不是出力折减。"
+
+- id: h2_fc_availability
+  registry_value: 0.95
+  d2_arg: "--fc-availability 0.95"
+  code: "model.py L474、L476 C = cap(fuelcell)×60.6×hu×0.95（t/h 氢输入）；L478、L505"
+  enters: "constraint: fuelcell_year_capacity（以氢输入计）"
+  effective_value: "氢输入容量 ×0.95；因老化不进容量，每 MW 装机最大电出力 = 0.95/1.027 = 0.925 MW"
+  verdict: match
+  check: "check_h2_map.py §F"
+  notes: "数值一致，但'容量降额 0.95'在电出力口径上相当于 0.925。若登记表意图是电出力降额 5 %，应改为 C 以 δ_fc 修正后的氢输入计。登记表 code_now 已注明，正文需写清。"
+
+# ---------------- H. 燃料电池效率 ----------------
+- id: h2_fc_kg_per_mwh
+  registry_value: 60.6
+  d2_arg: null
+  code: "argparse 默认 --fc-kg-per-mwh 60.6（L634；PRESET_PLEXOS 与 D2 均未设）；L340 fk = 60.6×hu；L345 efficiency = 1/fk；L351 老化"
+  enters: "fuelcell 链路效率（电平衡/氢平衡）与容量（L476）"
+  effective_value: "60.6 kg/MWh（49.5 % LHV）；老化后 62.24 kg/MWh（48.2 %）"
+  verdict: match
+  check: "check_h2_map.py §F"
+  notes: "依赖 argparse 默认值，建议写入 D2 参数文件以免默认值变动。"
+
+- id: h2_fc_partload
+  registry_value: constant
+  d2_arg: null
+  code: "model.py 无燃料电池曲线参数或约束（只有 --el-curve）"
+  enters: "—"
+  effective_value: "constant"
+  verdict: match
+  check: "check_h2_map.py：源码中无 fc_curve"
+  notes: ""
+
+# ---------------- I. 储氢罐 ----------------
+- id: h2_tank_standing_loss
+  registry_value: 0
+  d2_arg: "--h2-standing-loss-per-day 0"
+  code: "model.py L335 h2_loss = 1 − (1−0)^(1/24) = 0；L338 standing_loss"
+  enters: "Store 能量平衡"
+  effective_value: "0"
+  verdict: match
+  check: "resolved args"
+  notes: ""
+
+- id: h2_tank_initial_inventory
+  registry_value: 0
+  d2_arg: null
+  code: "model.py L338 e_initial=0, e_cyclic=False（硬编码）；S2_parameters.json Opening Inventory = 0"
+  enters: "Store 初始能量"
+  effective_value: "0 t"
+  verdict: match
+  check: "check_h2_map.py §I（源码字符串 + 输入文件）"
+  notes: "登记表 model_entry 'L322' 应为 L338。"
+
+- id: h2_tank_terminal_condition
+  registry_value: "e(2050 年末) = e(2049 年末)"
+  d2_arg: "--model-fixes"
+  code: "model.py L551-555 hydrogen_steady_final_year（否则 L556 e(end)=0）"
+  enters: "constraint: hydrogen_steady_final_year"
+  effective_value: "e(2050 最后一时) = e(2049 最后一时)"
+  verdict: match
+  check: "args.model_fixes = True；源码含约束名"
+  notes: "登记表 code_now 'L535–539' 应为 L551–556。"
+
+# ---------------- J. 建设单位 ----------------
+- id: h2_el_block_size
+  registry_value: 10
+  d2_arg: null
+  code: "TECH['electrolyzer'] = ('Power to H2 Facility','Max Operating Level')（L20）；S2_parameters.json = 10；cap() L466（bsc = 1）"
+  enters: "容量约束 L475-477"
+  effective_value: "10 kg/h/块（名义；老化与可用率后实际 9.27 kg/h）"
+  verdict: match
+  check: "check_h2_map.py §J"
+  notes: ""
+
+- id: h2_el_block_kw_basis
+  registry_value: 549.2
+  d2_arg: "--capex-electrolyzer 的数值（65904 = 120 × 549.2 等）"
+  code: "D2 造价参数；UNIT_KW['electrolyzer'] = 549.2（L110，仅年金法）；物理上 10×a_el×F = 549.23 kW"
+  enters: "objective（经造价换算）"
+  effective_value: "D2 四个锚点每块造价 ÷ 登记表 kJPY/kW = 549.2；10×49.12×1.11813 = 549.23 kW"
+  verdict: match
+  check: "check_h2_map.py §J"
+  notes: "登记表 code_now（'按 530 kW/块换算'）过时。model.py 中没有 el_MW 的后处理换算（summary 不报 MW），按 549.2 报 MW 需在后处理脚本中核对。"
+
+- id: h2_fc_block_size
+  registry_value: 10
+  d2_arg: null
+  code: "TECH['fuelcell'] Max Capacity = 10（S2_parameters.json）；BSC fuelcell = 10（L429）"
+  enters: "容量约束 L476"
+  effective_value: "10 MW_e/块"
+  verdict: match
+  check: "check_h2_map.py §J"
+  notes: ""
+
+- id: h2_tank_block_size
+  registry_value: 1
+  d2_arg: null
+  code: "TECH['tank'] Max Inventory = 1000 kg；L530 stores ≤ cap(tank)×hu"
+  enters: "constraint: tank_year_capacity"
+  effective_value: "1 t/块"
+  verdict: match
+  check: "check_h2_map.py §J"
+  notes: ""
+
+# ---------------- K. 上限 ----------------
+- id: h2_physical_caps
+  registry_value: {electrolyzer_MW_link: 2000, fuelcell_MW: 500, tank_t: 10000}
+  d2_arg: "--h2-unlimited"
+  code: "H2_PHYS L121；L434 phys_units；L437 年上限、L462-463 总上限；L338/L339/L345 组件 p_nom/e_nom；L662-664 binding 检查"
+  enters: "constraints: annual_build 上界、total_build_*"
+  effective_value: "电解槽 4,071.66 块（链路 2,000 MW，满负荷 2,236 MW）；燃料电池 50 块；储罐 10,000 t"
+  verdict: match
+  check: "check_h2_map.py §K"
+  notes: "el_eff_aux 链路 p_nom = 1,000 MW（L354）：满上限时附加耗电最多 0.1181×1,940 ≈ 229 MW，不起约束。"
+
+- id: h2_build_caps
+  registry_value: null
+  d2_arg: "--h2-unlimited"
+  code: "model.py L336、L432-436：h2s = h2a = inf → 年上限与总上限均取物理上限"
+  enters: "（无原稿上限）"
+  effective_value: "无上限（只剩物理上限）"
+  verdict: match
+  check: "args.h2_unlimited = True"
+  notes: ""

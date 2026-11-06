@@ -1,0 +1,9 @@
+# Environment used for the 2026-10-16 integer commissioning trials (Python 3.14.3).
+pypsa==1.2.4
+linopy==0.8.0
+gurobipy==13.0.2
+highspy==1.15.1
+numpy==2.5.0
+pandas==3.0.3
+xarray==2026.7.0
+pyarrow==25.0.0

@@ -1,0 +1,292 @@
+# =====================================================================
+# EV 参数登记表 → 模型代码映射（D2 默认设定）
+# 核查日期：2026-10-28
+# 依据：params/ev.yaml（登记表）；src/model.py（738 行，SHA-256 35a2bc2d…ab45a，与 bigmem 上的 model_reg1.py 相同）；
+#       src/default_D2_args.txt；src/make_reg1_batch.py DESIGN（A0/AH = S3/S4 + fixed，B0/BH = charge_only，C0/CH = bidirectional）
+# D2 参数由 model.py 自己的 argparse 和 PRESET_PLEXOS 复原（ast 取出，未 import model）：
+#   model_fixes=True，tsam_segments=0（逐时快照），ev_capacity_scale=0.9，ev_station_eff=0.93，ev_batt_*_eff=0.98，
+#   ev_charger_kw=10（argparse 默认），v2g=3，departure 0.8 @ 7，groups=commercial,residential，participation=0.5，
+#   availability_scale=1，ev_max_soc=None，ev_cohorts=1，ev_v2g_efc_cap=None，fixed_charge_profile={INP}fixed_fleet_charging_newbase.parquet
+# 计算脚本：params/mapping/scripts/ev/check_ev_map.py（31 项检查全部通过），数值见同目录 ev_effective_values.json
+# 行号均指当前 model.py（738 行）。登记表中的行号对应 722 行旧版本，EV 部分整体偏移 +16 行（见 ev_map.md 第 3 节）。
+# =====================================================================
+
+- id: ev_fleet_count_commercial
+  registry_value: "{2025: 148, 2030: 1492, 2035: 2751, 2040: 3628, 2050: 5865} 辆"
+  d2_arg: null
+  code: "prepare_inputs.py L66、L69–70：fleet['EV JR Namie Commercial Area'].reindex(ix.year) → profiles.parquet commercial_vehicles；model.py L374（B/C 乘参与率）、L413 nom=max(count)·ecap、L415 e_min_pu/e_max_pu、L419 充电功率、L417 车辆增减电量"
+  enters: "constraint: EV Store 的 e_nom、e_min_pu、e_max_pu，充放电 Link 的 p_nom 与 p_max_pu，L561 共享功率约束右端；A 情景通过固定曲线进入负荷"
+  effective_value: "profiles.parquet 逐年与 csv 完全相同，年内不变（只在 1 月 1 日跳变）；2025/2030/2035/2040/2050 = 148/1492/2751/3628/5865 辆。B/C 受控部分 2050 年 2,932.5 辆"
+  verdict: match
+  check: "check_ev_map.py：profiles.parquet 逐年最大值 = 最小值 = csv 同名列 = 登记表 value"
+  notes: "敏感性 ev_share（0/10/30/60/100%）在 model.py 中没有命令行入口，属原 PLEXOS 批次，D2 框架下无法直接复现。"
+
+- id: ev_fleet_count_residential
+  registry_value: "{2025: 218, 2030: 1862, 2035: 3421, 2040: 4598, 2050: 7365} 辆"
+  d2_arg: null
+  code: "prepare_inputs.py L66、L69–70（列 'EV Residential Cars'）→ profiles.parquet residential_vehicles；model.py 同商业车队（L374、L413、L415、L417、L419）"
+  enters: "constraint: 同 ev_fleet_count_commercial"
+  effective_value: "218/1862/3421/4598/7365 辆，与 csv、登记表一致；B/C 受控部分 2050 年 3,682.5 辆"
+  verdict: match
+  check: "同上；另核对 csv 中 'EV Residential Cars' 逐年 = 商业 + 东居民（成立，与登记表 notes 一致）"
+  notes: "作者 10-28 已决定沿用原稿 csv，不改。"
+
+- id: ev_battery_nominal_capacity
+  registry_value: "70 kWh/车"
+  d2_arg: null
+  code: "model.py L206 ecap=.07*args.ev_capacity_scale；L377 floor_dep=.35*(.07 if model_fixes else ecap)；build_fixed_profile.py L18、L31–32 battery_mwh=0.07（均为硬编码，没有命令行参数）"
+  enters: "constraint: 经 ecap 进入 Store e_nom、e_max_pu、e_initial、出发下限；经 0.07 进入绝对下限 e_min_pu"
+  effective_value: "0.07 MWh/车"
+  verdict: match
+  check: "脚本断言 0.07 × 1000 = 登记表 70；ast/正则定位 L206、L377"
+  notes: "S3/S4 PLEXOS 对象 Capacity = 70，与硬编码一致，但代码不读取该字段。"
+
+- id: ev_soh_capacity_scale
+  registry_value: "0.9（可用 63 kWh/车）"
+  d2_arg: "--ev-capacity-scale 0.9（覆盖 PRESET_PLEXOS 的 1.0）"
+  code: "model.py L206 ecap=.07*0.9=0.063；用于 L413 e_nom、L415 e_max_pu 与 e_initial、L417 车辆增减电量、L383 出发下限；不进入 L377 绝对下限；build_fixed_profile.py L32 soh=0.9"
+  enters: "constraint: Store e_nom、e_max_pu、e_initial、出发下限；固定曲线（A 情景及 B/C 非参与部分负荷）"
+  effective_value: "ecap = 0.063 MWh/车；下限仍为 0.35 × 0.07，不随 SOH 缩放"
+  verdict: match
+  check: "复原 D2 argparse 得 ev_capacity_scale = 0.9；固定曲线脚本 newbase 预设 soh = 0.9"
+  notes: "敏感性 soh08（make_sensitivity_batch.py L23）只改 --ev-capacity-scale，仍用 soh 0.9 生成的 newbase 固定曲线，A 情景与非参与部分与 0.8 口径不一致（不影响 D2）。"
+
+- id: ev_soc_min
+  registry_value: "0.35（名义容量比例，24.5 kWh/车）"
+  d2_arg: "--model-fixes（选择绝对下限口径）"
+  code: "model.py L377 floor_dep=pd.Series(.35*(.07 if args.model_fixes else ecap))；L378 floor_base=floor_dep.copy()；L415 e_min_pu=count*floor/nom"
+  enters: "constraint: EV Store e_min_pu（全时段下限，B/C）"
+  effective_value: "0.35 × 0.07 = 0.0245 MWh/车 = 24.5 kWh/车，为可用容量 63 kWh 的 38.9%"
+  verdict: match
+  check: "脚本按 model_fixes=True 计算 floor = 0.0245，与 0.35 × 70 kWh 比较"
+  notes: "0.35 硬编码，代码不读取 cfg 'Min SoC'（S3/S4 均为 35，数值一致）。A 情景的下限只在 build_fixed_profile.py L81 中校核（floor_shortfall 最大为 0）。"
+
+- id: ev_soc_max
+  registry_value: "0.96（可用容量比例，60.48 kWh/车）"
+  d2_arg: "--ev-max-soc 未设（None）"
+  code: "model.py L414 maxsoc=param(cfg,obj,'Max SoC')/100；L415 e_max_pu=count*ecap*maxsoc/nom；固定曲线 build_fixed_profile.py L20 INITIAL_AND_MAX_SOC=0.96"
+  enters: "constraint: EV Store e_max_pu（B/C）；固定曲线的充电目标（A 及非参与部分）"
+  effective_value: "S3、S4 两车队 Max SoC 均为 96 → 0.96 × 0.063 = 0.06048 MWh/车（名义的 86.4%）"
+  verdict: match
+  check: "读取 S3/S4_parameters.json 的 Max SoC，确认 ev_max_soc 为 None"
+  notes: "平时可调窗口 60.48 − 24.5 = 35.98 kWh/车。"
+
+- id: ev_initial_soc
+  registry_value: "0.96（可用容量比例）"
+  d2_arg: null
+  code: "model.py L415 e_initial=float(count.iloc[0])*ecap*.96；L417 energy_arrivals=count.diff().fillna(0)*ecap*.96/hrs；L418 从行驶负荷中扣除；build_fixed_profile.py L20、L59、L63"
+  enters: "constraint: Store 初始电量；行驶负荷 p_set（车辆增减带入/带走的电量）"
+  effective_value: "0.96 × 0.063 = 0.06048 MWh/车 × 2025 年车辆数（B/C 乘 0.5）"
+  verdict: match
+  check: "正则定位硬编码 .96；与 S3/S4 cfg 'Initial SoC' = 96 比较"
+  notes: "0.96 为硬编码，不读取 cfg。"
+
+- id: ev_terminal_condition
+  registry_value: "2050 年末电量 = 2049 年末电量 × 车辆数比值"
+  d2_arg: "--model-fixes"
+  code: "model.py L551 steady=args.model_fixes and 存在 2049 年；L572 ratio=cnt[last]/cnt[last_prev]；L573 约束 <bus>_steady_final_year；L574 terminal_recycle 只在 steady=False 时生效"
+  enters: "constraint: ev_<group>_steady_final_year（B/C）"
+  effective_value: "商业 5865/5759 = 1.01841，居民 7365/7269 = 1.01321（B/C 参与率在分子分母中抵消）；terminal_recycle 不生效"
+  verdict: match
+  check: "脚本确认 model_fixes=True 且快照含 2049 年，并计算比值"
+  notes: ""
+
+- id: ev_self_discharge
+  registry_value: "5.0e-4 /h"
+  d2_arg: null
+  code: "model.py L415 standing_loss=.0005（硬编码；L403 为分组分支，D2 不用）；n.snapshot_weightings.stores=1（L303，逐时）；build_fixed_profile.py L22、L69"
+  enters: "constraint: PyPSA Store 能量平衡 e_t = (1−0.0005)^1 · e_(t−1) + p_t（pypsa 1.2.4 define_store_constraints）；固定曲线递推"
+  effective_value: "每小时 0.05%，每天 1.19%，30 天 30.2%；按比例作用于电量"
+  verdict: match
+  check: "正则找到 2 处 standing_loss=.0005；确认 tsam_segments=0 使 stores 权重为 1；读 PyPSA 源码确认指数形式"
+  notes: "硬编码，未读 cfg 'Self Discharge Rate'（0.05 %/h，数值一致）。若改值，必须同时改 build_fixed_profile.py L22 并重建固定曲线。"
+
+- id: ev_station_efficiency
+  registry_value: "0.93（每个方向）"
+  d2_arg: "--ev-station-eff 0.93（覆盖 PRESET_PLEXOS 0.90）"
+  code: "model.py L207 es；L420 充电 Link efficiency=es*ebc；L422 放电 Link efficiency=ebd*es；L419 pnom=max(count)*kw_ev/es；L561 es·P_ch + ebd·P_dis ≤ N·a·kw；build_fixed_profile.py L32 station_eff=0.93"
+  enters: "constraint: 充放电 Link 效率与功率上限；固定曲线"
+  effective_value: "0.93"
+  verdict: match
+  check: "复原 D2 argparse；固定曲线脚本 newbase 预设同值"
+  notes: "敏感性 evlow（0.90/0.97/0.97）只改模型参数，仍用 0.93/0.98 生成的固定曲线（不影响 D2）。"
+
+- id: ev_battery_charge_efficiency
+  registry_value: "0.98"
+  d2_arg: "--ev-batt-charge-eff 0.98（覆盖 PRESET_PLEXOS 0.95）"
+  code: "model.py L207 ebc；L420 充电 Link efficiency=es*ebc；build_fixed_profile.py L32、L55"
+  enters: "constraint: 充电 Link 效率（电网 → 电池）"
+  effective_value: "充电链 0.93 × 0.98 = 0.9114"
+  verdict: match
+  check: "复原 D2 argparse"
+  notes: ""
+
+- id: ev_battery_discharge_efficiency
+  registry_value: "0.98"
+  d2_arg: "--ev-batt-discharge-eff 0.98（覆盖 PRESET_PLEXOS 0.90）"
+  code: "model.py L207 ebd；L422 放电 Link efficiency=ebd*es，p_nom=max(count)*kw_ev/ebd（model_fixes）；L561 ebd·P_dis"
+  enters: "constraint: 放电 Link 效率（电池 → 电网）与功率上限"
+  effective_value: "放电链 0.98 × 0.93 = 0.9114"
+  verdict: match
+  check: "复原 D2 argparse"
+  notes: "B 中放电被 L565 置零，只在 C 中起作用。"
+
+- id: ev_round_trip_efficiency
+  registry_value: "0.831（派生量）"
+  d2_arg: null
+  code: "派生：L420 × L422 = (es·ebc)·(ebd·es)"
+  enters: "派生量，不单独进入"
+  effective_value: "0.93 × 0.98 × 0.98 × 0.93 = 0.83065"
+  verdict: match
+  check: "脚本计算并四舍五入到 3 位与 0.831 比较"
+  notes: ""
+
+- id: ev_charger_power
+  registry_value: "10 kW/接入车（DC，桩输出侧）"
+  d2_arg: "--ev-charger-kw 未在 D2 中出现，取 argparse 默认 10（PRESET_PLEXOS 无此键）"
+  code: "model.py L208 kw_ev=10/1000；L419 充电 p_nom=max(count)·kw_ev/es，p_max_pu=count/max·a；L422 放电 p_nom=max(count)·kw_ev/ebd；L561（model_fixes）es·P_ch + ebd·P_dis ≤ N·a·kw_ev；build_fixed_profile.py L19 CHARGER_MW_PER_EV=0.01、L57"
+  enters: "constraint: <bus>_aggregate_mode（L561），以及 Link p_nom × p_max_pu"
+  effective_value: "直流侧 10 kW/接入车；交流侧最大取电 10/0.93 = 10.75 kW；放电电池侧 10/0.98 = 10.20 kW、送到电网 9.30 kW"
+  verdict: match
+  check: "复原 D2 argparse 得 10.0；确认 model_fixes=True 走 L561（L563 的交流口径不生效）"
+  notes: "固定曲线脚本中的 0.01 MW 为硬编码，与 --ev-charger-kw 不联动；kw6 敏感性需同步改脚本。"
+
+- id: ev_departure_hour
+  registry_value: "7 时（约束作用在 06:00 快照末的电量上）"
+  d2_arg: "--ev-departure-hour 7"
+  code: "model.py L381 h_dep=(7−1)%24=6（model_fixes）；L382 dmask=(snapshots.hour==6)；L383 floor_dep[dmask]=max(floor, dep_soc·ecap)"
+  enters: "constraint: EV Store e_min_pu 在每天 06:00 快照"
+  effective_value: "每天 06:00 快照（全期每年受约束小时数 = 当年天数，含周末）；PyPSA 快照 06:00 的 Store-e 是 06:00–07:00 末，即 07:00 的电量"
+  verdict: match
+  check: "脚本统计 hour==6 的快照数逐年等于天数；PyPSA 源码确认 e_t 为时段末状态"
+  notes: "L376、L380 的 dep_floor 是死代码（计算后未被使用），不影响结果。"
+
+- id: ev_departure_soc
+  registry_value: "0.8（可用容量比例，50.4 kWh/车）"
+  d2_arg: "--ev-departure-soc 0.8（PRESET_PLEXOS 为 None）"
+  code: "model.py L383 floor_dep[dmask]=np.maximum(0.0245, 0.8·ecap)；L415 e_min_pu=count·floor_dep/nom"
+  enters: "constraint: EV Store e_min_pu（06:00 快照，B/C 受控部分）"
+  effective_value: "0.8 × 0.063 = 0.0504 MWh/车（名义的 72%）；出发时剩余窗口 60.48 − 50.4 = 10.08 kWh/车"
+  verdict: match
+  check: "脚本断言 dep_floor = 0.0504；固定曲线 06:00 最低 SoC = 0.96 ≥ 0.8"
+  notes: "约束作用于车队总电量（含 06:00 不在桩上的约 9.5% 车辆）。build_fixed_profile.py L32 newbase 预设 departure_soc=0.6，只用于 check.json 校核，不影响曲线。"
+
+- id: ev_departure_groups
+  registry_value: "[commercial, residential]"
+  d2_arg: "--ev-departure-groups 未设，取 argparse 默认 'commercial,residential'"
+  code: "model.py L376 dep_groups=args.ev_departure_groups.split(',')；L415 floor_dep if key in dep_groups else floor_base"
+  enters: "constraint: 两个车队的 e_min_pu 都使用含出发下限的 floor_dep"
+  effective_value: "commercial、residential 均适用，每天生效"
+  verdict: match
+  check: "复原 D2 argparse"
+  notes: ""
+
+- id: ev_participation
+  registry_value: "0.5"
+  d2_arg: "--ev-participation 0.5（PRESET_PLEXOS 为 1.0）"
+  code: "model.py L367 条件 ev_control!='fixed' and p<1；L372 非参与负荷 p_set=(1−0.5)·固定曲线；L374 df vehicles、drive_MWh ×0.5；其后 L413–L422、L558–L561 均用缩放后的 count；L278/L285 读固定曲线"
+  enters: "constraint: 车辆数 → Store e_nom/e_min/e_max、Link 功率、共享功率约束；行驶负荷 ×0.5；电网母线固定负荷 ev_nonparticipating_charge"
+  effective_value: "B/C：2050 年受控商业 2,932.5 辆（e_nom 184.75 MWh，交流充电 p_nom 31.53 MW），居民 3,682.5 辆（232.00 MWh，39.60 MW）；非参与负荷 = 0.5 × 固定曲线。A：不适用，全车队按固定曲线（L361–366）"
+  verdict: match
+  check: "脚本按 0.5 复算容量与功率；固定曲线对车辆数为一次齐次，所以 0.5 × 曲线严格等于半个车队按同一规则充电"
+  notes: "登记表的'其余 50% 按固定曲线'只适用于 B/C；A 情景 100% 按固定曲线。"
+
+- id: ev_v2g_cost
+  registry_value: "3 円/kWh（电池侧放电）"
+  d2_arg: "--v2g-cost-jpy-per-kwh 3（PRESET_PLEXOS 为 0）"
+  code: "model.py L422 放电 Link marginal_cost=args.v2g_cost_jpy_per_kwh/1000；bus0=EV 电池母线；目标权重 L301 snapshot_weightings.objective=weight×discount"
+  enters: "objective: Σ_t 0.003 百万円/MWh × P_dis,batt(t) × 贴现权重（只在 C 中非零；B 由 L565 置零，A 无 EV Link）"
+  effective_value: "0.003 百万円/MWh = 3 円/kWh，按电池侧放电量计"
+  verdict: match
+  check: "单位换算 3/1000 = 0.003；确认 Link p0 在 bus0（电池）一侧"
+  notes: "充电 Link 无 marginal_cost；V2G 成本只在放电 Link 上，没有放在 Store 上。"
+
+- id: ev_v2g_efc_cap
+  registry_value: "不设上限"
+  d2_arg: "--ev-v2g-efc-cap 未设（None）"
+  code: "model.py L566–570（cap 为 None 时整段跳过）；L712–718 影子价格输出"
+  enters: "无（D2 不生成该约束）"
+  effective_value: "无 EFC 约束"
+  verdict: match
+  check: "复原 D2 argparse 得 None"
+  notes: "敏感性 efc50/efc100 有命令行入口。"
+
+- id: ev_availability_profile
+  registry_value: "ev_charging_share_2018_2050.csv，'~CS_JR Namie Commercial Area' 列"
+  d2_arg: null
+  code: "prepare_inputs.py L68、L72：availability[name+'~CS_JR Namie Commercial Area']/100（每个车队取自己的列）；model.py L255 ×scale 并 clip(1)；L419 p_max_pu=count/max·a；L561 右端 N·a·kw"
+  enters: "constraint: 充放电 Link p_max_pu 与共享功率约束；固定曲线的交流功率上限"
+  effective_value: "与 csv/100 逐时完全一致；平均 商业 0.727、居民 0.765；06:00 平均 0.906 / 0.901；最大 1.0"
+  verdict: match
+  check: "脚本按 prepare_inputs.load_time 重读 csv 并比较（最大差 0）"
+  notes: "两车队的列分别是 'EV JR Namie Commercial Area~CS_…' 与 'EV Residential Cars~CS_…'，即同一充电站、不同车队的两列，并非同一列。"
+
+- id: ev_availability_scale
+  registry_value: "1.0"
+  d2_arg: "--ev-availability-scale 未设，取 argparse 默认 1"
+  code: "model.py L253–255 df[column]=(df[column]*1).clip(upper=1)；L638–641 缩放时强制换用对应固定曲线"
+  enters: "constraint: 同 ev_availability_profile（乘 1）"
+  effective_value: "1.0（无缩放）"
+  verdict: match
+  check: "复原 D2 argparse"
+  notes: ""
+
+- id: ev_traction_profile
+  registry_value: "ev_data_2018_2050.csv（每车每小时行驶距离）"
+  d2_arg: null
+  code: "prepare_inputs.py L67、L71 drive_MWh=vehicles×0.0002×drive；model.py L374（B/C ×0.5）、L418 Load <bus>_traction p_set=drive_MWh − energy_arrivals"
+  enters: "constraint: EV 母线功率平衡中的行驶负荷；固定曲线递推"
+  effective_value: "profiles.parquet 与 csv 重算逐时完全一致；商业平均 4.13 km/车·h，居民 2.35 km/车·h"
+  verdict: match
+  check: "脚本重算 vehicles × 0.0002 × csv 并比较（最大差 0）"
+  notes: "csv 本身无单位标注；'km/车·h' 只能由公式反推，属于合理推断。"
+
+- id: ev_energy_per_km
+  registry_value: "0.2 kWh/km"
+  d2_arg: null
+  code: "prepare_inputs.py L71 硬编码 .0002（MWh/km）"
+  enters: "constraint: 经行驶负荷进入（见 ev_traction_profile）"
+  effective_value: "0.0002 MWh/km = 0.2 kWh/km；与 cfg Efficiency = 200 Wh/km 一致"
+  verdict: match
+  check: "正则定位 prepare_inputs.py L71；与登记表比较"
+  notes: "model.py 不读 cfg 'Efficiency'；改值需重跑 prepare_inputs.py 和固定曲线。"
+
+- id: ev_annual_mileage
+  registry_value: "null（派生量，不是模型输入）"
+  d2_arg: null
+  code: "无入口（由 ev_traction_profile 累加得到）"
+  enters: "不进入模型"
+  effective_value: "由输入推算：商业 36,226 km/车·年（7,245 kWh），居民 20,622 km/车·年（4,124 kWh），各年变化 < 3%"
+  verdict: doc_only
+  check: "脚本按年累加 csv 每车 km"
+  notes: "数值与登记表 code_now 一致。是否偏高由正文/作者判断。"
+
+- id: ev_cohort_test
+  registry_value: "{base_cohorts: 1, test_cohorts: 3, theta: [0.5, 0.75, 1.0]}"
+  d2_arg: "--ev-cohorts 未设（默认 1）、--ev-cohort-theta 未设（默认 1.0，cohorts=1 时不用）"
+  code: "model.py L384 args.ev_cohorts>1 时走分组分支（L384–409）；D2 走 L410–422 聚合分支"
+  enters: "D2 下不进入（单一聚合 Store）；K=3 与 theta 只用于敏感性"
+  effective_value: "base_cohorts = 1（生效）；test_cohorts/theta 只在敏感性中通过命令行设定"
+  verdict: match
+  check: "复原 D2 argparse 得 ev_cohorts = 1"
+  notes: "test_cohorts、theta 部分属 doc_only（敏感性），有命令行入口。"
+
+- id: ev_uncontrolled_charging_profile
+  registry_value: "尽早充回 96% 可用容量；参数与 D2 一致"
+  d2_arg: "--fixed-charge-profile {INP}fixed_fleet_charging_newbase.parquet"
+  code: "model.py L284–290 读取并检查覆盖；L361–366（A：100% 负荷 ev_fixed_charge）；L367–372（B/C：(1−p)·曲线）；L600 只在 fixed 时记录 SHA；生成脚本 build_fixed_profile.py --preset newbase（L18–33、L44–109）"
+  enters: "constraint: 电网母线外生负荷 p_set（A 全部；B/C 50%）"
+  effective_value: "用当前 profiles.parquet 重建，SHA-256 3e0b0b15…08d09 与 inputs 文件完全一致（逐值差 0）；生成参数 0.063 MWh、0.93、0.98、0.0005/h、0.01 MW、目标 0.96、绝对下限，与 D2 一致；06:00 最低 SoC 0.96；全期充电/行驶 = 1.137（商业）、1.168（居民）；峰值 74.6 MW"
+  verdict: match
+  check: "check_ev_map.py 在临时目录运行 build_fixed_profile.py --preset newbase 并比较 SHA-256；逐项比较脚本常数与 D2 参数"
+  notes: "唯一差异为脚本 departure_soc=0.6（只用于 check.json，D2 为 0.8）。B/C 也使用此曲线，但 summary.json 中 fixed_charge_profile_sha256 只在 A 记录（L600）。"
+
+- id: ev_battery_capex_in_system_cost
+  registry_value: "不计入"
+  d2_arg: null
+  code: "model.py 目标函数只有：L465 新能源/氢能建设、L515 启动成本、L547 电网扩容、L581 生物质持有成本、各组件 marginal_cost；EV 部分只有 L422 V2G 成本；全文件无 capital_cost"
+  enters: "无"
+  effective_value: "目标函数中没有 EV 电池或双向充电桩投资项"
+  verdict: match
+  check: "脚本列出全部 add_objective / marginal_cost 行，确认没有 EV 投资项，且 capital_cost 不出现"
+  notes: ""

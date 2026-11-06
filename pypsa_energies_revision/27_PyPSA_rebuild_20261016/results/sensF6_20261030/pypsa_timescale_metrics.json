@@ -1,0 +1,70 @@
+{
+  "leak10__CH": {
+    "tank_t": 75.1322984721316,
+    "throughput_over_capacity": 79.92874349517038,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.6,
+      57.5,
+      26.4,
+      4.6
+    ],
+    "acf_24h": 0.5736160312153618,
+    "little_mean_days": 2.091280708882367,
+    "fifo_mean_days": 2.012786309004511,
+    "fifo_median_days": 1.7916666666666667,
+    "lifo_share_le_24h": 0.5593731124761107,
+    "fifo_share_gt_168h": 0.0012886667110457663,
+    "across_quarter_net_share": 1.5508524096765568e-16
+  },
+  "leak01__CH": {
+    "tank_t": 77.82630204681294,
+    "throughput_over_capacity": 79.35874103130703,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.4,
+      60.0,
+      25.4,
+      3.2
+    ],
+    "acf_24h": 0.5738242037131818,
+    "little_mean_days": 2.2489342216768433,
+    "fifo_mean_days": 2.214414300678873,
+    "fifo_median_days": 1.9583333333333333,
+    "lifo_share_le_24h": 0.5510924308971222,
+    "fifo_share_gt_168h": 0.0023252304000879313,
+    "across_quarter_net_share": 0.0011457810582050406
+  },
+  "tank043__CH": {
+    "tank_t": 43.0,
+    "throughput_over_capacity": 107.99380686529933,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      18.6,
+      62.3,
+      16.4,
+      2.8
+    ],
+    "acf_24h": 0.4164517751376224,
+    "little_mean_days": 1.6451671759943791,
+    "fifo_mean_days": 1.6388616373209166,
+    "fifo_median_days": 1.4583333333333333,
+    "lifo_share_le_24h": 0.6163413700551293,
+    "fifo_share_gt_168h": 0.0,
+    "across_quarter_net_share": 0.001533172005153181
+  },
+  "aperp__CH": {
+    "tank_t": 78.00260425764759,
+    "throughput_over_capacity": 79.29466713063398,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.4,
+      59.6,
+      25.7,
+      3.3
+    ],
+    "acf_24h": 0.5759104351569788,
+    "little_mean_days": 2.292797802823007,
+    "fifo_mean_days": 2.2647196285281317,
+    "fifo_median_days": 2.0416666666666665,
+    "lifo_share_le_24h": 0.5498469063025997,
+    "fifo_share_gt_168h": 0.002620662369161976,
+    "across_quarter_net_share": 0.002336645120823944
+  }
+}

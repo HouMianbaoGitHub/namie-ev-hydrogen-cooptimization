@@ -1,0 +1,452 @@
+{
+ "h2_el_capex": {
+  "effective": {
+   "2025": 120.0,
+   "2030": 52.0,
+   "2040": 40.0,
+   "2050": 30.0
+  },
+  "expected": {
+   "2025": 120,
+   "2030": 52,
+   "2040": 40,
+   "2050": 30
+  },
+  "ok": true,
+  "check": "D2 --capex-* parsed by parse_kv, _interp 2025-2050, divided by block size; max rel. diff 2.22e-16"
+ },
+ "h2_fc_capex": {
+  "effective": {
+   "2025": 180.0,
+   "2030": 150.0,
+   "2040": 113.0,
+   "2050": 113.0
+  },
+  "expected": {
+   "2025": 180,
+   "2030": 150,
+   "2040": 113,
+   "2050": 113
+  },
+  "ok": true,
+  "check": "D2 --capex-* parsed by parse_kv, _interp 2025-2050, divided by block size; max rel. diff 0.00e+00"
+ },
+ "h2_tank_capex": {
+  "effective": {
+   "2025": 112.0,
+   "2030": 96.0,
+   "2040": 63.0,
+   "2050": 54.0
+  },
+  "expected": {
+   "2025": 112,
+   "2030": 96,
+   "2040": 63,
+   "2050": 54
+  },
+  "ok": true,
+  "check": "D2 --capex-* parsed by parse_kv, _interp 2025-2050, divided by block size; max rel. diff 2.22e-16"
+ },
+ "h2_el_fom": {
+  "effective": 0.02,
+  "expected": 0.02,
+  "ok": true,
+  "check": "scale_annuity with --h2-stack-repl removed: (PV/d/capex - 1) x 0.03, all years 2025-2050"
+ },
+ "h2_fc_fom": {
+  "effective": 0.03,
+  "expected": 0.03,
+  "ok": true,
+  "check": "scale_annuity with --h2-stack-repl removed: (PV/d/capex - 1) x 0.03, all years 2025-2050"
+ },
+ "h2_tank_fom": {
+  "effective": 0.005,
+  "expected": 0.005,
+  "ok": true,
+  "check": "scale_annuity with --h2-stack-repl removed: (PV/d/capex - 1) x 0.03, all years 2025-2050"
+ },
+ "h2_el_stack_replacement_cost": {
+  "effective": {
+   "share": 0.11,
+   "interval_years": 15.0,
+   "pv_share_of_capex": 0.197144
+  },
+  "expected": {
+   "share": 0.11,
+   "interval_years": 15,
+   "pv_share_of_capex": 0.197144
+  },
+  "ok": true,
+  "check": "scale_annuity with --h2-fom removed: PV/d/capex - 1 = share/(1.03^L - 1)"
+ },
+ "h2_fc_stack_replacement_cost": {
+  "effective": {
+   "share": 0.2,
+   "interval_years": 10.0,
+   "pv_share_of_capex": 0.581537
+  },
+  "expected": {
+   "share": 0.2,
+   "interval_years": 10,
+   "pv_share_of_capex": 0.581537
+  },
+  "ok": true,
+  "check": "scale_annuity with --h2-fom removed: PV/d/capex - 1 = share/(1.03^L - 1)"
+ },
+ "_total_unit_cost": {
+  "mismatching_year_tech": 0
+ },
+ "h2_el_system_life": {
+  "effective": "not used (investment_method=plexos; scale_annuity uses tech_life: False)",
+  "expected": {
+   "2025": 20,
+   "2030": 25,
+   "2040": 30,
+   "2050": 35
+  },
+  "ok": true,
+  "check": "args.investment_method; ast: tech_life absent from scale_annuity",
+  "vintages_past_registry_life_by_2050": [
+   2025,
+   2026,
+   2027
+  ]
+ },
+ "h2_fc_system_life": {
+  "effective": "not used (investment_method=plexos; scale_annuity uses tech_life: False)",
+  "expected": 20,
+  "ok": true,
+  "check": "args.investment_method; ast: tech_life absent from scale_annuity",
+  "vintages_past_registry_life_by_2050": [
+   2025,
+   2026,
+   2027,
+   2028,
+   2029,
+   2030
+  ]
+ },
+ "h2_tank_life": {
+  "effective": "not used (investment_method=plexos; scale_annuity uses tech_life: False)",
+  "expected": 30,
+  "ok": true,
+  "check": "args.investment_method; ast: tech_life absent from scale_annuity",
+  "vintages_past_registry_life_by_2050": []
+ },
+ "h2_el_stack_life": {
+  "effective": 15,
+  "expected": 15,
+  "ok": true,
+  "check": "args.el_stack_life (L347 age = (L-1)/2) and --h2-stack-repl interval",
+  "age_years": 7.0
+ },
+ "h2_fc_stack_life": {
+  "effective": 10,
+  "expected": 10,
+  "ok": true,
+  "check": "args.fc_stack_life (L350)",
+  "age_years": 4.5
+ },
+ "h2_el_degradation": {
+  "effective": 0.0024,
+  "expected": 0.0024,
+  "ok": true,
+  "check": "L346-348: eff = hu/(a_el(1+r*age))",
+  "delta_el": 1.0168
+ },
+ "h2_fc_degradation": {
+  "effective": 0.006,
+  "expected": 0.006,
+  "ok": true,
+  "check": "L349-351",
+  "delta_fc": 1.027,
+  "aged_kg_per_MWh": 62.236
+ },
+ "h2_degradation_method": {
+  "effective": "lifetime_average",
+  "expected": "lifetime_average",
+  "ok": true,
+  "check": "args.degradation_average",
+  "age_el": 7.0,
+  "age_fc": 4.5,
+  "registry_unit_text": "age = (stack_life − 1)/2：电解槽 7 年（电堆寿命 15 年，F6 2026-10-30 起；F5 为 19.5 年），燃料电池 4.5 年"
+ },
+ "h2_el_linear_coeff": {
+  "effective": 49.12,
+  "expected": 49.12,
+  "ok": true,
+  "check": "args.h2_electrolysis_mwh_per_kg x 1000; L339 efficiency = hu/a_el"
+ },
+ "h2_el_compression_energy": {
+  "effective": "not separable (contained in a_el = 49.12)",
+  "expected": 2.0,
+  "ok": true,
+  "check": "49.12 = 47.12 + 2.0 (registry chain); scaled by delta_el",
+  "compression_after_ageing_kWh_per_kg": 2.034
+ },
+ "h2_el_sec_reference_53": {
+  "effective": "not in D2 (PRESET_PLEXOS 0.053 overridden by --h2-electrolysis-mwh-per-kg)",
+  "expected": 53.0,
+  "ok": true,
+  "check": "args"
+ },
+ "h2_el_sec_basis": {
+  "effective": {
+   "linear_coeff": 49.12,
+   "full_load_system": 54.923
+  },
+  "expected": {
+   "linear_coeff": 49.12,
+   "full_load_system": 54.92,
+   "unit": "kWh/kg"
+  },
+  "ok": true,
+  "check": "SEC(x) = a*delta*(1 + extra(x)/x)",
+  "unaged": {
+   "x035": 51.93,
+   "x050": 52.64,
+   "x070": 53.12,
+   "x100": 54.92
+  },
+  "aged_delta_1.0168": {
+   "x035": 52.8,
+   "x100": 55.85
+  },
+  "registry_sensitivity_aged": {
+   "x035_min": 54.36,
+   "full_load": 57.49
+  }
+ },
+ "h2_el_full_load_input_factor": {
+  "effective": 1.11813,
+  "expected": 1.1181,
+  "ok": true,
+  "check": "1 + noload + max_j s_j(1-b_j)"
+ },
+ "h2_el_noload": {
+  "effective": 0.02,
+  "expected": 0.02,
+  "ok": true,
+  "check": "L519-521 extra >= noload*u (u in link MW)",
+  "share_of_full_load_input": 0.01789
+ },
+ "h2_el_partload_curve": {
+  "effective": {
+   "cli": "0.35:0.1057,0.5185:0.2038",
+   "slopes_kWh_per_kg": [
+    5.192,
+    4.819
+   ],
+   "kink_x": 0.7001
+  },
+  "expected": {
+   "breakpoints": [
+    0.35,
+    0.7
+   ],
+   "extra_slope_kwh_per_kg": [
+    5.19,
+    4.82
+   ],
+   "cli": "0.35:0.1057,0.5185:0.2038"
+  },
+  "ok": true,
+  "check": "L522-525; kink where s1(x-b1) = s2(x-b2); ref = u - su (model_fixes & h2_uc & startup_hours>0)",
+  "ref_is_committed_minus_startup": true
+ },
+ "h2_el_water_vom": {
+  "effective": 4.0672,
+  "expected": 4,
+  "ok": false,
+  "check": "L339 marginal_cost = (4/a_el)/1e6 per MWh link input; kg per MWh input = 1/(a_el*delta) (L348)",
+  "JPY_per_MWh_input": 81.43,
+  "hardcoded_in_code": true,
+  "S2_parameters_VOM": 4.0
+ },
+ "h2_uc_enabled": {
+  "effective": true,
+  "expected": true,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_el_min_load": {
+  "effective": 0.2,
+  "expected": 0.2,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_el_startup_hours": {
+  "effective": 1,
+  "expected": 1,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_el_standby_power": {
+  "effective": 0.0224,
+  "expected": 0.0224,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_el_startup_energy": {
+  "effective": 0.0,
+  "expected": 0,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_el_startup_cost": {
+  "effective": 1118.0,
+  "expected": 1118,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_el_ramp": {
+  "effective": 1.0,
+  "expected": 1.0,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)",
+  "binding_possible": false
+ },
+ "h2_fc_min_load": {
+  "effective": 0.0,
+  "expected": 0,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_fc_startup_hours": {
+  "effective": 0,
+  "expected": 0,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_fc_ramp": {
+  "effective": 1.0,
+  "expected": 1.0,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)",
+  "binding_possible": false
+ },
+ "h2_el_availability": {
+  "effective": 0.97,
+  "expected": 0.97,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)",
+  "link_MW_per_block": 0.47646,
+  "kg_per_h_per_block_aged": 9.5397
+ },
+ "h2_fc_availability": {
+  "effective": 0.95,
+  "expected": 0.95,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)",
+  "max_electric_MW_per_MW": 0.925
+ },
+ "h2_fc_kg_per_mwh": {
+  "effective": 60.6,
+  "expected": 60.6,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)",
+  "lhv_eff": 0.4951,
+  "aged": 62.236,
+  "aged_lhv_eff": 0.4821
+ },
+ "h2_tank_standing_loss": {
+  "effective": 0.0,
+  "expected": 0,
+  "ok": true,
+  "check": "resolved args (argparse default <- PRESET_PLEXOS <- D2)"
+ },
+ "h2_fc_standby_startup": {
+  "effective": {
+   "standby": 0.0,
+   "startup_energy": 0.0,
+   "startup_cost": 0.0
+  },
+  "expected": {
+   "standby": 0,
+   "startup_energy": 0,
+   "startup_cost": 0
+  },
+  "ok": true,
+  "check": "argparse defaults"
+ },
+ "h2_fc_partload": {
+  "effective": "constant",
+  "expected": "constant",
+  "ok": true,
+  "check": "no fuel-cell curve argument/constraint in model.py"
+ },
+ "h2_tank_initial_inventory": {
+  "effective": 0,
+  "expected": 0,
+  "ok": true,
+  "check": "L338 + S2_parameters Opening Inventory"
+ },
+ "h2_tank_terminal_condition": {
+  "effective": "steady final year",
+  "expected": "e(2050 年末) = e(2049 年末)",
+  "ok": true,
+  "check": "L551-556: steady = model_fixes and 2049 in snapshots"
+ },
+ "h2_el_block_size": {
+  "effective": 10.0,
+  "expected": 10,
+  "ok": true,
+  "check": "cap() L466 = installed*param/bsc (bsc=1)"
+ },
+ "h2_fc_block_size": {
+  "effective": 10.0,
+  "expected": 10,
+  "ok": true,
+  "check": "cap() with bsc=10 -> MW"
+ },
+ "h2_tank_block_size": {
+  "effective": 1.0,
+  "expected": 1,
+  "ok": true,
+  "check": "L530 cap(tank)*hu"
+ },
+ "h2_el_block_kw_basis": {
+  "effective": {
+   "capex_divisor_from_D2": {
+    "2025": 549.2,
+    "2030": 549.2,
+    "2040": 549.2,
+    "2050": 549.2
+   },
+   "full_load_input_kW": 549.23,
+   "link_kW": 491.2,
+   "UNIT_KW": 549.2
+  },
+  "expected": 549.2,
+  "ok": true,
+  "check": "D2 capex per block / registry kJPY/kW; 10 x a_el x F"
+ },
+ "h2_physical_caps": {
+  "effective": {
+   "H2_PHYS": {
+    "electrolyzer_MW": 2000.0,
+    "fuelcell_MW": 500.0,
+    "tank_t": 10000.0
+   },
+   "unit_caps": {
+    "electrolyzer": 4071.66,
+    "fuelcell": 50.0,
+    "tank": 10000.0
+   },
+   "electrolyzer_full_load_MW": 2236.3
+  },
+  "expected": {
+   "electrolyzer_MW_link": 2000,
+   "fuelcell_MW": 500,
+   "tank_t": 10000
+  },
+  "ok": true,
+  "check": "L121, L434-437, L462-463"
+ },
+ "h2_build_caps": {
+  "effective": "none (physical caps only)",
+  "expected": null,
+  "ok": true,
+  "check": "args.h2_unlimited -> h2s=h2a=inf (L336, L432-436)"
+ }
+}

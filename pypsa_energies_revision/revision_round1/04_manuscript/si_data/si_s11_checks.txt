@@ -1,0 +1,20 @@
+H2 2050: shift 1-7d -> 1-5d (pp): 4.48-4.95
+H2 2050: shift 7-28d -> 5-20d (pp): 4.20-4.64
+H2 2049: shift 1-7d -> 1-5d (pp): 5.29-6.61
+H2 2049: shift 7-28d -> 5-20d (pp): 5.00-5.85
+H2 >20d share 2050: 3.30-3.67 ; 2049: 2.86-3.54
+H2 >28d share 2050: 3.19-3.76 ; 2049: 2.44-2.77
+EV (managed + A input) >20d share 2050: 0.53-3.18 ; 2049: 0.61-3.69
+EV intraday change 7/28 -> 5/20 (pp, 2050): -0.16 to 0.03
+max |2050-2049| any band, any series (pp): 1.82 (CH EV managed)
+H2 FIFO mean 2050: 2.12-2.27 ; 2049: 2.16-2.23
+--- sensitivity runs (2050) ---
+n runs with H2 metrics: 58 ; n runs with V2G-fleet metrics: 31
+H2 FIFO mean: 1.44 (tank043 S2) - 2.88 (capex070 CH)
+H2 1-7d share: 55.04 (capex070 S2) - 62.25 (tank043 CH)
+H2 >28d share: 2.15 - 5.82 (capex070 CH)
+H2 >20d share (5/20): 2.12 - 6.50 (capex070 CH)
+H2 FIFO share >168h max: 0.0231
+H2 across-quarter net share max: 0.0073
+V2G fleet (CH) intraday share: 66.59 (v2g10) - 76.66 (evcap080)
+V2G fleet FIFO mean: 0.69 - 1.35

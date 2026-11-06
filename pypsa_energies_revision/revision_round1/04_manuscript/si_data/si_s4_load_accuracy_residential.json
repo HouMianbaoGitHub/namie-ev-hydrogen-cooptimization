@@ -1,0 +1,16 @@
+{
+ "sector": "residential",
+ "model": "Random Forest (default), 80/20 random split, seed 42",
+ "data": "Shinchi Town smart meters 2018, mean load of 50 households (final_modeling_data.csv)",
+ "script_metric_definition": "sklearn MAPE on all test points",
+ "n_test": 1752,
+ "n_test_zero": 0,
+ "MAPE_all_pct": 6.535863837038841,
+ "MAPE_nonzero_pct": 6.535863837038841,
+ "WAPE_pct": 6.540648732996046,
+ "RMSE_kW": 0.06096714564961575,
+ "MAE_kW": 0.0444589435216895,
+ "R2": 0.928751255593536,
+ "MAPE_script_pct": 6.535863837038841,
+ "runtime_s": 12
+}

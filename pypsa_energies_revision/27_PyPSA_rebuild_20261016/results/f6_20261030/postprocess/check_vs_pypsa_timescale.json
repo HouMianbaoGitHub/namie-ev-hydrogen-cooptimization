@@ -1,0 +1,66 @@
+{
+  "S2": {
+    "var_shares_new": [
+      12.1,
+      57.8,
+      26.4,
+      3.8
+    ],
+    "var_shares_ref": [
+      12.1,
+      57.8,
+      26.4,
+      3.8
+    ],
+    "fifo_mean_days_new": 2.1202001899901224,
+    "fifo_mean_days_ref": 2.1202001899901224
+  },
+  "AH": {
+    "var_shares_new": [
+      11.3,
+      57.4,
+      28.1,
+      3.2
+    ],
+    "var_shares_ref": [
+      11.3,
+      57.4,
+      28.1,
+      3.2
+    ],
+    "fifo_mean_days_new": 2.219052247110865,
+    "fifo_mean_days_ref": 2.219052247110865
+  },
+  "BH": {
+    "var_shares_new": [
+      11.2,
+      57.4,
+      28.2,
+      3.2
+    ],
+    "var_shares_ref": [
+      11.2,
+      57.4,
+      28.2,
+      3.2
+    ],
+    "fifo_mean_days_new": 2.2304727295755584,
+    "fifo_mean_days_ref": 2.2304727295755584
+  },
+  "CH": {
+    "var_shares_new": [
+      11.3,
+      59.4,
+      25.9,
+      3.4
+    ],
+    "var_shares_ref": [
+      11.3,
+      59.4,
+      25.9,
+      3.4
+    ],
+    "fifo_mean_days_new": 2.267438253891182,
+    "fifo_mean_days_ref": 2.2674382538911826
+  }
+}

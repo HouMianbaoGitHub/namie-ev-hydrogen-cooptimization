@@ -1,0 +1,104 @@
+{
+  "F6__S2": {
+    "tank_t": 85.48181325013596,
+    "throughput_over_capacity": 82.91269025278004,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      12.1,
+      57.8,
+      26.4,
+      3.8
+    ],
+    "acf_24h": 0.5747609870529077,
+    "little_mean_days": 2.149234936435439,
+    "fifo_mean_days": 2.1202001899901224,
+    "fifo_median_days": 1.875,
+    "lifo_share_le_24h": 0.5692351833430149,
+    "fifo_share_gt_168h": 0.0010189473184379324,
+    "across_quarter_net_share": 0.0017650594893199947
+  },
+  "F6__AH": {
+    "tank_t": 86.63363822130808,
+    "throughput_over_capacity": 79.2304447135441,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.3,
+      57.4,
+      28.1,
+      3.2
+    ],
+    "acf_24h": 0.5843666378801575,
+    "little_mean_days": 2.24851886695764,
+    "fifo_mean_days": 2.219052247110865,
+    "fifo_median_days": 2.0416666666666665,
+    "lifo_share_le_24h": 0.5544526331983969,
+    "fifo_share_gt_168h": 0.0015502868066208145,
+    "across_quarter_net_share": 0.0017910434134355989
+  },
+  "F6__BH": {
+    "tank_t": 82.81952412679775,
+    "throughput_over_capacity": 78.66083334973067,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.2,
+      57.4,
+      28.2,
+      3.2
+    ],
+    "acf_24h": 0.587794610508009,
+    "little_mean_days": 2.2604063629293973,
+    "fifo_mean_days": 2.2304727295755584,
+    "fifo_median_days": 2.0416666666666665,
+    "lifo_share_le_24h": 0.5512455335183764,
+    "fifo_share_gt_168h": 0.001981368859478568,
+    "across_quarter_net_share": 0.002051394544952358
+  },
+  "F6__CH": {
+    "tank_t": 78.17656780964646,
+    "throughput_over_capacity": 79.28553715615189,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.3,
+      59.4,
+      25.9,
+      3.4
+    ],
+    "acf_24h": 0.577681911458897,
+    "little_mean_days": 2.2959126633976,
+    "fifo_mean_days": 2.2674382538911826,
+    "fifo_median_days": 2.0416666666666665,
+    "lifo_share_le_24h": 0.5502566726487816,
+    "fifo_share_gt_168h": 0.002691690878819356,
+    "across_quarter_net_share": 0.0022606297819960388
+  },
+  "F6t2060__S2": {
+    "tank_t": 85.48917014558037,
+    "throughput_over_capacity": 82.88332195237395,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.9,
+      57.5,
+      27.0,
+      3.7
+    ],
+    "acf_24h": 0.5781723267075991,
+    "little_mean_days": 2.16244054157207,
+    "fifo_mean_days": 2.1242842993324924,
+    "fifo_median_days": 1.875,
+    "lifo_share_le_24h": 0.5707234383352829,
+    "fifo_share_gt_168h": 0.0010187980328108387,
+    "across_quarter_net_share": 0.003430345504453355
+  },
+  "F6t2060__CH": {
+    "tank_t": 78.18883582534596,
+    "throughput_over_capacity": 79.25717333394856,
+    "variance_shares_lt1d_1to7d_7to28d_gt28d": [
+      11.2,
+      58.8,
+      26.6,
+      3.5
+    ],
+    "acf_24h": 0.582868809554567,
+    "little_mean_days": 2.308838231232525,
+    "fifo_mean_days": 2.2675571258201477,
+    "fifo_median_days": 2.0833333333333335,
+    "lifo_share_le_24h": 0.5519929677568228,
+    "fifo_share_gt_168h": 0.0026967913005057106,
+    "across_quarter_net_share": 0.001732789021222141
+  }
+}

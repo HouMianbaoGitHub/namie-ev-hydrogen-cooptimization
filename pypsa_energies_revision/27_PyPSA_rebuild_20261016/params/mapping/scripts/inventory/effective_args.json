@@ -1,0 +1,934 @@
+{
+ "args": {
+  "scenario": {
+   "flag": "--scenario",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "days_per_year": {
+   "flag": "--days-per-year",
+   "line": 634,
+   "argparse_default": 0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0,
+   "origin": "argparse_default"
+  },
+  "only_year": {
+   "flag": "--only-year",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "end_year": {
+   "flag": "--end-year",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "continuous": {
+   "flag": "--continuous",
+   "line": 634,
+   "argparse_default": true,
+   "preset_plexos": "(not set)",
+   "d2_value": true,
+   "origin": "argparse_default"
+  },
+  "market_limit_mw": {
+   "flag": "--market-limit-mw",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "118",
+   "origin": "cli"
+  },
+  "renewable_scale": {
+   "flag": "--renewable-scale",
+   "line": 634,
+   "argparse_default": 1,
+   "preset_plexos": "(not set)",
+   "d2_value": 1,
+   "origin": "argparse_default"
+  },
+  "ev_availability_scale": {
+   "flag": "--ev-availability-scale",
+   "line": 634,
+   "argparse_default": 1,
+   "preset_plexos": "(not set)",
+   "d2_value": 1,
+   "origin": "argparse_default"
+  },
+  "price_scale": {
+   "flag": "--price-scale",
+   "line": 634,
+   "argparse_default": 1,
+   "preset_plexos": "(not set)",
+   "d2_value": 1,
+   "origin": "argparse_default"
+  },
+  "ev_control": {
+   "flag": "--ev-control",
+   "line": 634,
+   "argparse_default": "bidirectional",
+   "preset_plexos": "(not set)",
+   "d2_value": "bidirectional",
+   "origin": "argparse_default"
+  },
+  "fixed_charge_profile": {
+   "flag": "--fixed-charge-profile",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "inputs/fixed_fleet_charging_newbase.parquet",
+   "origin": "cli"
+  },
+  "solver": {
+   "flag": "--solver",
+   "line": 634,
+   "argparse_default": "highs",
+   "preset_plexos": "(not set)",
+   "d2_value": "highs",
+   "origin": "argparse_default"
+  },
+  "time_limit": {
+   "flag": "--time-limit",
+   "line": 634,
+   "argparse_default": 120,
+   "preset_plexos": "(not set)",
+   "d2_value": 120,
+   "origin": "argparse_default"
+  },
+  "threads": {
+   "flag": "--threads",
+   "line": 634,
+   "argparse_default": 8,
+   "preset_plexos": "(not set)",
+   "d2_value": 8,
+   "origin": "argparse_default"
+  },
+  "ev_max_soc": {
+   "flag": "--ev-max-soc",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "v2g_cost_jpy_per_kwh": {
+   "flag": "--v2g-cost-jpy-per-kwh",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "3",
+   "origin": "cli"
+  },
+  "ev_cohorts": {
+   "flag": "--ev-cohorts",
+   "line": 634,
+   "argparse_default": 1,
+   "preset_plexos": "(not set)",
+   "d2_value": 1,
+   "origin": "argparse_default"
+  },
+  "ev_cohort_theta": {
+   "flag": "--ev-cohort-theta",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "ev_capacity_scale": {
+   "flag": "--ev-capacity-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": 1.0,
+   "d2_value": "0.9",
+   "origin": "cli"
+  },
+  "h2_electrolysis_mwh_per_kg": {
+   "flag": "--h2-electrolysis-mwh-per-kg",
+   "line": 634,
+   "argparse_default": 0.053,
+   "preset_plexos": 0.053,
+   "d2_value": "0.04912",
+   "origin": "cli"
+  },
+  "h2_availability": {
+   "flag": "--h2-availability",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "h2_standing_loss_per_day": {
+   "flag": "--h2-standing-loss-per-day",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "h2_limit_scale": {
+   "flag": "--h2-limit-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "h2_unlimited": {
+   "flag": "--h2-unlimited",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": false,
+   "d2_value": true,
+   "origin": "cli"
+  },
+  "h2_annual_unlimited": {
+   "flag": "--h2-annual-unlimited",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": "(not set)",
+   "d2_value": false,
+   "origin": "argparse_default"
+  },
+  "h2_total_unlimited": {
+   "flag": "--h2-total-unlimited",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": "(not set)",
+   "d2_value": false,
+   "origin": "argparse_default"
+  },
+  "h2_uc": {
+   "flag": "--h2-uc",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": false,
+   "d2_value": true,
+   "origin": "cli"
+  },
+  "el_min_load": {
+   "flag": "--el-min-load",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0.2",
+   "origin": "cli"
+  },
+  "fc_min_load": {
+   "flag": "--fc-min-load",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0.2",
+   "origin": "cli"
+  },
+  "el_startup_cost": {
+   "flag": "--el-startup-cost",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "fc_startup_cost": {
+   "flag": "--fc-startup-cost",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "el_ramp": {
+   "flag": "--el-ramp",
+   "line": 634,
+   "argparse_default": 2.0,
+   "preset_plexos": 2.0,
+   "d2_value": "1",
+   "origin": "cli"
+  },
+  "fc_ramp": {
+   "flag": "--fc-ramp",
+   "line": 634,
+   "argparse_default": 2.0,
+   "preset_plexos": 2.0,
+   "d2_value": "1",
+   "origin": "cli"
+  },
+  "investment_method": {
+   "flag": "--investment-method",
+   "line": 634,
+   "argparse_default": "plexos",
+   "preset_plexos": "plexos",
+   "d2_value": "plexos",
+   "origin": "preset_plexos(L631)"
+  },
+  "h2_capex": {
+   "flag": "--h2-capex",
+   "line": 634,
+   "argparse_default": "base",
+   "preset_plexos": "(not set)",
+   "d2_value": "base",
+   "origin": "argparse_default"
+  },
+  "wacc": {
+   "flag": "--wacc",
+   "line": 634,
+   "argparse_default": 0.03,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.03,
+   "origin": "argparse_default"
+  },
+  "grid_max_mw": {
+   "flag": "--grid-max-mw",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "grid_capex_jpy_per_kw": {
+   "flag": "--grid-capex-jpy-per-kw",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "grid_fom": {
+   "flag": "--grid-fom",
+   "line": 634,
+   "argparse_default": 0.01,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.01,
+   "origin": "argparse_default"
+  },
+  "grid_life": {
+   "flag": "--grid-life",
+   "line": 634,
+   "argparse_default": 40.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 40.0,
+   "origin": "argparse_default"
+  },
+  "grid_wacc": {
+   "flag": "--grid-wacc",
+   "line": 634,
+   "argparse_default": 0.03,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.03,
+   "origin": "argparse_default"
+  },
+  "grid_start_year": {
+   "flag": "--grid-start-year",
+   "line": 634,
+   "argparse_default": 2030,
+   "preset_plexos": "(not set)",
+   "d2_value": 2030,
+   "origin": "argparse_default"
+  },
+  "capex_electrolyzer": {
+   "flag": "--capex-electrolyzer",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "2025:65904,2030:28558.4,2040:21968,2050:16476",
+   "origin": "cli"
+  },
+  "capex_fuelcell": {
+   "flag": "--capex-fuelcell",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "2025:180,2030:150,2040:113,2050:113",
+   "origin": "cli"
+  },
+  "capex_tank": {
+   "flag": "--capex-tank",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "2025:112000,2030:96000,2040:63000,2050:54000",
+   "origin": "cli"
+  },
+  "h2_om_set": {
+   "flag": "--h2-om-set",
+   "line": 634,
+   "argparse_default": "verified",
+   "preset_plexos": "(not set)",
+   "d2_value": "verified",
+   "origin": "argparse_default"
+  },
+  "h2_sale_price": {
+   "flag": "--h2-sale-price",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "h2_sale_max_kgph": {
+   "flag": "--h2-sale-max-kgph",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "h2_capex_scale": {
+   "flag": "--h2-capex-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "h2_cost_flat_from": {
+   "flag": "--h2-cost-flat-from",
+   "line": 634,
+   "argparse_default": 0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0,
+   "origin": "argparse_default"
+  },
+  "h2_life": {
+   "flag": "--h2-life",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "tsam_segments": {
+   "flag": "--tsam-segments",
+   "line": 634,
+   "argparse_default": 0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0,
+   "origin": "argparse_default"
+  },
+  "unit_scaling": {
+   "flag": "--unit-scaling",
+   "line": 634,
+   "argparse_default": true,
+   "preset_plexos": "(not set)",
+   "d2_value": true,
+   "origin": "argparse_default"
+  },
+  "model_fixes": {
+   "flag": "--model-fixes",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": false,
+   "d2_value": true,
+   "origin": "cli"
+  },
+  "degradation_average": {
+   "flag": "--degradation-average",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": false,
+   "d2_value": true,
+   "origin": "cli"
+  },
+  "fc_kg_per_mwh": {
+   "flag": "--fc-kg-per-mwh",
+   "line": 634,
+   "argparse_default": 60.6,
+   "preset_plexos": "(not set)",
+   "d2_value": 60.6,
+   "origin": "argparse_default"
+  },
+  "ev_station_eff": {
+   "flag": "--ev-station-eff",
+   "line": 634,
+   "argparse_default": 0.9,
+   "preset_plexos": 0.9,
+   "d2_value": "0.93",
+   "origin": "cli"
+  },
+  "ev_batt_charge_eff": {
+   "flag": "--ev-batt-charge-eff",
+   "line": 634,
+   "argparse_default": 0.95,
+   "preset_plexos": 0.95,
+   "d2_value": "0.98",
+   "origin": "cli"
+  },
+  "ev_batt_discharge_eff": {
+   "flag": "--ev-batt-discharge-eff",
+   "line": 634,
+   "argparse_default": 0.9,
+   "preset_plexos": 0.9,
+   "d2_value": "0.98",
+   "origin": "cli"
+  },
+  "re_fom_jpy_per_kw": {
+   "flag": "--re-fom-jpy-per-kw",
+   "line": 634,
+   "argparse_default": 1000.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1000.0,
+   "origin": "argparse_default"
+  },
+  "export_curtail_share": {
+   "flag": "--export-curtail-share",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "export_curtail_level": {
+   "flag": "--export-curtail-level",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "curtail_wind_weight": {
+   "flag": "--curtail-wind-weight",
+   "line": 634,
+   "argparse_default": 0.3,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.3,
+   "origin": "argparse_default"
+  },
+  "curtail_calendar": {
+   "flag": "--curtail-calendar",
+   "line": 634,
+   "argparse_default": true,
+   "preset_plexos": "(not set)",
+   "d2_value": true,
+   "origin": "argparse_default"
+  },
+  "price_wind_beta": {
+   "flag": "--price-wind-beta",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "price_series": {
+   "flag": "--price-series",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "inputs/tohoku_price_plan_ref2024.parquet",
+   "origin": "cli"
+  },
+  "series_curtail_scale": {
+   "flag": "--series-curtail-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "renewable_profile": {
+   "flag": "--renewable-profile",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "inputs/namie_renewables_ninja_2024.parquet",
+   "origin": "cli"
+  },
+  "price_wind_beta_path": {
+   "flag": "--price-wind-beta-path",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "price_wind_beta_scale": {
+   "flag": "--price-wind-beta-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "export_curtail_share_path": {
+   "flag": "--export-curtail-share-path",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "export_curtail_share_scale": {
+   "flag": "--export-curtail-share-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "import_limit_mw": {
+   "flag": "--import-limit-mw",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "self_sufficiency": {
+   "flag": "--self-sufficiency",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "island_days": {
+   "flag": "--island-days",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "island_load_share": {
+   "flag": "--island-load-share",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "island_start_year": {
+   "flag": "--island-start-year",
+   "line": 634,
+   "argparse_default": 2030,
+   "preset_plexos": "(not set)",
+   "d2_value": 2030,
+   "origin": "argparse_default"
+  },
+  "import_adder_jpy_per_kwh": {
+   "flag": "--import-adder-jpy-per-kwh",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "export_deduction_jpy_per_kwh": {
+   "flag": "--export-deduction-jpy-per-kwh",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "ev_charger_kw": {
+   "flag": "--ev-charger-kw",
+   "line": 634,
+   "argparse_default": 10.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 10.0,
+   "origin": "argparse_default"
+  },
+  "ev_participation": {
+   "flag": "--ev-participation",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": 1.0,
+   "d2_value": "0.5",
+   "origin": "cli"
+  },
+  "ev_departure_soc": {
+   "flag": "--ev-departure-soc",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "0.8",
+   "origin": "cli"
+  },
+  "ev_departure_hour": {
+   "flag": "--ev-departure-hour",
+   "line": 634,
+   "argparse_default": 7,
+   "preset_plexos": 7,
+   "d2_value": "7",
+   "origin": "cli"
+  },
+  "ev_departure_groups": {
+   "flag": "--ev-departure-groups",
+   "line": 634,
+   "argparse_default": "commercial,residential",
+   "preset_plexos": "(not set)",
+   "d2_value": "commercial,residential",
+   "origin": "argparse_default"
+  },
+  "ev_v2g_efc_cap": {
+   "flag": "--ev-v2g-efc-cap",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "h2_startup_hours": {
+   "flag": "--h2-startup-hours",
+   "line": 634,
+   "argparse_default": 0,
+   "preset_plexos": 0,
+   "d2_value": "1",
+   "origin": "cli"
+  },
+  "fc_startup_hours": {
+   "flag": "--fc-startup-hours",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "el_noload": {
+   "flag": "--el-noload",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0.02",
+   "origin": "cli"
+  },
+  "el_curve": {
+   "flag": "--el-curve",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "0.35:0.1057,0.5185:0.2038",
+   "origin": "cli"
+  },
+  "el_degradation": {
+   "flag": "--el-degradation",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0.0024",
+   "origin": "cli"
+  },
+  "el_stack_life": {
+   "flag": "--el-stack-life",
+   "line": 634,
+   "argparse_default": 10,
+   "preset_plexos": 10,
+   "d2_value": "40",
+   "origin": "cli"
+  },
+  "fc_degradation": {
+   "flag": "--fc-degradation",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0.006",
+   "origin": "cli"
+  },
+  "fc_stack_life": {
+   "flag": "--fc-stack-life",
+   "line": 634,
+   "argparse_default": 10,
+   "preset_plexos": 10,
+   "d2_value": "10",
+   "origin": "cli"
+  },
+  "el_standby_power": {
+   "flag": "--el-standby-power",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "fc_standby_power": {
+   "flag": "--fc-standby-power",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "el_startup_energy": {
+   "flag": "--el-startup-energy",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": 0.0,
+   "d2_value": "0",
+   "origin": "cli"
+  },
+  "fc_startup_energy": {
+   "flag": "--fc-startup-energy",
+   "line": 634,
+   "argparse_default": 0.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0.0,
+   "origin": "argparse_default"
+  },
+  "el_availability": {
+   "flag": "--el-availability",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "0.97",
+   "origin": "cli"
+  },
+  "fc_availability": {
+   "flag": "--fc-availability",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": null,
+   "d2_value": "0.95",
+   "origin": "cli"
+  },
+  "gurobi_method": {
+   "flag": "--gurobi-method",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "gurobi_numeric_focus": {
+   "flag": "--gurobi-numeric-focus",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "gurobi_bar_homogeneous": {
+   "flag": "--gurobi-bar-homogeneous",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "gurobi_crossover": {
+   "flag": "--gurobi-crossover",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "bar_conv_tol": {
+   "flag": "--bar-conv-tol",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "fix_builds": {
+   "flag": "--fix-builds",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "fix_before": {
+   "flag": "--fix-before",
+   "line": 634,
+   "argparse_default": 0,
+   "preset_plexos": "(not set)",
+   "d2_value": 0,
+   "origin": "argparse_default"
+  },
+  "no_perpetuity": {
+   "flag": "--no-perpetuity",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": "(not set)",
+   "d2_value": false,
+   "origin": "argparse_default"
+  },
+  "perpetuity": {
+   "flag": "--perpetuity",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": "(not set)",
+   "d2_value": false,
+   "origin": "argparse_default"
+  },
+  "h2_no_build_from": {
+   "flag": "--h2-no-build-from",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "h2_fom": {
+   "flag": "--h2-fom",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "electrolyzer:0.02,fuelcell:0.03,tank:0.005",
+   "origin": "cli"
+  },
+  "h2_stack_repl": {
+   "flag": "--h2-stack-repl",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": "electrolyzer:0.11:40,fuelcell:0.20:10",
+   "origin": "cli"
+  },
+  "wind_scale": {
+   "flag": "--wind-scale",
+   "line": 634,
+   "argparse_default": 1.0,
+   "preset_plexos": "(not set)",
+   "d2_value": 1.0,
+   "origin": "argparse_default"
+  },
+  "extend_to": {
+   "flag": "--extend-to",
+   "line": 634,
+   "argparse_default": 2050,
+   "preset_plexos": "(not set)",
+   "d2_value": 2050,
+   "origin": "argparse_default"
+  },
+  "output": {
+   "flag": "--output",
+   "line": 634,
+   "argparse_default": null,
+   "preset_plexos": "(not set)",
+   "d2_value": null,
+   "origin": "argparse_default"
+  },
+  "build_only": {
+   "flag": "--build-only",
+   "line": 634,
+   "argparse_default": false,
+   "preset_plexos": "(not set)",
+   "d2_value": false,
+   "origin": "argparse_default"
+  },
+  "preset": {
+   "flag": "--preset",
+   "line": 634,
+   "argparse_default": "newbase",
+   "preset_plexos": "(not set)",
+   "d2_value": "plexos",
+   "origin": "cli"
+  }
+ },
+ "preset_keys_not_in_argparse": [],
+ "cli_unknown": []
+}

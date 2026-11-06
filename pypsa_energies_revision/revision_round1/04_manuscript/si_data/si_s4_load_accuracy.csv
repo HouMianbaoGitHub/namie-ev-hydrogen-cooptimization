@@ -1,0 +1,4 @@
+sector,MAPE_script_pct,MAPE_all_pct,WAPE_pct,RMSE_kW,MAE_kW,R2,n_test
+residential,6.536,6.536,6.541,0.06097,0.04446,0.9288,1752
+commercial,8.4,8.4,7.493,3.084,1.636,0.9059,1589
+industrial,7.166,8.092,5.92,4.519,2.467,0.9745,7564

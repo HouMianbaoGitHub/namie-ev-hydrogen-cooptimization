@@ -1,0 +1,28 @@
+{
+ "n_groups": 34,
+ "n_cases_sensF6": 58,
+ "n_cases_from_sensF5": 30,
+ "n_IS_negative": 34,
+ "ratio_min": 0.2818460128068969,
+ "ratio_min_group": "capex130",
+ "ratio_max": 0.8651027234277634,
+ "ratio_max_group": "part025",
+ "ratio_min_excl_capex130": 0.5070344820588195,
+ "ratio_min_excl_capex130_group": "netcharge",
+ "dH_S_min": 0.015473992096787,
+ "dH_S_min_group": "capex130",
+ "dH_S_max": 4.632986652481257,
+ "dH_S_max_group": "aperp",
+ "coh4_t10_sensF5": {
+  "C0": "infeasible_or_unbounded",
+  "CH": "infeasible_or_unbounded"
+ },
+ "base": {
+  "dH_S": 0.5399736868998346,
+  "dH_C": 0.4031066679691264,
+  "I_S": -0.1368670189307081,
+  "ratio": 0.7465302064689365,
+  "EV_flex_CA": 2.8973038542821428
+ },
+ "n_cases_total": 88
+}
