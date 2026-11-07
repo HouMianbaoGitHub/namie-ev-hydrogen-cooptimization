@@ -28,6 +28,7 @@ EV fleet,evcap080,EV usable capacity 0.8,dH_S,0.5399736868998346,0.5399736868998
 EV fleet,evcap080,EV usable capacity 0.8,dH_C,0.4155248604904855,0.4031066679691264
 EV fleet,evcap080,EV usable capacity 0.8,I_C,-0.124448826409349,-0.1368670189307081
 EV fleet,evcap080,EV usable capacity 0.8,ratio,0.7695279799209281,0.7465302064689365
+EV fleet,evcap080,EV usable capacity 0.8,EV_flex_CA,2.68557828786917,2.8973038542821428
 EV fleet,part025,EV participation 25%,dH_S,0.5399736868998346,0.5399736868998346
 EV fleet,part025,EV participation 25%,dH_C,0.4671327071163773,0.4031066679691264
 EV fleet,part025,EV participation 25%,I_C,-0.0728409797834572,-0.1368670189307081
@@ -47,6 +48,7 @@ EV fleet,chg6,Charger 6 kW,dH_S,0.5399736868998346,0.5399736868998346
 EV fleet,chg6,Charger 6 kW,dH_C,0.4342711673504951,0.4031066679691264
 EV fleet,chg6,Charger 6 kW,I_C,-0.1057025195493395,-0.1368670189307081
 EV fleet,chg6,Charger 6 kW,ratio,0.8042450546873641,0.7465302064689365
+EV fleet,chg6,Charger 6 kW,EV_flex_CA,2.5018665042507138,2.8973038542821428
 Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,dH_S,0.5399571084598591,0.5399736868998346
 Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,dH_C,0.4030963811728867,0.4031066679691264
 Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,I_C,-0.1368607272869724,-0.1368670189307081
@@ -139,6 +141,7 @@ Hydrogen capital cost,capex130,H$_2$ capex ×1.3,ratio,0.2818460128068937,0.7465
 "System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",dH_C,0.1543603588445918,0.4031066679691264
 "System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",I_C,-0.059976627175537,-0.1368670189307081
 "System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",ratio,0.720176026129692,0.7465302064689365
+"System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",EV_flex_CA,2.372274734804215,2.8973038542821428
 End of horizon (different basis),aperp,Perpetual annuity,dH_S,4.632986652481257,0.5399736868998346
 End of horizon (different basis),aperp,Perpetual annuity,dH_C,3.614547263115135,0.4031066679691264
 End of horizon (different basis),aperp,Perpetual annuity,I_C,-1.0184393893661223,-0.1368670189307081

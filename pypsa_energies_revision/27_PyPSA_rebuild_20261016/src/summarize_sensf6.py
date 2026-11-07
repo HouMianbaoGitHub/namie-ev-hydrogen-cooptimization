@@ -31,6 +31,17 @@ runs6 = {p.name: run(p) for p in D.iterdir() if (p / 'summary.json').exists()}
 runs5 = {p.name: run(p) for p in D5.iterdir() if (p / 'summary.json').exists()}
 groups = sorted({k.split('__')[0] for k in runs6})
 A0_CHANGES = {'evcap080', 'chg6'}   # fixed profile rebuilt -> A0 differs; system-wide groups (S1 re-solved) also change A0
+A0_RUNS = {p.name: run(p) for p in (R / 'a0F6_20261107').iterdir() if (p / 'summary.json').exists()}   # registry sensitivity_a0_F6_20261107
+
+
+def ev_flex(g, n, x):
+    a = A0_RUNS.get(f'{g}__A0')
+    if a is not None:
+        assert a['term'] == 'optimal', g
+        return n['C0'] - a['npv']
+    return n['C0'] - n['A0'] if (x['S1'] == 'base' and g not in A0_CHANGES) else float('nan')
+
+
 COLS = {'el_kgph': 'el_kgph_2050', 'fc_MW': 'fc_MW_2050', 'tank_t': 'tank_t_2050', 'wind_MW': 'wind_MW_2050', 'first_h2': 'first_h2'}
 rows = []
 for g in ['BASE'] + groups:
@@ -50,7 +61,7 @@ for g in ['BASE'] + groups:
                  'infeasible': ','.join(c for c in x if x[c] == 'INFEASIBLE'),
                  'S1': n['S1'], 'S2': n['S2'], 'C0': n['C0'], 'CH': n['CH'], 'dH_S': dS, 'dH_C': dC, 'I_S': dC - dS,
                  'ratio': dC / dS if abs(dS) > 1e-6 else float('nan'),
-                 'EV_flex_CA': n['C0'] - n['A0'] if (x['S1'] == 'base' and g not in A0_CHANGES) else float('nan'),
+                 'EV_flex_CA': ev_flex(g, n, x),
                  'el_S2_kgph': get('S2', 'el_kgph'), 'el_CH_kgph': get('CH', 'el_kgph'), 'fc_CH_MW': get('CH', 'fc_MW'),
                  'tank_CH_t': get('CH', 'tank_t'), 'first_h2_S2': get('S2', 'first_h2'), 'first_h2_CH': get('CH', 'first_h2'),
                  'el_started_MW_CH': uc.get('electrolyzer_started_MW_total'), 'el_standby_mean_MW_CH': uc.get('electrolyzer_mean_standby_MW')})

@@ -14,6 +14,8 @@ Reference: reg1 d2__S2 (electrolyzer first built 2040). Two case sets:
           truncated 2050 and 2060, nine scenarios each (registry default_F6)
   sensf6  (energies4608521_sensF6_20261030, C:): F6 sensitivity (registry sensitivity_F6_20261030); only runs with hydrogen,
           S1/C0 of each group are unchanged from sensf5 (F6 changes hydrogen parameters only)
+  a0f6    (energies4608521_a0F6_20261107, C:): A0 for evcap080, chg6 and joint090, plus the base A0 as a reproduction check
+          (registry sensitivity_a0_F6_20261107)
   allann  (energies4608521_allann_20261029, C: drive): F3 with every new asset as annuities (--all-annuity), perpetuity vs
           truncated at 2050 (--no-perpetuity) and at 2060 (+ --extend-to 2060); S1, S2, C0, CH (R1.3 terminal-value comparison, registry all_annuity_method)
 Usage: python make_timing_batch.py remove|graded -> run_<tag>.ps1, launch_<tag>.ps1"""
@@ -23,9 +25,9 @@ from pathlib import Path
 BS = chr(92)
 SET = sys.argv[1] if __name__ == '__main__' else 'graded'   # imported (make_aoba_batch.py): case definitions only
 TAG = {'remove': 'energies4608521_timing_20261028', 'graded': 'energies4608521_timing2_20261028', 'more': 'timing3_20261029',
-       'flat': 'energies4608521_timing4_20261029', 'annuity': 'energies4608521_annuity_20261029', 'allann': 'energies4608521_allann_20261029', 'effpath': 'energies4608521_effpath_20261029', 'h2tech': 'energies4608521_h2tech_20261029', 'f4': 'energies4608521_f4_20261029', 'f5': 'energies4608521_f5_20261030', 'sensf5': 'energies4608521_sensF5_20261030', 'f6test': 'energies4608521_f6test_20261030', 'f6': 'energies4608521_f6_20261030', 'sensf6': 'energies4608521_sensF6_20261030', 'revf6': 'energies4608521_revF6_20261101'}[SET]
-RUN = {'remove': 'timing', 'graded': 'timing2', 'more': 'timing3', 'flat': 'timing4', 'annuity': 'annuity', 'allann': 'allann', 'effpath': 'effpath', 'h2tech': 'h2tech', 'f4': 'f4', 'f5': 'f5', 'sensf5': 'sensF5', 'f6test': 'f6test', 'f6': 'f6', 'sensf6': 'sensF6', 'revf6': 'revF6'}[SET]
-ROOT = ('C:' if SET in ('allann', 'effpath', 'h2tech', 'f4', 'f5', 'sensf5', 'f6test', 'f6', 'sensf6', 'revf6') else 'D:') + BS + 'CodexRuns' + BS + TAG   # bigmem D: is an HDD; new batches on C:
+       'flat': 'energies4608521_timing4_20261029', 'annuity': 'energies4608521_annuity_20261029', 'allann': 'energies4608521_allann_20261029', 'effpath': 'energies4608521_effpath_20261029', 'h2tech': 'energies4608521_h2tech_20261029', 'f4': 'energies4608521_f4_20261029', 'f5': 'energies4608521_f5_20261030', 'sensf5': 'energies4608521_sensF5_20261030', 'f6test': 'energies4608521_f6test_20261030', 'f6': 'energies4608521_f6_20261030', 'sensf6': 'energies4608521_sensF6_20261030', 'revf6': 'energies4608521_revF6_20261101', 'a0f6': 'energies4608521_a0F6_20261107'}[SET]
+RUN = {'remove': 'timing', 'graded': 'timing2', 'more': 'timing3', 'flat': 'timing4', 'annuity': 'annuity', 'allann': 'allann', 'effpath': 'effpath', 'h2tech': 'h2tech', 'f4': 'f4', 'f5': 'f5', 'sensf5': 'sensF5', 'f6test': 'f6test', 'f6': 'f6', 'sensf6': 'sensF6', 'revf6': 'revF6', 'a0f6': 'a0F6'}[SET]
+ROOT = ('C:' if SET in ('allann', 'effpath', 'h2tech', 'f4', 'f5', 'sensf5', 'f6test', 'f6', 'sensf6', 'revf6', 'a0f6') else 'D:') + BS + 'CodexRuns' + BS + TAG   # bigmem D: is an HDD; new batches on C:
 SRC = 'D:' + BS + 'CodexRuns' + BS + 'namie_ev_controls_20261017' + BS + 'src'
 PY = 'C:' + BS + 'Python314' + BS + 'python.exe'
 INP = 'inputs/'
@@ -202,10 +204,10 @@ REVF6 = {   # registry sensitivity_review_F6_20261101 (mock review 2026-11-01: B
     'capexmid': ([(f'--capex-{k}', v) for k, v in MID.items()] + [('--h2-fom', 'electrolyzer:0.04,fuelcell:0.05,tank:0.01')], ('S2', 'CH')),
     'spread070': ([('--price-series', INP + 'tohoku_price_plan_ref2024_spread070.parquet')], ('S1', 'S2', 'A0', 'AH', 'C0', 'CH')),   # make_price_variants.py
     'curt2x': ([('--series-curtail-scale', '2')], ('S1', 'S2', 'A0', 'AH', 'C0', 'CH'))}
-CASES = {'remove': REMOVE, 'graded': GRADED, 'more': MORE, 'flat': FLAT, 'annuity': ANNUITY, 'allann': ALLANN, 'effpath': EFFPATH, 'h2tech': H2TECH, 'f4': {'F4': []}, 'f5': {'F5': [], 'F5t2060': [('--extend-to', '2060')]}, 'sensf5': {k: v[0] for k, v in SENSF5.items()}, 'f6test': F6TEST, 'f6': {'F6': [], 'F6t2060': [('--extend-to', '2060')]}, 'sensf6': {k: v[0] for k, v in SENSF6.items()}, 'revf6': {k: v[0] for k, v in REVF6.items()}}[SET]
+CASES = {'remove': REMOVE, 'graded': GRADED, 'more': MORE, 'flat': FLAT, 'annuity': ANNUITY, 'allann': ALLANN, 'effpath': EFFPATH, 'h2tech': H2TECH, 'f4': {'F4': []}, 'f5': {'F5': [], 'F5t2060': [('--extend-to', '2060')]}, 'sensf5': {k: v[0] for k, v in SENSF5.items()}, 'f6test': F6TEST, 'f6': {'F6': [], 'F6t2060': [('--extend-to', '2060')]}, 'sensf6': {k: v[0] for k, v in SENSF6.items()}, 'revf6': {k: v[0] for k, v in REVF6.items()}, 'a0f6': {'F6check': [], **{k: SENSF6[k][0] for k in ('evcap080', 'chg6', 'joint090')}}}[SET]
 jobs = []
 for name, changes in CASES.items():
-    a = {'f4': F4, 'f5': F5, 'sensf5': F5, 'f6test': F5, 'f6': F6, 'sensf6': F6, 'revf6': F6}.get(SET, F3)
+    a = {'f4': F4, 'f5': F5, 'sensf5': F5, 'f6test': F5, 'f6': F6, 'sensf6': F6, 'revf6': F6, 'a0f6': F6}.get(SET, F3)
     for c in changes:
         a = setarg(a, c[0], c[1], drop=len(c) > 2 and c[2])
     if SET == 'f6test':
@@ -219,6 +221,9 @@ for name, changes in CASES.items():
         continue
     if SET == 'revf6':
         jobs += [(f'{name}__{s}', DESIGN[s] + a) for s in REVF6[name][1]]
+        continue
+    if SET == 'a0f6':   # registry sensitivity_a0_F6_20261107: A0 of the groups that rebuild the profile; F6check must return the base A0
+        jobs.append((f'{name}__A0', DESIGN['A0'] + a))
         continue
     if SET in ('f5', 'f6'):   # all nine scenarios (truncation changes the 2050 weight, so S0 too)
         jobs += [(f'{name}__{s}', DESIGN[s] + a) for s in DESIGN]
@@ -274,7 +279,7 @@ if __name__ == '__main__':
         return out
 
 
-    base = kv(F6 if SET in ('f6', 'sensf6', 'revf6') else F5 if SET in ('f5', 'sensf5', 'f6test') else F3)
+    base = kv(F6 if SET in ('f6', 'sensf6', 'revf6', 'a0f6') else F5 if SET in ('f5', 'sensf5', 'f6test') else F3)
     for n, a in jobs:
         new = kv(a[2:])
         ch = {k: v for k, v in new.items() if base.get(k) != v}

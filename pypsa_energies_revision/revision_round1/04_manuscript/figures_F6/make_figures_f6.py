@@ -518,7 +518,7 @@ def fig7():
                             gridspec_kw=dict(width_ratios=[1.25, 1, 1, 1]))
     PAN = [(['dH_S', 'dH_C'], 'Hydrogen value ΔH\n(billion JPY)', 'a'),
            (['I_C'], 'Interaction $I^S_C$ = ΔH(C) − ΔH(S)\n(billion JPY)', 'b'),
-           (['ratio'], 'Crowding-out ratio\nΔH(C)/ΔH(S)', 'c'), (['EV_flex_CA'], 'EV flexibility C − A\n(billion JPY)', 'd')]
+           (['ratio'], 'Retained-value ratio\nΔH(C)/ΔH(S)', 'c'), (['EV_flex_CA'], 'EV flexibility C − A\n(billion JPY)', 'd')]
     for ax, (ms, title, letter) in zip(axs, PAN):
         inner = df[df.metric.isin(ms) & ~df.group.isin(eh)]
         lo, hi = min(inner.value.min(), inner.baseline.min(), 0), max(inner.value.max(), inner.baseline.max(), 0)
@@ -627,7 +627,7 @@ def fig8():
     axb.annotate('Base case', (base['dH_A'], base['dH_C'] / base['dH_A']), xytext=(-22, -26), textcoords='offset points', arrowprops=dict(arrowstyle='-', color=INK2, lw=0.5, shrinkA=1, shrinkB=4),
                  fontsize=6, color=INK2)
     axb.set_xscale('log'); axb.set_xticks([0.02, 0.1, 0.5, 2]); axb.set_xticklabels(['0.02', '0.1', '0.5', '2'])
-    axb.set_ylim(0, 1); axb.set_xlabel('ΔH(A), billion JPY (log)'); axb.set_ylabel('Crowding-out ratio ΔH(C)/ΔH(A)')
+    axb.set_ylim(0, 1); axb.set_xlabel('ΔH(A), billion JPY (log)'); axb.set_ylabel('Retained-value ratio ΔH(C)/ΔH(A)')
     ygrid(axb); tag(axb, 'b', x=-0.15)
     cb = fig.colorbar(sc, ax=axb, fraction=0.06, pad=0.03, aspect=22)
     cb.set_label('EV participation (%)', fontsize=6.4); cb.ax.tick_params(labelsize=6, width=0.5, length=2)
@@ -636,7 +636,7 @@ def fig8():
     gc = bot.subgridspec(1, 3, wspace=0.08)
     params = list(dict.fromkeys(prcc.parameter))
     yp = np.arange(len(params))[::-1]
-    for k, (m, mlab) in enumerate((('I_C', 'Interaction $I_C$'), ('ratio', 'Crowding-out ratio'), ('EV_flex_CA', 'EV flexibility C − A'))):
+    for k, (m, mlab) in enumerate((('I_C', 'Interaction $I_C$'), ('ratio', 'Retained-value ratio'), ('EV_flex_CA', 'EV flexibility C − A'))):
         axp = fig.add_subplot(gc[0, k])
         d = prcc[prcc.metric == m].set_index('parameter').reindex(params)
         axp.barh(yp, d.prcc, height=0.62, color=[CTRL['A'] if v >= 0 else '#e34948' for v in d.prcc], edgecolor='none')

@@ -381,7 +381,7 @@
    },
    "peak_total_MW": 74.61268357568571,
    "index_matches_profiles": true,
-   "sha256_rebuilt": "016a7423b689a2c7b6c9ddb5ea295a2500f742ef3fb4c6ee3aa05d74adba22be",
+   "sha256_rebuilt": "3e0b0b157477544f2edb7580f636037f8573a1d100211fe3f76c446e04e08d09",
    "rebuilt_max_abs_diff_MW": 0.0,
    "rebuilt_check": {
     "feasible_floor": true,
@@ -613,7 +613,7 @@
    "check": "fixed profile reproducible (SHA-256 or values)",
    "ok": true,
    "detail": [
-    "016a7423b689",
+    "3e0b0b157477",
     "3e0b0b157477",
     0.0
    ]

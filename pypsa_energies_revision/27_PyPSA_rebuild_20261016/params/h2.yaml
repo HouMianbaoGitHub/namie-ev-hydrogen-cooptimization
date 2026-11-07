@@ -944,3 +944,18 @@
   model_entry: "命令行选项，无代码改动"
   notes: "S1、C0 在 B1 中不变（只改氢能参数），沿用 F6 基准；B2 改变全系统，六个情景全部重算。"
   result: "2026-11-01 全部 20 个 optimal、check_passed（results/revF6_20261101/revF6_summary.csv）。ΔH(S)：capex110 0.245、capex120 0.085、fom4 0.180、capexmid 0（不建）；比例 ΔH(C)/ΔH(S) 0.69/0.59/0.68。spread070：ΔH(S/A/C) ≈ 0，CH 不建电解槽，C0−A0 2.90→2.16。curt2x：ΔH(A) 0.542、ΔH(C) 0.404、I_C −0.138（2050 出口 0.72→0.67 TWh，但弃电小时均价 0.01 JPY/kWh）。写入正文 2.9、3.5、4.2，SI S9.3（表 S9.5），回复信 R2.2b(4)、R2.6a；摘要按作者意见不改。"
+
+- id: sensitivity_a0_F6_20261107
+  name: 补算 A0，使改变无序充电曲线的敏感性组能给出 EV 灵活性 C0−A0
+  value: "make_timing_batch.py a0f6：4 个算例。evcap080、chg6、joint090 的 A0（用各组已重建的无序充电曲线），另加基准 A0 作复现校验（F6check）。"
+  unit: "算例"
+  sensitivity: "回答 R1.5（电池可用容量 80% 时 EV 增量价值是否仍为正）；chg6、joint090 补全同类缺口。A0 不含氢能，F5 与 F6 的氢参数差异不影响它，所以可与 sensF5 的 C0 对比。"
+  source: "revision_round1/06_mock_review_20261104/external_agents_20261107（模拟审稿，多份报告要求补算）；E3 回复信原写未重算"
+  report: "revision_round1/06_mock_review_20261104/external_agents_20261107"
+  decided: "2026-11-07 作者：'如果时间不长，当然可以跑了'（基准 A0 约 3.5 分钟）"
+  status: confirmed
+  verified: "check_all.py --remote；全部为现有命令行选项，无模型代码改动；曲线文件 soh08、chg6、av09 已在 bigmem"
+  code_now: "bigmem C:/CodexRuns/energies4608521_a0F6_20261107（run_a0F6.ps1）"
+  model_entry: "命令行选项，无代码改动"
+  notes: "只补 A0，不补 AH，所以这三组仍没有同车队交互 I_C。"
+  result: "2026-11-07 四个全部 optimal、check_passed（results/a0F6_20261107）。F6check 目标值与基准 A0 一致；C0−A0：evcap080 2.69、chg6 2.50、joint090 2.37（基准 2.90）。"
