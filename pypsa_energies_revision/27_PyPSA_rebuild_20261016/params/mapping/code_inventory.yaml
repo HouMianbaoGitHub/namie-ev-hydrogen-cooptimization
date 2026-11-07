@@ -1,0 +1,2132 @@
+# D2 反向盘点：模型代码中影响结果的数值来源 → 参数登记表
+# 由 params/mapping/scripts/inventory/build_inventory.py 生成（只读脚本，2026-10-28）。
+# 行号指 src/model.py（738 行），另注明的除外。D2 = --preset plexos + src/default_D2_args.txt；
+# 求解器设置来自 src/make_reg1_batch.py L29。
+- item: argparse --scenario
+  where: model.py L634（定义）；L209 cfg 读取；L307 has_ev/has_h2；L308 candidates
+  d2_value: S0–S4（批处理）
+  origin: cli
+  registry_id: null
+  verdict: orphan
+  notes: D2 值由批处理给出（src/make_reg1_batch.py L16–19：S0/S1/S2 与 A0/AH/B0/BH/C0/CH），决定参与优化的技术集合（has_ev、has_h2、可扩建对象）。登记表没有情景定义条目。
+  suggest:
+    domain: grid_econ
+    id: scenario_design
+- item: argparse --days-per-year
+  where: model.py L634（定义）；L218–221、L295–296、L592–595
+  d2_value: 0
+  origin: argparse_default
+  registry_id: time_resolution
+  verdict: covered
+  notes: ''
+- item: argparse --only-year
+  where: model.py L634（定义）；L213–214
+  d2_value: null
+  origin: argparse_default
+  registry_id: planning_horizon
+  verdict: inactive_in_D2
+  notes: 诊断用单年切片
+- item: argparse --end-year
+  where: model.py L634（定义）；L215–216、L634 HEND
+  d2_value: null
+  origin: argparse_default
+  registry_id: planning_horizon
+  verdict: inactive_in_D2
+  notes: 诊断用；HEND 只在截断年金法 vintage_pv 中使用
+- item: argparse --continuous
+  where: model.py L634（定义）；L643（只写入 stats）
+  d2_value: true
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 兼容开关，不进入模型
+- item: argparse --market-limit-mw
+  where: model.py L634（定义）；L317、L320、L636
+  d2_value: 118
+  origin: cli
+  registry_id: grid_interface_mw
+  verdict: covered
+  notes: 覆盖 PLEXOS TohokuPowerMarket Max Purchases/Max Sales 150
+- item: argparse --renewable-scale
+  where: model.py L634（定义）；L237–238
+  d2_value: 1
+  origin: argparse_default
+  registry_id: re_profile_source
+  verdict: covered
+  notes: ''
+- item: argparse --ev-availability-scale
+  where: model.py L634（定义）；L253–255、L640
+  d2_value: 1
+  origin: argparse_default
+  registry_id: ev_availability_scale
+  verdict: covered
+  notes: ''
+- item: argparse --price-scale
+  where: model.py L634（定义）；L239
+  d2_value: 1
+  origin: argparse_default
+  registry_id: price_series
+  verdict: covered
+  notes: ''
+- item: argparse --ev-control
+  where: model.py L634（定义）；L278、L285、L361、L367、L384、L410、L564–565
+  d2_value: bidirectional
+  origin: argparse_default
+  registry_id: null
+  verdict: orphan
+  notes: D2 C 组取 argparse 默认 bidirectional（允许 V2G）；A 组 fixed、B 组 charge_only 由批处理 make_reg1_batch.py L17–18 指定。是否允许 V2G 决定 EV 的全部系统价值，但登记表只有 V2G 成本、参与率等，没有控制方式本身的条目。
+  suggest:
+    domain: ev
+    id: ev_control_regimes
+- item: argparse --fixed-charge-profile
+  where: model.py L634（定义）；L279、L286–290
+  d2_value: inputs/fixed_fleet_charging_newbase.parquet
+  origin: cli
+  registry_id: ev_uncontrolled_charging_profile
+  verdict: covered
+  notes: 已用 newbase 参数（0.07×0.9、0.93、0.98、0.0005、0.96、10 kW）逐时复算前 500 h，误差 0
+- item: argparse --solver
+  where: model.py L634（定义）；L646、L653
+  d2_value: highs
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: argparse 默认 highs；批处理 make_reg1_batch.py L29 改为 gurobi。default_D2_args.txt 不含求解器设定
+- item: argparse --time-limit
+  where: model.py L634（定义）；L646
+  d2_value: 120
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: argparse 默认 120 s；批处理 L29 为 36000 s。只用 default_D2_args.txt 运行会在 120 s 截断
+- item: argparse --threads
+  where: model.py L634（定义）；L646
+  d2_value: 8
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 批处理为 5
+- item: argparse --ev-max-soc
+  where: model.py L634（定义）；L394、L414
+  d2_value: null
+  origin: argparse_default
+  registry_id: ev_soc_max
+  verdict: covered
+  notes: 未设，取 cfg Max SoC/100 = 0.96；注意 e_initial 的 0.96 是另外硬编码的，不随本参数变化
+- item: argparse --v2g-cost-jpy-per-kwh
+  where: model.py L634（定义）；L408、L422
+  d2_value: 3
+  origin: cli
+  registry_id: ev_v2g_cost
+  verdict: covered
+  notes: ''
+- item: argparse --ev-cohorts
+  where: model.py L634（定义）；L384
+  d2_value: 1
+  origin: argparse_default
+  registry_id: ev_cohort_test
+  verdict: covered
+  notes: D2 = 1（不分组）
+- item: argparse --ev-cohort-theta
+  where: model.py L634（定义）；L391
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: ev_cohort_test
+  verdict: inactive_in_D2
+  notes: 只在 ev_cohorts > 1 时使用
+- item: argparse --ev-capacity-scale
+  where: model.py L634（定义）；L206
+  d2_value: 0.9
+  origin: cli
+  registry_id: ev_soh_capacity_scale
+  verdict: covered
+  notes: ''
+- item: argparse --h2-electrolysis-mwh-per-kg
+  where: model.py L634（定义）；L334、L339、L434、L475、L662
+  d2_value: 0.04912
+  origin: cli
+  registry_id: h2_el_linear_coeff
+  verdict: covered
+  notes: 同时决定物理上限的块数 2000/(10×0.04912) = 4071.7
+- item: argparse --h2-availability
+  where: model.py L634（定义）；L473–474
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 被 --el-availability / --fc-availability 覆盖，静默不起作用
+- item: argparse --h2-standing-loss-per-day
+  where: model.py L634（定义）；L335、L338
+  d2_value: 0
+  origin: cli
+  registry_id: h2_tank_standing_loss
+  verdict: covered
+  notes: ''
+- item: argparse --h2-limit-scale
+  where: model.py L634（定义）；L336、L432–433
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: --h2-unlimited 下不起作用
+- item: argparse --h2-unlimited
+  where: model.py L634（定义）；L336、L432–436、L661
+  d2_value: true
+  origin: cli
+  registry_id: h2_build_caps
+  verdict: covered
+  notes: ''
+- item: argparse --h2-annual-unlimited
+  where: model.py L634（定义）；L433
+  d2_value: false
+  origin: argparse_default
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --h2-total-unlimited
+  where: model.py L634（定义）；L336、L432
+  d2_value: false
+  origin: argparse_default
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --h2-uc
+  where: model.py L634（定义）；L356、L487–515、L519–524
+  d2_value: true
+  origin: cli
+  registry_id: h2_uc_enabled
+  verdict: covered
+  notes: ''
+- item: argparse --el-min-load
+  where: model.py L634（定义）；L481、L501
+  d2_value: 0.2
+  origin: cli
+  registry_id: h2_el_min_load
+  verdict: covered
+  notes: ''
+- item: argparse --fc-min-load
+  where: model.py L634（定义）；L481、L504
+  d2_value: 0.2
+  origin: cli
+  registry_id: h2_fc_min_load
+  verdict: covered
+  notes: ''
+- item: argparse --el-startup-cost
+  where: model.py L634（定义）；L481、L510
+  d2_value: 0
+  origin: cli
+  registry_id: h2_el_startup_cost
+  verdict: covered
+  notes: ''
+- item: argparse --fc-startup-cost
+  where: model.py L634（定义）；L481、L510
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: h2_fc_standby_startup
+  verdict: covered
+  notes: ''
+- item: argparse --el-ramp
+  where: model.py L634（定义）；L481、L511–514
+  d2_value: 1
+  origin: cli
+  registry_id: h2_el_ramp
+  verdict: covered
+  notes: 1 ≤ 1，生成冗余约束
+- item: argparse --fc-ramp
+  where: model.py L634（定义）；L481、L511–514
+  d2_value: 1
+  origin: cli
+  registry_id: h2_fc_ramp
+  verdict: covered
+  notes: ''
+- item: argparse --investment-method
+  where: model.py L634（定义）；L173、L440–448
+  d2_value: plexos
+  origin: preset_plexos
+  registry_id: investment_cost_method
+  verdict: covered
+  notes: 来自 PRESET_PLEXOS L631
+- item: argparse --h2-capex
+  where: model.py L634（定义）；L167（只在 annuity_pv）
+  d2_value: base
+  origin: argparse_default
+  registry_id: h2_el_capex
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略
+- item: argparse --wacc
+  where: model.py L634（定义）；L155（只在 annuity_pv）
+  d2_value: 0.03
+  origin: argparse_default
+  registry_id: wacc_build_cost
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略；D2 的 3% 来自各处硬编码 1.03
+- item: argparse --grid-max-mw
+  where: model.py L634（定义）；L318–321、L540
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: grid_reinforcement_max_mw
+  verdict: covered
+  notes: D2 = 0（不扩容）；登记值 82 是敏感性用
+- item: argparse --grid-capex-jpy-per-kw
+  where: model.py L634（定义）；L98
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: grid_reinforcement_capex
+  verdict: inactive_in_D2
+  notes: gmax = 0 时不用。注意 --preset plexos 下默认 0（扩容免费），登记值 105000 只在 PRESET_NEWBASE
+- item: argparse --grid-fom
+  where: model.py L634（定义）；L98
+  d2_value: 0.01
+  origin: argparse_default
+  registry_id: grid_reinforcement_fom
+  verdict: inactive_in_D2
+  notes: argparse 默认 0.01 ≠ 登记值 0.019
+- item: argparse --grid-life
+  where: model.py L634（定义）；L96
+  d2_value: 40.0
+  origin: argparse_default
+  registry_id: grid_reinforcement_life
+  verdict: inactive_in_D2
+  notes: argparse 默认 40 ≠ 登记值 28
+- item: argparse --grid-wacc
+  where: model.py L634（定义）；L96
+  d2_value: 0.03
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: D2 不用；扩容敏感性会用到，但登记表无条目
+  suggest:
+    domain: grid_econ
+    id: grid_reinforcement_wacc
+- item: argparse --grid-start-year
+  where: model.py L634（定义）；L541
+  d2_value: 2030
+  origin: argparse_default
+  registry_id: grid_reinforcement_start_year
+  verdict: inactive_in_D2
+  notes: argparse 默认 2030 ≠ 登记值 2031
+- item: argparse --capex-electrolyzer
+  where: model.py L634（定义）；L64–65、L75
+  d2_value: 2025:65904,2030:28558.4,2040:21968,2050:16476
+  origin: cli
+  registry_id:
+  - h2_el_capex
+  - h2_el_block_kw_basis
+  verdict: covered
+  notes: 65904 = 120 kJPY/kW × 549.2 kW/块；登记表 h2_el_capex 的 code_now 仍写 63600（530 kW/块），应更新
+- item: argparse --capex-fuelcell
+  where: model.py L634（定义）；L64–65、L67、L75
+  d2_value: 2025:180,2030:150,2040:113,2050:113
+  origin: cli
+  registry_id: h2_fc_capex
+  verdict: covered
+  notes: kJPY/kW × UNIT_KW[fuelcell] 10000
+- item: argparse --capex-tank
+  where: model.py L634（定义）；L64–65、L75
+  d2_value: 2025:112000,2030:96000,2040:63000,2050:54000
+  origin: cli
+  registry_id: h2_tank_capex
+  verdict: covered
+  notes: kJPY/t × 1 t/块
+- item: argparse --h2-om-set
+  where: model.py L634（定义）；L131–142（只在 annuity_pv）
+  d2_value: verified
+  origin: argparse_default
+  registry_id: h2_el_fom
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略
+- item: argparse --h2-sale-price
+  where: model.py L634（定义）；L341–344
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: null
+  verdict: orphan
+  notes: D2 = 0，即氢气不外售（只能回发电）。这是模型边界假设，数值上表现为一个关闭的开关，登记表没有说明
+  suggest:
+    domain: h2
+    id: h2_offsite_sale
+- item: argparse --h2-sale-max-kgph
+  where: model.py L634（定义）；L343
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 只在 h2_sale_price > 0 时使用
+- item: argparse --h2-capex-scale
+  where: model.py L634（定义）；L167（只在 annuity_pv）
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: h2_el_capex
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略：用 --h2-capex-scale 做造价敏感性在 D2 中无效
+- item: argparse --h2-cost-flat-from
+  where: model.py L634（定义）；L161–162（只在 annuity_pv）
+  d2_value: 0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略
+- item: argparse --h2-life
+  where: model.py L634（定义）；L129（只在 tech_life，年金法）
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: h2_el_system_life
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略
+- item: argparse --tsam-segments
+  where: model.py L634（定义）；L276–282
+  d2_value: 0
+  origin: argparse_default
+  registry_id: time_resolution
+  verdict: covered
+  notes: D2 = 0（逐时）
+- item: argparse --unit-scaling
+  where: model.py L634（定义）；L204–205、L430、L679、L696
+  d2_value: true
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: hu、bu、BSC 缩放，只改数值条件
+- item: argparse --model-fixes
+  where: model.py L634（定义）；L281、L377、L381、L408、L422、L524、L551–556、L560–563、L572–574
+  d2_value: true
+  origin: cli
+  registry_id:
+  - h2_tank_terminal_condition
+  - ev_terminal_condition
+  verdict: covered
+  notes: 是多项设定的总开关，各子项见本表 model_fixes 条目
+- item: argparse --degradation-average
+  where: model.py L634（定义）；L347、L350
+  d2_value: true
+  origin: cli
+  registry_id: h2_degradation_method
+  verdict: covered
+  notes: ''
+- item: argparse --fc-kg-per-mwh
+  where: model.py L634（定义）；L340、L476、L486、L538、L696
+  d2_value: 60.6
+  origin: argparse_default
+  registry_id: h2_fc_kg_per_mwh
+  verdict: covered
+  notes: argparse 默认 60.6；与 PLEXOS H2 Supply Node Generation Coefficient −60.6 相同
+- item: argparse --ev-station-eff
+  where: model.py L634（定义）；L207、L406–408、L419–422、L559–561
+  d2_value: 0.93
+  origin: cli
+  registry_id: ev_station_efficiency
+  verdict: covered
+  notes: ''
+- item: argparse --ev-batt-charge-eff
+  where: model.py L634（定义）；L207、L407、L420
+  d2_value: 0.98
+  origin: cli
+  registry_id: ev_battery_charge_efficiency
+  verdict: covered
+  notes: ''
+- item: argparse --ev-batt-discharge-eff
+  where: model.py L634（定义）；L207、L408、L422、L561
+  d2_value: 0.98
+  origin: cli
+  registry_id: ev_battery_discharge_efficiency
+  verdict: covered
+  notes: ''
+- item: argparse --re-fom-jpy-per-kw
+  where: model.py L634（定义）；L166（只在 annuity_pv）
+  d2_value: 1000.0
+  origin: argparse_default
+  registry_id:
+  - re_fom
+  - generator_side_kw_charge
+  verdict: inactive_in_D2
+  notes: PLEXOS 方法下静默忽略；风光 FO&M 1000 来自 S*_annuity.json c17
+- item: argparse --export-curtail-share
+  where: model.py L634（定义）；L256–268
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: regional_curtailment_rate
+  verdict: inactive_in_D2
+  notes: 即使设为 > 0，只要用 --price-series（df 含 curt_rate），L321 也优先用 curt_rate，curt_flag 被静默忽略
+- item: argparse --export-curtail-level
+  where: model.py L634（定义）；L321
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: regional_curtailment_rate
+  verdict: inactive_in_D2
+  notes: 同上
+- item: argparse --curtail-wind-weight
+  where: model.py L634（定义）；L264
+  d2_value: 0.3
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 旧弃电代理，--price-series 下不用
+- item: argparse --curtail-calendar
+  where: model.py L634（定义）；L265–266
+  d2_value: true
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 旧弃电代理（季节 0.5、周末 1.15）
+- item: argparse --price-wind-beta
+  where: model.py L634（定义）；L241–252
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: D2 = 0。注意帮助文字说 --price-series 取代 beta，但代码在价格序列之后仍会施加 beta（若非 0）
+- item: argparse --price-series
+  where: model.py L634（定义）；L228–236
+  d2_value: inputs/tohoku_price_plan_ref2024.parquet
+  origin: cli
+  registry_id:
+  - price_series
+  - regional_curtailment_rate
+  verdict: covered
+  notes: ''
+- item: argparse --series-curtail-scale
+  where: model.py L634（定义）；L321
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: export_curtailment_application
+  verdict: covered
+  notes: ''
+- item: argparse --renewable-profile
+  where: model.py L634（定义）；L222–227
+  d2_value: inputs/namie_renewables_ninja_2024.parquet
+  origin: cli
+  registry_id: re_profile_source
+  verdict: covered
+  notes: ''
+- item: argparse --price-wind-beta-path
+  where: model.py L634（定义）；L241
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --price-wind-beta-scale
+  where: model.py L634（定义）；L241
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --export-curtail-share-path
+  where: model.py L634（定义）；L256
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --export-curtail-share-scale
+  where: model.py L634（定义）；L256
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --import-limit-mw
+  where: model.py L634（定义）；L582–583
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --self-sufficiency
+  where: model.py L634（定义）；L584–590
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --island-days
+  where: model.py L634（定义）；L531–539
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --island-load-share
+  where: model.py L634（定义）；L534
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --island-start-year
+  where: model.py L634（定义）；L535
+  d2_value: 2030
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --import-adder-jpy-per-kwh
+  where: model.py L634（定义）；L319
+  d2_value: 0
+  origin: cli
+  registry_id: network_import_adder
+  verdict: covered
+  notes: ''
+- item: argparse --export-deduction-jpy-per-kwh
+  where: model.py L634（定义）；L321
+  d2_value: 0
+  origin: cli
+  registry_id: network_export_deduction
+  verdict: covered
+  notes: ''
+- item: argparse --ev-charger-kw
+  where: model.py L634（定义）；L208、L406–408、L419–422、L559–561
+  d2_value: 10.0
+  origin: argparse_default
+  registry_id: ev_charger_power
+  verdict: covered
+  notes: 固定充电曲线脚本 build_fixed_profile.py L19 另写死 0.01 MW，不随本参数变化
+- item: argparse --ev-participation
+  where: model.py L634（定义）；L278、L285、L367–374
+  d2_value: 0.5
+  origin: cli
+  registry_id: ev_participation
+  verdict: covered
+  notes: ''
+- item: argparse --ev-departure-soc
+  where: model.py L634（定义）；L379–383
+  d2_value: 0.8
+  origin: cli
+  registry_id: ev_departure_soc
+  verdict: covered
+  notes: ''
+- item: argparse --ev-departure-hour
+  where: model.py L634（定义）；L281、L380–382
+  d2_value: 7
+  origin: cli
+  registry_id: ev_departure_hour
+  verdict: covered
+  notes: model_fixes 下约束放在 06:00 快照
+- item: argparse --ev-departure-groups
+  where: model.py L634（定义）；L376、L403、L415
+  d2_value: commercial,residential
+  origin: argparse_default
+  registry_id: ev_departure_groups
+  verdict: covered
+  notes: ''
+- item: argparse --ev-v2g-efc-cap
+  where: model.py L634（定义）；L566–570、L712–718
+  d2_value: null
+  origin: argparse_default
+  registry_id: ev_v2g_efc_cap
+  verdict: covered
+  notes: ''
+- item: argparse --h2-startup-hours
+  where: model.py L634（定义）；L497–501、L524
+  d2_value: 1
+  origin: cli
+  registry_id: h2_el_startup_hours
+  verdict: covered
+  notes: ''
+- item: argparse --fc-startup-hours
+  where: model.py L634（定义）；L497
+  d2_value: 0
+  origin: cli
+  registry_id: h2_fc_startup_hours
+  verdict: covered
+  notes: ''
+- item: argparse --el-noload
+  where: model.py L634（定义）；L352、L519–521
+  d2_value: 0.02
+  origin: cli
+  registry_id: h2_el_noload
+  verdict: covered
+  notes: ''
+- item: argparse --el-curve
+  where: model.py L634（定义）；L352、L522–525
+  d2_value: 0.35:0.1057,0.5185:0.2038
+  origin: cli
+  registry_id: h2_el_partload_curve
+  verdict: covered
+  notes: ''
+- item: argparse --el-degradation
+  where: model.py L634（定义）；L346–348
+  d2_value: 0.0024
+  origin: cli
+  registry_id: h2_el_degradation
+  verdict: covered
+  notes: ''
+- item: argparse --el-stack-life
+  where: model.py L634（定义）；L347
+  d2_value: 40
+  origin: cli
+  registry_id: h2_el_stack_life
+  verdict: covered
+  notes: D2 = 40 → 寿命平均 age 19.5 年，δ = 1 + 0.0024×19.5 = 1.0468；须与 --h2-stack-repl 的 40 手动保持一致
+- item: argparse --fc-degradation
+  where: model.py L634（定义）；L349–351
+  d2_value: 0.006
+  origin: cli
+  registry_id: h2_fc_degradation
+  verdict: covered
+  notes: ''
+- item: argparse --fc-stack-life
+  where: model.py L634（定义）；L350
+  d2_value: 10
+  origin: cli
+  registry_id: h2_fc_stack_life
+  verdict: covered
+  notes: age 4.5 年，δ = 1.027
+- item: argparse --el-standby-power
+  where: model.py L634（定义）；L356、L490–494
+  d2_value: 0
+  origin: cli
+  registry_id: h2_el_standby_power
+  verdict: covered
+  notes: ''
+- item: argparse --fc-standby-power
+  where: model.py L634（定义）；L356、L490
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: h2_fc_standby_startup
+  verdict: covered
+  notes: ''
+- item: argparse --el-startup-energy
+  where: model.py L634（定义）；L356、L491、L507
+  d2_value: 0
+  origin: cli
+  registry_id: h2_el_startup_energy
+  verdict: covered
+  notes: ''
+- item: argparse --fc-startup-energy
+  where: model.py L634（定义）；L356、L491
+  d2_value: 0.0
+  origin: argparse_default
+  registry_id: h2_fc_standby_startup
+  verdict: covered
+  notes: ''
+- item: argparse --el-availability
+  where: model.py L634（定义）；L473、L475
+  d2_value: 0.97
+  origin: cli
+  registry_id: h2_el_availability
+  verdict: covered
+  notes: ''
+- item: argparse --fc-availability
+  where: model.py L634（定义）；L474、L476
+  d2_value: 0.95
+  origin: cli
+  registry_id: h2_fc_availability
+  verdict: covered
+  notes: ''
+- item: argparse --gurobi-method
+  where: model.py L634（定义）；L648
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 批处理未设
+- item: argparse --gurobi-numeric-focus
+  where: model.py L634（定义）；L650
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 批处理 make_reg1_batch.py L29 = 1
+- item: argparse --gurobi-bar-homogeneous
+  where: model.py L634（定义）；L651
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 批处理 = 1
+- item: argparse --gurobi-crossover
+  where: model.py L634（定义）；L652、L727
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 未设；决定平衡残差容差 1e-5
+- item: argparse --bar-conv-tol
+  where: model.py L634（定义）；L649
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: argparse --fix-builds
+  where: model.py L634（定义）；L449–455、L635
+  d2_value: null
+  origin: argparse_default
+  registry_id: foresight_robustness
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --fix-before
+  where: model.py L634（定义）；L449–452
+  d2_value: 0
+  origin: argparse_default
+  registry_id: foresight_robustness
+  verdict: inactive_in_D2
+  notes: ''
+- item: argparse --no-perpetuity
+  where: model.py L634（定义）；L634 PERP
+  d2_value: false
+  origin: argparse_default
+  registry_id: end_treatment
+  verdict: covered
+  notes: PRESET_PLEXOS 未设 → PERP = True
+- item: argparse --perpetuity
+  where: model.py L634（定义）；L634 PERP
+  d2_value: false
+  origin: argparse_default
+  registry_id: end_treatment
+  verdict: covered
+  notes: ''
+- item: argparse --h2-no-build-from
+  where: model.py L634（定义）；L456–459
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 期末效应检验
+- item: argparse --h2-fom
+  where: model.py L634（定义）；L68、L77–80
+  d2_value: electrolyzer:0.02,fuelcell:0.03,tank:0.005
+  origin: cli
+  registry_id:
+  - h2_el_fom
+  - h2_fc_fom
+  - h2_tank_fom
+  verdict: covered
+  notes: 永续 FO&M = 造价 × 份额 / 0.03。登记表 model_entry 仍写"PLEXOS 方法下没有入口"，已过时
+- item: argparse --h2-stack-repl
+  where: model.py L634（定义）；L69、L81
+  d2_value: electrolyzer:0.11:40,fuelcell:0.20:10
+  origin: cli
+  registry_id:
+  - h2_el_stack_replacement_cost
+  - h2_fc_stack_replacement_cost
+  - h2_el_stack_life
+  - h2_fc_stack_life
+  verdict: covered
+  notes: 永续换堆现值 = 造价 × 份额 / (1.03^L − 1)。登记表 code_now 仍写"D2 不计"，已过时
+- item: argparse --wind-scale
+  where: model.py L634（定义）；L238
+  d2_value: 1.0
+  origin: argparse_default
+  registry_id: wind_scale_sensitivity
+  verdict: covered
+  notes: 登记表写"无此参数"，已过时（代码已有）
+- item: argparse --extend-to
+  where: model.py L634（定义）；L634 YEND、L43–48、L50–54
+  d2_value: 2050
+  origin: argparse_default
+  registry_id:
+  - planning_horizon
+  - horizon_extension_2060
+  verdict: covered
+  notes: ''
+- item: argparse --output
+  where: model.py L634（定义）；L271、L642
+  d2_value: null
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: 输出路径
+- item: argparse --build-only
+  where: model.py L634（定义）；L645
+  d2_value: false
+  origin: argparse_default
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: argparse --preset
+  where: model.py L634（定义）；L634
+  d2_value: plexos
+  origin: cli
+  registry_id: investment_cost_method
+  verdict: covered
+  notes: D2 = plexos
+- item: TECH 对象名与容量属性映射
+  where: model.py L15–22
+  d2_value: 'wind/roof/solar: Max Capacity；fuelcell: Max Capacity；electrolyzer: Max Operating Level；tank: Max Inventory'
+  origin: hardcoded
+  registry_id:
+  - h2_el_block_size
+  - h2_fc_block_size
+  - h2_tank_block_size
+  - new_build_limit_wind
+  verdict: covered
+  notes: 结构映射，数值来自 S*_parameters.json
+- item: OLD_CAPEX
+  where: model.py L32–34
+  d2_value: 原稿氢能造价
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 全文件无引用（死代码）
+- item: CAPEX（风光造价路径）
+  where: model.py L101–102
+  d2_value: wind 293/248/177/127 等
+  origin: hardcoded
+  registry_id:
+  - capex_onshore_wind
+  - capex_pv_utility
+  - capex_pv_rooftop
+  verdict: inactive_in_D2
+  notes: 只在年金法；D2 风光造价来自 S*_annuity.json c17
+- item: H2_CAPEX（base/low/high/old）
+  where: model.py L103–107
+  d2_value: low 与 D2 CLI 相同
+  origin: hardcoded
+  registry_id:
+  - h2_el_capex
+  - h2_fc_capex
+  - h2_tank_capex
+  verdict: inactive_in_D2
+  notes: 只在年金法
+- item: H2_FOM
+  where: model.py L108
+  d2_value: low = {el .02, fc .03, tank .005}
+  origin: hardcoded
+  registry_id:
+  - h2_el_fom
+  - h2_fc_fom
+  - h2_tank_fom
+  verdict: inactive_in_D2
+  notes: 只在年金法；与 D2 的 --h2-fom 数值重复
+- item: H2_LIFE
+  where: model.py L109
+  d2_value: 20/20/30
+  origin: hardcoded
+  registry_id:
+  - h2_el_system_life
+  - h2_fc_system_life
+  - h2_tank_life
+  verdict: inactive_in_D2
+  notes: ''
+- item: UNIT_KW['fuelcell'] = 10000
+  where: model.py L110；L67 使用
+  d2_value: 10000
+  origin: hardcoded
+  registry_id: h2_fc_block_size
+  verdict: covered
+  notes: scale_annuity 中把 kJPY/kW 换成 JPY/块
+- item: UNIT_KW['electrolyzer'] = 549.2
+  where: model.py L110
+  d2_value: 549.2
+  origin: hardcoded
+  registry_id: h2_el_block_kw_basis
+  verdict: inactive_in_D2
+  notes: 只在年金法；D2 的 549.2 隐含在 --capex-electrolyzer 65904 中
+- item: UNIT_KW wind/solar/roof/tank
+  where: model.py L110
+  d2_value: 40000/20000/20/1
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 只在年金法
+- item: PERP（永续开关）
+  where: model.py L112、L634
+  d2_value: true
+  origin: argparse_default
+  registry_id: end_treatment
+  verdict: covered
+  notes: ''
+- item: HEND
+  where: model.py L113、L634
+  d2_value: 2050
+  origin: argparse_default
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 只在 vintage_pv 截断分支
+- item: YEND
+  where: model.py L114、L634
+  d2_value: 2050
+  origin: argparse_default
+  registry_id: planning_horizon
+  verdict: covered
+  notes: ''
+- item: W2050 = 1.03^-(YEND-2025)/0.03
+  where: model.py L115–116；L298、L579、L678、L716
+  d2_value: 15.92
+  origin: hardcoded
+  registry_id:
+  - end_treatment
+  - discount_rate
+  verdict: covered
+  notes: 2050 年运行与持有费的永续权重
+- item: annuity_factor()
+  where: model.py L118–119
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 只在 grid_pv_per_mw（gmax = 0）
+- item: H2_PHYS
+  where: model.py L121；L338、L339、L345、L434、L662
+  d2_value:
+    electrolyzer_MW: 2000
+    fuelcell_MW: 500
+    tank_t: 10000
+  origin: hardcoded
+  registry_id: h2_physical_caps
+  verdict: covered
+  notes: ''
+- item: EL_LIFE_PATH
+  where: model.py L125
+  d2_value:
+    2025: 20
+    2030: 25
+    2040: 30
+    2050: 35
+  origin: hardcoded
+  registry_id: h2_el_system_life
+  verdict: inactive_in_D2
+  notes: ''
+- item: H2_STACK
+  where: model.py L126
+  d2_value:
+    electrolyzer:
+    - 0.11
+    - 15
+    fuelcell:
+    - 0.2
+    - 10
+  origin: hardcoded
+  registry_id:
+  - h2_el_stack_replacement_cost
+  - h2_fc_stack_replacement_cost
+  verdict: inactive_in_D2
+  notes: 只在年金法；电解槽间隔 15 与 D2 的 40 不一致
+- item: H2_FOM_V
+  where: model.py L127
+  d2_value:
+    electrolyzer: 0.04
+    fuelcell: 0.04
+    tank: 0.01
+  origin: hardcoded
+  registry_id:
+  - h2_el_fom
+  - h2_fc_fom
+  verdict: inactive_in_D2
+  notes: ''
+- item: tech_life 写死寿命（风光 30、fc 20、tank 30）
+  where: model.py L130、L132
+  d2_value: 30/20/30
+  origin: hardcoded
+  registry_id:
+  - re_lifetime
+  - h2_fc_system_life
+  - h2_tank_life
+  verdict: inactive_in_D2
+  notes: 只在年金法
+- item: s_inf / vintage_pv
+  where: model.py L144–151
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 年金法
+- item: BSC 建设变量缩放
+  where: model.py L429–431
+  d2_value:
+    wind: 40
+    solar: 20
+    roof: 0.02
+    fuelcell: 10
+    electrolyzer: 1
+    tank: 1
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: PRESET_NEWBASE
+  where: model.py L603–620
+  d2_value: 整组
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: D2 不载入；其中 el_degradation .006、stack 15、annuity、网费 2/1、no_perpetuity 等与 D2 不同
+- item: PRESET_PLEXOS 生效部分
+  where: model.py L622–631
+  d2_value: investment_method='plexos'
+  origin: preset_plexos
+  registry_id: investment_cost_method
+  verdict: covered
+  notes: 其余键被 CLI 覆盖或与 CLI 同值（ev_departure_hour 7）
+- item: load_annuity：2050 年后造价 ×1.03^-(y-2050)
+  where: model.py L53
+  d2_value: 1.03
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: YEND = 2050 时不执行
+- item: scale_annuity：原稿造价 csv 列映射与 old 值
+  where: model.py L66–67、L75、L83
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: D2 三类氢能设备都给了 --h2-fom，走 L77–82 分支，old 被计算但不使用
+- item: scale_annuity：造价锚点线性插值，2050 后取 2050
+  where: model.py L36–37、L75
+  d2_value: np.interp
+  origin: hardcoded
+  registry_id: h2_el_capex
+  verdict: covered
+  notes: 登记表 code_now 给出 2035 年插值结果
+- item: scale_annuity：造价贴现 d = 1.03^-(y-2025)
+  where: model.py L76
+  d2_value: 1.03
+  origin: hardcoded
+  registry_id:
+  - discounting_convention
+  - discount_rate
+  verdict: covered
+  notes: ''
+- item: scale_annuity：FO&M 永续 = 份额 × 造价 / 0.03
+  where: model.py L80
+  d2_value: 0.03
+  origin: hardcoded
+  registry_id:
+  - h2_el_fom
+  - discount_rate
+  verdict: covered
+  notes: 不读 PERP：--no-perpetuity 时仍按永续
+- item: scale_annuity：换堆永续 = 份额 × 造价 / (1.03^L − 1)
+  where: model.py L81
+  d2_value: 1.03
+  origin: hardcoded
+  registry_id:
+  - h2_el_stack_replacement_cost
+  - discount_rate
+  verdict: covered
+  notes: 第一次换堆在建设后第 L 年
+- item: scale_annuity：氢能现值整体替换 PLEXOS 原值
+  where: model.py L82
+  d2_value: null
+  origin: hardcoded
+  registry_id: investment_cost_method
+  verdict: covered
+  notes: 原稿燃料电池 FO&M 9600 円/kW·年、电解槽 FO&M 20 不再进入 D2。登记表 h2_fc_capex code_now 仍写"另含 320.2 kJPY/kW"，已过时
+- item: hu = 1e-3（氢 kg→t）
+  where: model.py L204；L679、L696 重复
+  d2_value: 0.001
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: bu = 1e-3（生物质 GJ→TJ）
+  where: model.py L205；L679 重复
+  d2_value: 0.001
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: ecap = 0.07 × ev_capacity_scale
+  where: model.py L206
+  d2_value: 0.063
+  origin: hardcoded
+  registry_id: ev_battery_nominal_capacity
+  verdict: covered
+  notes: ''
+- item: kw_ev = ev_charger_kw / 1000
+  where: model.py L208
+  d2_value: 0.01
+  origin: hardcoded
+  registry_id: ev_charger_power
+  verdict: numerical
+  notes: 单位换算
+- item: 风光曲线按（月,日,时）映射，缺值 interpolate/bfill/ffill
+  where: model.py L224–227
+  d2_value: null
+  origin: hardcoded
+  registry_id: re_profile_time_mapping
+  verdict: covered
+  notes: ''
+- item: 价格序列映射：min(年, ylast)，×1000 JPY/kWh→JPY/MWh
+  where: model.py L232–236
+  d2_value: ylast = 2050
+  origin: hardcoded
+  registry_id:
+  - price_series
+  - leap_year_handling
+  verdict: covered
+  notes: ''
+- item: 风光 p_max_pu clip(upper=1)
+  where: model.py L237–238
+  d2_value: 1
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: beta 价格调整：168 h 窗、min_periods 24、地板 10 JPY/MWh
+  where: model.py L247–252
+  d2_value: null
+  origin: hardcoded
+  registry_id: price_floor
+  verdict: inactive_in_D2
+  notes: beta = 0
+- item: 旧弃电代理：季节 1/0.5、周末 1.15
+  where: model.py L264–268
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: grid_conditions_by_year.csv 输出
+  where: model.py L270–274
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: 只输出
+- item: tsam 出发标记 h_dep0
+  where: model.py L281
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: days_per_year 权重 365/366
+  where: model.py L296
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: 运行贴现 1.03^-(y-2024)，末年 W2050
+  where: model.py L297–298
+  d2_value: 1.03
+  origin: hardcoded
+  registry_id:
+  - discount_rate
+  - discounting_convention
+  - end_treatment
+  verdict: covered
+  notes: ''
+- item: snapshot_weightings（objective/generators/stores）
+  where: model.py L301–303
+  d2_value: 1
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: 非 EV 负荷 p_set = load_MW
+  where: model.py L306
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - load_annual_trajectory
+  - load_hourly_shape
+  verdict: covered
+  notes: ''
+- item: 现有光伏 = 名称含 UtilityPV 或 Namie RooftopPV 的 Units×Max Capacity
+  where: model.py L310
+  d2_value: 103
+  origin: hardcoded
+  registry_id: existing_pv_mw
+  verdict: covered
+  notes: ''
+- item: 现有风电 = Fukushima Revitalization OnshoreWind
+  where: model.py L311
+  d2_value: 38
+  origin: hardcoded
+  registry_id: existing_wind_mw
+  verdict: covered
+  notes: ''
+- item: 风光、水电可变成本 = 0（marginal_cost 未设）
+  where: model.py L314–316
+  d2_value: 0
+  origin: hardcoded
+  registry_id: null
+  verdict: orphan
+  notes: PLEXOS 原稿也没有 VO&M。决定弃电无成本、风光先于进口调度。影响小，但属于经济假设
+  suggest:
+    domain: grid_econ
+    id: re_vom
+- item: 水电 p_nom（cfg 缺省时 1）
+  where: model.py L316
+  d2_value: 1
+  origin: hardcoded
+  registry_id: hydro_ukedo
+  verdict: covered
+  notes: ''
+- item: 市场上限缺省 150（cfg Max Purchases/Sales）
+  where: model.py L317、L320
+  d2_value: 150
+  origin: hardcoded
+  registry_id: grid_interface_mw
+  verdict: inactive_in_D2
+  notes: 被 --market-limit-mw 118 覆盖
+- item: 进口成本 = 价格 + adder；/1e6 百万円
+  where: model.py L319
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - price_series
+  - network_import_adder
+  verdict: covered
+  notes: ''
+- item: 出口 p_max_pu = 1 − curt_rate × scale；收入 = 价格 − deduction
+  where: model.py L321
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - export_curtailment_application
+  - network_export_deduction
+  verdict: covered
+  notes: ''
+- item: 生物质库存 e_nom 100000 GJ、初始 10000 GJ、非循环
+  where: model.py L324
+  d2_value:
+    e_nom_GJ: 100000
+    e_initial_GJ: 10000
+  origin: hardcoded
+  registry_id: biomass_namie
+  verdict: covered
+  notes: e_nom 不起约束（无补给）
+- item: 生物质机组 p_nom 20 GJ/h（2 MW）、效率 0.1 MWh/GJ
+  where: model.py L325
+  d2_value:
+    p_nom_GJh: 20
+    eff: 0.1
+  origin: hardcoded
+  registry_id: biomass_namie
+  verdict: covered
+  notes: 与 PLEXOS Namie Biomass Max Capacity 2、Heat Rate 10 同值，但为硬编码
+- item: 生物质燃料出售 p_nom 100000 GJ/h，价格 BiomassMarket
+  where: model.py L326–331
+  d2_value: null
+  origin: hardcoded
+  registry_id: biomass_namie
+  verdict: covered
+  notes: 出售能力事实上不限
+- item: 氢罐日损失 → 小时损失换算
+  where: model.py L335
+  d2_value: null
+  origin: hardcoded
+  registry_id: h2_tank_standing_loss
+  verdict: numerical
+  notes: ''
+- item: 氢能有限上限分支 50000 kg、500×a_el MW、300×fk
+  where: model.py L336–337
+  d2_value: null
+  origin: hardcoded
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: --h2-unlimited 下改用 H2_PHYS
+- item: 氢罐 e_initial = 0、e_cyclic = False
+  where: model.py L338
+  d2_value: 0
+  origin: hardcoded
+  registry_id: h2_tank_initial_inventory
+  verdict: covered
+  notes: ''
+- item: 电解槽水费 4 JPY/kg：marginal_cost = (4/a_el)/1e6
+  where: model.py L339
+  d2_value: 4
+  origin: hardcoded
+  registry_id: h2_el_water_vom
+  verdict: covered
+  notes: 登记表写 L323，现为 L339；与 PLEXOS VO&M Charge 4 同值但为硬编码
+- item: 燃料电池可变成本 = 0（marginal_cost 未设）
+  where: model.py L345
+  d2_value: 0
+  origin: hardcoded
+  registry_id: null
+  verdict: orphan
+  notes: PLEXOS 原稿 FC VO&M Charge = 0。燃料电池放电无可变成本，影响氢储能调度经济性；文献 PEMFC O&M 常按 ct/kWh 计
+  suggest:
+    domain: h2
+    id: h2_fc_vom
+- item: h2_sale 小时上限缺省 1e5 kg/h
+  where: model.py L343
+  d2_value: 100000
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: 老化 age = (stack_life − 1)/2
+  where: model.py L347、L350
+  d2_value:
+    el: 19.5
+    fc: 4.5
+  origin: hardcoded
+  registry_id: h2_degradation_method
+  verdict: covered
+  notes: 登记表单位栏仍写电解槽 7 年（对应 stack life 15）
+- item: 电解槽老化效率 hu/(a_el(1+δ·age))
+  where: model.py L348
+  d2_value: 1.0468
+  origin: hardcoded
+  registry_id: h2_el_degradation
+  verdict: covered
+  notes: ''
+- item: 燃料电池老化效率 1/(fk(1+δ·age))
+  where: model.py L351
+  d2_value: 1.027
+  origin: hardcoded
+  registry_id: h2_fc_degradation
+  verdict: covered
+  notes: ''
+- item: el_eff_aux / h2_eff_sink p_nom 1000 MW
+  where: model.py L354–355
+  d2_value: 1000
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: 额外耗电上界；在 2000 MW 链路上限下最大约 236 MW，不起约束
+- item: h2_aux_power / sink p_nom 500 MW
+  where: model.py L358–359
+  d2_value: 500
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: 待机与启动能耗均为 0，不建
+- item: dep_floor（0.35，max(.35, soc)）
+  where: model.py L376、L380
+  d2_value: 0.35
+  origin: hardcoded
+  registry_id: ev_soc_min
+  verdict: numerical
+  notes: 死代码：赋值后从未使用
+- item: EV 最低电量 0.35 × 0.07 MWh/车（model_fixes 用名义容量）
+  where: model.py L377
+  d2_value: 0.0245
+  origin: hardcoded
+  registry_id: ev_soc_min
+  verdict: covered
+  notes: ''
+- item: 出发约束快照 = departure_hour − 1（model_fixes）
+  where: model.py L381–382
+  d2_value: 6
+  origin: hardcoded
+  registry_id: ev_departure_hour
+  verdict: covered
+  notes: ''
+- item: 出发电量 = departure_soc × ecap
+  where: model.py L383
+  d2_value: 0.0504
+  origin: hardcoded
+  registry_id: ev_departure_soc
+  verdict: covered
+  notes: ''
+- item: 非参与车辆负荷 = (1 − p) × 固定曲线；参与车辆数与行驶 × p
+  where: model.py L371–374
+  d2_value: 0.5
+  origin: hardcoded
+  registry_id:
+  - ev_participation
+  - ev_uncontrolled_charging_profile
+  verdict: covered
+  notes: ''
+- item: cohort 分支
+  where: model.py L384–409
+  d2_value: null
+  origin: hardcoded
+  registry_id: ev_cohort_test
+  verdict: inactive_in_D2
+  notes: ''
+- item: EV Store e_nom = max(车辆数) × ecap
+  where: model.py L413
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: EV e_initial = 车辆数₀ × ecap × 0.96
+  where: model.py L415
+  d2_value: 0.96
+  origin: hardcoded
+  registry_id: ev_initial_soc
+  verdict: covered
+  notes: 与 cfg Max SoC 分别取值
+- item: EV standing_loss = 0.0005/h
+  where: model.py L415（cohort 分支 L403）
+  d2_value: 0.0005
+  origin: hardcoded
+  registry_id: ev_self_discharge
+  verdict: covered
+  notes: ''
+- item: EV e_cyclic = False
+  where: model.py L415
+  d2_value: false
+  origin: hardcoded
+  registry_id: ev_terminal_condition
+  verdict: covered
+  notes: ''
+- item: 新增车辆带入电量 diff(车辆数) × ecap × 0.96
+  where: model.py L417
+  d2_value: 0.96
+  origin: hardcoded
+  registry_id: ev_initial_soc
+  verdict: covered
+  notes: ''
+- item: EV 行驶负荷 = drive_MWh − 新增车辆电量
+  where: model.py L418
+  d2_value: null
+  origin: hardcoded
+  registry_id: ev_traction_profile
+  verdict: covered
+  notes: ''
+- item: 充电 Link p_nom = max(车辆数)×kw/es，p_max_pu = 车辆比 × 接入率
+  where: model.py L419–420
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - ev_charger_power
+  - ev_availability_profile
+  verdict: covered
+  notes: ''
+- item: 放电 Link p_nom = max(车辆数)×kw/ebd（model_fixes）
+  where: model.py L422
+  d2_value: null
+  origin: hardcoded
+  registry_id: ev_charger_power
+  verdict: covered
+  notes: ''
+- item: 氢能物理上限块数：2000/(10·a_el)、500/10、10000
+  where: model.py L434
+  d2_value:
+    electrolyzer: 4071.7
+    fuelcell: 50
+    tank: 10000
+  origin: hardcoded
+  registry_id: h2_physical_caps
+  verdict: covered
+  notes: ''
+- item: 年建设上限：风光取 cfg Max Units Built in Year，氢能取物理上限
+  where: model.py L437
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - new_build_limit_wind
+  - new_build_limit_pv_utility
+  - new_build_limit_pv_rooftop
+  - h2_build_caps
+  verdict: covered
+  notes: ''
+- item: PLEXOS 方法累计装机不退役
+  where: model.py L446–448
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - investment_cost_method
+  - re_lifetime
+  verdict: covered
+  notes: ''
+- item: 总建设上限
+  where: model.py L460–463
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - new_build_limit_wind
+  - h2_build_caps
+  verdict: covered
+  notes: ''
+- item: 投资系数 = ann / 1e6 / bsc
+  where: model.py L464–465
+  d2_value: null
+  origin: hardcoded
+  registry_id: investment_cost_method
+  verdict: numerical
+  notes: 单位换算
+- item: 电解槽/燃料电池容量 = 块 × a_el × av；块 × fk × av
+  where: model.py L473–476
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - h2_el_availability
+  - h2_fc_availability
+  - h2_el_block_kw_basis
+  verdict: covered
+  notes: 链路口径 491.2 kW/块
+- item: 启动成本权重 ow = 目标权重 / 小时
+  where: model.py L479、L510
+  d2_value: null
+  origin: hardcoded
+  registry_id: h2_el_startup_cost
+  verdict: inactive_in_D2
+  notes: 启动成本为 0
+- item: 冷启动：p ≤ u − su/h，p ≥ pmin(u − su/h)
+  where: model.py L497–504
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - h2_el_startup_hours
+  - h2_el_min_load
+  verdict: covered
+  notes: ''
+- item: 启动定义 su ≥ warm − warm(t−1)，su ≤ warm
+  where: model.py L506、L509
+  d2_value: null
+  origin: hardcoded
+  registry_id: h2_uc_enabled
+  verdict: covered
+  notes: ''
+- item: 部分负荷曲线参照容量 = u − su（model_fixes 且 h2_uc）
+  where: model.py L524
+  d2_value: null
+  origin: hardcoded
+  registry_id: h2_el_partload_curve
+  verdict: covered
+  notes: ''
+- item: 储罐容量 = 块 × 1000 kg × hu
+  where: model.py L530
+  d2_value: null
+  origin: hardcoded
+  registry_id: h2_tank_block_size
+  verdict: covered
+  notes: ''
+- item: 孤岛约束
+  where: model.py L531–539
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: 电网扩容变量与成本
+  where: model.py L540–550
+  d2_value: null
+  origin: hardcoded
+  registry_id: grid_reinforcement_max_mw
+  verdict: inactive_in_D2
+  notes: ''
+- item: model_fixes：末年稳态（生物质、氢、EV 按车辆数比）
+  where: model.py L551–555、L571–573
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - h2_tank_terminal_condition
+  - ev_terminal_condition
+  - biomass_namie
+  verdict: covered
+  notes: ''
+- item: 非 model_fixes 末端：氢回零、居民 EV 回 0.96
+  where: model.py L556、L574
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - h2_tank_terminal_condition
+  - ev_terminal_condition
+  verdict: inactive_in_D2
+  notes: ''
+- item: model_fixes：EV 直流侧共享功率 es·充 + ebd·放 ≤ N·kw·a
+  where: model.py L560–563
+  d2_value: null
+  origin: hardcoded
+  registry_id: ev_charger_power
+  verdict: covered
+  notes: ''
+- item: charge_only/fixed 禁止放电
+  where: model.py L564–565
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: orphan
+  notes: 属于 --ev-control 条目（建议 ev_control_regimes）
+  suggest:
+    domain: ev
+    id: ev_control_regimes
+- item: 生物质期末库存持有费 10 円/GJ·年（含永续）
+  where: model.py L576–581；账本 L679 重复
+  d2_value: 10
+  origin: hardcoded
+  registry_id: biomass_namie
+  verdict: covered
+  notes: 与 PLEXOS BioMass Inventory Charge 10 同值，硬编码
+- item: 进口上限、自给率约束
+  where: model.py L582–590
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: inactive_in_D2
+  notes: ''
+- item: 水电月度电量上限（GWh × 1000）
+  where: model.py L591–599
+  d2_value: null
+  origin: hardcoded
+  registry_id: hydro_ukedo
+  verdict: covered
+  notes: ''
+- item: 参数检查 parser.error
+  where: model.py L635–641
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: ''
+- item: physical_cap_check 0.99 判定
+  where: model.py L661–664
+  d2_value: 0.99
+  origin: hardcoded
+  registry_id: h2_physical_caps
+  verdict: numerical
+  notes: 只报告
+- item: 账本与平衡检查容差 1e-5/1e-3、max(0.01, 1e-6·obj)
+  where: model.py L727–731
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: 检查不通过会中止输出，但不改解
+- item: 'param: NewOnshoreWInd OnshoreWind / Max Units Built'
+  where: model.py L308、L312–313、L462；inputs/S*_parameters.json
+  d2_value: 30
+  origin: plexos_param
+  registry_id: new_build_limit_wind
+  verdict: covered
+  notes: ''
+- item: 'param: NewOnshoreWInd OnshoreWind / Max Units Built in Year'
+  where: model.py L437；inputs/S*_parameters.json
+  d2_value: 3
+  origin: plexos_param
+  registry_id: new_build_limit_wind
+  verdict: covered
+  notes: ''
+- item: 'param: NewOnshoreWInd OnshoreWind / Max Capacity'
+  where: model.py L312–313、L466；inputs/S*_parameters.json
+  d2_value: 40
+  origin: plexos_param
+  registry_id: new_build_limit_wind
+  verdict: covered
+  notes: ''
+- item: 'param: NewUtilityPV UtilityPV / Max Units Built'
+  where: model.py L308、L312、L462；inputs/S*_parameters.json
+  d2_value: 20
+  origin: plexos_param
+  registry_id: new_build_limit_pv_utility
+  verdict: covered
+  notes: ''
+- item: 'param: NewUtilityPV UtilityPV / Max Units Built in Year'
+  where: model.py L437；inputs/S*_parameters.json
+  d2_value: 2
+  origin: plexos_param
+  registry_id: new_build_limit_pv_utility
+  verdict: covered
+  notes: ''
+- item: 'param: NewUtilityPV UtilityPV / Max Capacity'
+  where: model.py L312、L466；inputs/S*_parameters.json
+  d2_value: 20
+  origin: plexos_param
+  registry_id: new_build_limit_pv_utility
+  verdict: covered
+  notes: ''
+- item: 'param: NewRooftopPV RooftopPV / Max Units Built'
+  where: model.py L308、L312、L462；inputs/S*_parameters.json
+  d2_value: 3000
+  origin: plexos_param
+  registry_id: new_build_limit_pv_rooftop
+  verdict: covered
+  notes: ''
+- item: 'param: NewRooftopPV RooftopPV / Max Units Built in Year'
+  where: model.py L437；inputs/S*_parameters.json
+  d2_value: 20
+  origin: plexos_param
+  registry_id: new_build_limit_pv_rooftop
+  verdict: covered
+  notes: ''
+- item: 'param: NewRooftopPV RooftopPV / Max Capacity'
+  where: model.py L312、L466；inputs/S*_parameters.json
+  d2_value: 0.02
+  origin: plexos_param
+  registry_id: new_build_limit_pv_rooftop
+  verdict: covered
+  notes: ''
+- item: 'param: FH2R Fuel Cell Power Station Hydrogen / Max Units Built'
+  where: model.py L308（>0 判定）、L462；inputs/S*_parameters.json
+  d2_value: 30
+  origin: plexos_param
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: 只用于判定候选；上限被 H2_PHYS 代替
+- item: 'param: FH2R Fuel Cell Power Station Hydrogen / Max Units Built in Year'
+  where: model.py L437；inputs/S*_parameters.json
+  d2_value: 10
+  origin: plexos_param
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: 'param: FH2R Fuel Cell Power Station Hydrogen / Max Capacity'
+  where: model.py L466；inputs/S*_parameters.json
+  d2_value: 10
+  origin: plexos_param
+  registry_id: h2_fc_block_size
+  verdict: covered
+  notes: MW/块
+- item: 'param: Power to H2 Facility / Max Units Built'
+  where: model.py L308、L462；inputs/S*_parameters.json
+  d2_value: 50
+  origin: plexos_param
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: 'param: Power to H2 Facility / Max Units Built in Year'
+  where: model.py L437；inputs/S*_parameters.json
+  d2_value: 10
+  origin: plexos_param
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: 'param: Power to H2 Facility / Max Operating Level'
+  where: model.py L466；inputs/S*_parameters.json
+  d2_value: 10
+  origin: plexos_param
+  registry_id: h2_el_block_size
+  verdict: covered
+  notes: kg/h/块
+- item: 'param: H2 Storage Tank / Max Units Built'
+  where: model.py L308、L462；inputs/S*_parameters.json
+  d2_value: 50
+  origin: plexos_param
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: 'param: H2 Storage Tank / Max Units Built in Year'
+  where: model.py L437；inputs/S*_parameters.json
+  d2_value: 4
+  origin: plexos_param
+  registry_id: h2_build_caps
+  verdict: inactive_in_D2
+  notes: ''
+- item: 'param: H2 Storage Tank / Max Inventory'
+  where: model.py L466、L530；inputs/S*_parameters.json
+  d2_value: 1000
+  origin: plexos_param
+  registry_id: h2_tank_block_size
+  verdict: covered
+  notes: kg/块
+- item: 'param: FH2R UtilityPV / Namie Sakai Solar No1/No2 UtilityPV / Namie Yatsuda Revitalization UtilityPV / Namie RooftopPV / Units × Max Capacity'
+  where: model.py L310；inputs/S*_parameters.json
+  d2_value: 20+20+16+38+9 = 103
+  origin: plexos_param
+  registry_id: existing_pv_mw
+  verdict: covered
+  notes: ''
+- item: 'param: Fukushima Revitalization OnshoreWind / Max Capacity × Units'
+  where: model.py L311；inputs/S*_parameters.json
+  d2_value: 38
+  origin: plexos_param
+  registry_id: existing_wind_mw
+  verdict: covered
+  notes: ''
+- item: 'param: Ukedo Gawa Hydro / Max Capacity'
+  where: model.py L316；inputs/S*_parameters.json
+  d2_value: 1
+  origin: plexos_param
+  registry_id: hydro_ukedo
+  verdict: covered
+  notes: ''
+- item: 'param: TohokuPowerMarket / Max Purchases'
+  where: model.py L317；inputs/S*_parameters.json
+  d2_value: 150
+  origin: plexos_param
+  registry_id: grid_interface_mw
+  verdict: inactive_in_D2
+  notes: 被 --market-limit-mw 118 覆盖
+- item: 'param: TohokuPowerMarket / Max Sales'
+  where: model.py L320；inputs/S*_parameters.json
+  d2_value: 150
+  origin: plexos_param
+  registry_id: grid_interface_mw
+  verdict: inactive_in_D2
+  notes: 同上
+- item: 'param: EV JR Namie Commercial Area / Max SoC'
+  where: model.py L394、L414；inputs/S*_parameters.json
+  d2_value: 96
+  origin: plexos_param
+  registry_id: ev_soc_max
+  verdict: covered
+  notes: ''
+- item: 'param: EV Residential Cars / Max SoC'
+  where: model.py L394、L414；inputs/S*_parameters.json
+  d2_value: 96
+  origin: plexos_param
+  registry_id: ev_soc_max
+  verdict: covered
+  notes: ''
+- item: 'param: ''EV Residential Cars'' / ''H2 Storage Tank'' 是否存在 / 对象存在性'
+  where: model.py L307；inputs/S*_parameters.json
+  d2_value: S3/S4 有 EV；S2/S4 有氢
+  origin: plexos_param
+  registry_id: null
+  verdict: orphan
+  notes: 情景开关，归入 scenario_design
+  suggest:
+    domain: grid_econ
+    id: scenario_design
+- item: PLEXOS 属性未经 param() 读取：EV * / Capacity 70 kWh
+  where: model.py L206、L377 写死 0.07；inputs/S4_parameters.json
+  d2_value: 70
+  origin: plexos_param
+  registry_id: ev_battery_nominal_capacity
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：EV * / Min SoC 35 %
+  where: model.py L377 写死 0.35；inputs/S4_parameters.json
+  d2_value: 35
+  origin: plexos_param
+  registry_id: ev_soc_min
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：EV * / Initial SoC 96 %
+  where: model.py L415、L417 写死 0.96；inputs/S4_parameters.json
+  d2_value: 96
+  origin: plexos_param
+  registry_id: ev_initial_soc
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：EV * / Self Discharge Rate 0.05 %/h
+  where: model.py L415 写死 0.0005；inputs/S4_parameters.json
+  d2_value: 0.05
+  origin: plexos_param
+  registry_id: ev_self_discharge
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：EV * / Max Charge Rate 10 kW
+  where: --ev-charger-kw 默认 10；inputs/S4_parameters.json
+  d2_value: 10
+  origin: plexos_param
+  registry_id: ev_charger_power
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：EV * / Efficiency 200 Wh/km
+  where: prepare_inputs.py L71 写死 0.0002；inputs/S4_parameters.json
+  d2_value: 200
+  origin: plexos_param
+  registry_id: ev_energy_per_km
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：Power to H2 Facility / VO&M Charge 4
+  where: model.py L339 写死 4；inputs/S4_parameters.json
+  d2_value: 4
+  origin: plexos_param
+  registry_id: h2_el_water_vom
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：Electricity / Conversion Factor 0.053
+  where: --h2-electrolysis-mwh-per-kg（D2 0.04912）；inputs/S4_parameters.json
+  d2_value: 0.053
+  origin: plexos_param
+  registry_id: h2_el_sec_reference_53
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：H2 Supply Node / Generation Coefficient −60.6
+  where: --fc-kg-per-mwh 默认 60.6；inputs/S4_parameters.json
+  d2_value: -60.6
+  origin: plexos_param
+  registry_id: h2_fc_kg_per_mwh
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：Namie Biomass / Max Capacity 2、Heat Rate 10
+  where: model.py L325 写死；inputs/S4_parameters.json
+  d2_value: 2 MW / 10 GJ/MWh
+  origin: plexos_param
+  registry_id: biomass_namie
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：BioMass / Max Inventory 100、Opening Inventory 10、Inventory Charge 10
+  where: model.py L324、L579 写死（×1000 解释为 GJ）；inputs/S4_parameters.json
+  d2_value: 100 / 10 / 10
+  origin: plexos_param
+  registry_id: biomass_namie
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: PLEXOS 属性未经 param() 读取：FH2R Fuel Cell / FO&M Charge 9600、Power to H2 Facility / FO&M Charge 20
+  where: D2 中被 --h2-fom 取代（L82）；inputs/S4_parameters.json
+  d2_value: 9600 / 20
+  origin: plexos_param
+  registry_id: h2_fc_fom
+  verdict: covered
+  notes: 同一数值另以硬编码或 CLI 进入模型，二者独立
+- item: inputs/S*_annuity.json：风光对象 pv_per_unit（PLEXOS 诊断 c17）
+  where: model.py L50–54、L210、L464；prepare_inputs.py L42
+  d2_value: PV/块（JPY）
+  origin: input_file
+  registry_id:
+  - capex_onshore_wind
+  - capex_pv_utility
+  - capex_pv_rooftop
+  - re_fom
+  - wacc_build_cost
+  verdict: covered
+  notes: 含造价贴现与 FO&M 永续
+- item: inputs/S*_annuity.json：氢能对象 pv_per_unit
+  where: model.py L72、L82
+  d2_value: null
+  origin: input_file
+  registry_id: investment_cost_method
+  verdict: inactive_in_D2
+  notes: 被 scale_annuity 新值整体替换
+- item: inputs/h2_buildcost_original_plexos.csv
+  where: model.py L66、L75
+  d2_value: null
+  origin: input_file
+  registry_id: investment_cost_method
+  verdict: inactive_in_D2
+  notes: 读入但 old 不用
+- item: inputs/profiles.parquet：load_MW
+  where: model.py L212、L306、L534、L589
+  d2_value: null
+  origin: input_file
+  registry_id:
+  - load_annual_trajectory
+  - load_hourly_shape
+  verdict: covered
+  notes: ''
+- item: inputs/profiles.parquet：price_JPY_MWh
+  where: model.py L212、L236
+  d2_value: null
+  origin: input_file
+  registry_id: price_series
+  verdict: inactive_in_D2
+  notes: 被 --price-series 覆盖
+- item: inputs/profiles.parquet：solar_pu、wind_pu
+  where: model.py L212、L226
+  d2_value: null
+  origin: input_file
+  registry_id: re_profile_source
+  verdict: inactive_in_D2
+  notes: 被 --renewable-profile 逐时覆盖
+- item: inputs/profiles.parquet：commercial/residential_vehicles
+  where: model.py L374、L413；prepare_inputs.py L66、L70
+  d2_value: null
+  origin: input_file
+  registry_id:
+  - ev_fleet_count_commercial
+  - ev_fleet_count_residential
+  verdict: covered
+  notes: 按年阶梯（reindex 年份）
+- item: inputs/profiles.parquet：commercial/residential_drive_MWh
+  where: model.py L374、L418；prepare_inputs.py L67、L71
+  d2_value: null
+  origin: input_file
+  registry_id:
+  - ev_traction_profile
+  - ev_energy_per_km
+  verdict: covered
+  notes: ''
+- item: inputs/profiles.parquet：commercial/residential_availability
+  where: model.py L255、L419、L558；prepare_inputs.py L68、L72
+  d2_value: null
+  origin: input_file
+  registry_id: ev_availability_profile
+  verdict: covered
+  notes: 两车队都用商业区 CS 列
+- item: inputs/namie_renewables_ninja_2024.parquet：solar_pu、wind_pu
+  where: model.py L224–227
+  d2_value: null
+  origin: input_file
+  registry_id:
+  - re_profile_source
+  - pv_profile_spec
+  - wind_profile_spec
+  - re_profile_time_mapping
+  verdict: covered
+  notes: 起点 2024-01-01 09:00，前 9 h 回卷补齐
+- item: inputs/tohoku_price_plan_ref2024.parquet：price、curtail_rate
+  where: model.py L231–236、L321
+  d2_value: null
+  origin: input_file
+  registry_id:
+  - price_series
+  - regional_curtailment_rate
+  verdict: covered
+  notes: 年份 2025–2050
+- item: inputs/fixed_fleet_charging_newbase.parquet：commercial/residential_grid_charge_MW
+  where: model.py L279、L286–290、L365、L371
+  d2_value: null
+  origin: input_file
+  registry_id: ev_uncontrolled_charging_profile
+  verdict: covered
+  notes: 其余 8 列不读
+- item: inputs/historical_s4/DataFiles/Hydrogen_Biomass_Market_Benchmark_Price_yearly.csv：BiomassMarket
+  where: model.py L326–331
+  d2_value: 2025 22.9 … 2050 33.3 円/GJ
+  origin: input_file
+  registry_id: biomass_namie
+  verdict: covered
+  notes: ''
+- item: inputs/hydro_monthly.parquet：hydro_GWh
+  where: model.py L591–599；prepare_inputs.py L76–81
+  d2_value: null
+  origin: input_file
+  registry_id: hydro_ukedo
+  verdict: covered
+  notes: PLEXOS 变化点序列按月 ffill
+- item: inputs/S*_parameters.json（整体）
+  where: model.py L209
+  d2_value: null
+  origin: input_file
+  registry_id: null
+  verdict: covered
+  notes: 各属性见 plexos_param 条目
+- item: prepare_inputs：负荷 = 有 Load 文件的对象之和
+  where: prepare_inputs.py L58–60
+  d2_value: null
+  origin: input_file
+  registry_id: load_annual_trajectory
+  verdict: covered
+  notes: ''
+- item: prepare_inputs：RF 百分数 /100，2 月 29 日回退 2 月 28 日
+  where: prepare_inputs.py L62–65
+  d2_value: null
+  origin: input_file
+  registry_id: re_profile_source
+  verdict: inactive_in_D2
+  notes: D2 风光被 ninja 覆盖
+- item: prepare_inputs：行驶耗电 0.0002 MWh/km
+  where: prepare_inputs.py L71
+  d2_value: 0.0002
+  origin: input_file
+  registry_id: ev_energy_per_km
+  verdict: covered
+  notes: ''
+- item: prepare_inputs：两车队接入率都取 ~CS_JR Namie Commercial Area
+  where: prepare_inputs.py L72
+  d2_value: null
+  origin: input_file
+  registry_id: ev_availability_profile
+  verdict: covered
+  notes: ''
+- item: prepare_inputs：水电变化点 ffill
+  where: prepare_inputs.py L76–79
+  d2_value: null
+  origin: input_file
+  registry_id: hydro_ukedo
+  verdict: covered
+  notes: ''
+- item: build_fixed_profile.py 常数 0.07/0.01/0.96/0.35/0.0005
+  where: revision_round1/03_analysis/fixed_fleet_charging/build_fixed_profile.py L18–22
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - ev_battery_nominal_capacity
+  - ev_charger_power
+  - ev_initial_soc
+  - ev_soc_min
+  - ev_self_discharge
+  verdict: covered
+  notes: 与 model.py 同值；CHARGER_MW_PER_EV 不随 --ev-charger-kw 变化
+- item: build_fixed_profile.py newbase 预设 soh 0.9、桩 0.93、电池 0.98
+  where: build_fixed_profile.py L32
+  d2_value: null
+  origin: hardcoded
+  registry_id:
+  - ev_soh_capacity_scale
+  - ev_station_efficiency
+  - ev_battery_charge_efficiency
+  verdict: covered
+  notes: 已复算确认 D2 所用 parquet 由此预设生成
+- item: build_fixed_profile.py 模块常数 0.90/0.95
+  where: build_fixed_profile.py L23–27
+  d2_value: null
+  origin: hardcoded
+  registry_id: null
+  verdict: numerical
+  notes: 未被使用（P 预设覆盖），易误读
+- item: build_fixed_profile.py 出发 SoC 0.6（只用于校核）
+  where: build_fixed_profile.py L32、L83
+  d2_value: 0.6
+  origin: hardcoded
+  registry_id: ev_departure_soc
+  verdict: inactive_in_D2
+  notes: 不影响曲线

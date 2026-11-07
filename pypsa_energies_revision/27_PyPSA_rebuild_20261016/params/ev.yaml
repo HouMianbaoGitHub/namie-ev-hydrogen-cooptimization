@@ -1,0 +1,475 @@
+# =====================================================================
+# EV 参数登记表（energies-4608521 返修，PyPSA 主模型 D2 默认设定）
+# 生成日期：2026-10-28
+#
+# 用途：记录有依据的最终采用值及其出处。今后检查参数一律以本表为准，
+#       不以代码中的现值为准。code_now 只供对照。
+# 状态：confirmed 已有作者决定或报告推荐且无矛盾；conflict 资料之间数值矛盾；
+#       no_source 查不到依据（value 为 null）；author_to_decide 需作者决定口径或取舍。
+#
+# 资料清单（按优先级）
+#  1. 作者决定
+#     - revision_round1/02_plan/D2_模型设定.md 第 1 节（设计意图，10-22 至 10-28）、第 5 节（检查记录）
+#     - revision_round1/02_plan/revision_master_plan.md（按日期追加，后者覆盖前者）
+#  2. 报告（revision_round1/reports/）
+#     - EV往返效率核实.md
+#     - EV电池退化与容量衰减建模方法.md
+#     - 开源模型中的EV与电池退化表示.md
+#     - 能源系统模型中的电动车聚合.md
+#     - R1_5_parameter_sources.md（Item 1–3，EV 部分）
+#     - 新基准参数与实现审阅.md（EV 部分：S5、S6、S7、S10、A3、A4）
+#  3. 代码核查：revision_round1/02_plan/D2_settings/04_ev.md（2026-10-28）
+#  4. 代码与输入（只读）
+#     - 27_PyPSA_rebuild_20261016/src/model.py（722 行版本；argparse L618，PRESET_NEWBASE L587–604，
+#       PRESET_PLEXOS L606–615，EV 部分 L190–192、L345–406、L541–558）
+#     - 27_PyPSA_rebuild_20261016/src/default_D2_args.txt（D2 = --preset plexos + 该文件参数）
+#     - 27_PyPSA_rebuild_20261016/src/prepare_inputs.py L66–72（车辆数、行驶耗电、接入率）
+#     - 固定充电曲线脚本实际位于 revision_round1/03_analysis/fixed_fleet_charging/build_fixed_profile.py
+#       （src/ 下没有该文件）
+#     - 27_PyPSA_rebuild_20261016/inputs/S3_parameters.json、S4_parameters.json（原稿 PLEXOS EV 对象）
+#     - 27_PyPSA_rebuild_20261016/inputs/historical_s4/DataFiles/ev_data/EVforecast - Integrated.csv
+#
+# 行号均指 model.py，另注明的除外。报告路径相对 revision_round1/。
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# 1. 车队规模
+# ---------------------------------------------------------------------
+- id: ev_fleet_count_commercial
+  name: 商业车队车辆数（EV JR Namie Commercial Area）
+  value: {2025: 148, 2030: 1492, 2035: 2751, 2040: 3628, 2050: 5865}
+  unit: 辆（逐年，取自 csv 同名列）
+  sensitivity: {ev_share: [0, 0.1, 0.3, 0.6, 1.0]}
+  source: "原稿 PLEXOS 输入 DataFiles/ev_data/EVforecast - Integrated.csv，列 'EV JR Namie Commercial Area'（PLEXOS 对象 Units=5000 为被文件覆盖的默认值）"
+  report: "02_plan/D2_settings/04_ev.md §1 车辆数、§2 S1"
+  decided: "2026-10-28 作者：按原稿 PLEXOS 输入 csv，不修改（D2_模型设定.md §5）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "profiles.parquet 逐年与 csv 完全相同，年内不变（只在 1 月 1 日跳变）；2025/2030/2035/2040/2050 = 148/1492/2751/3628/5865 辆。B/C 受控部分 2050 年 2,932.5 辆"
+  model_entry: "prepare_inputs.py L66、L69–70：fleet['EV JR Namie Commercial Area'].reindex(ix.year) → profiles.parquet commercial_vehicles；model.py L374（B/C 乘参与率）、L413 nom=max(count)·ecap、L415 e_min_pu/e_max_pu、L419 充电功率、L417 车辆增减电量；进入：constraint: EV Store 的 e_nom、e_min_pu、e_max_pu，充放电 Link 的 p_nom 与 p_max_pu，L561 共享功率约束右端；A 情景通过固定曲线进入负荷"
+  notes: "敏感性中的 EV 比例 0/10/30/60/100% 来自 revision_master_plan.md 2026-10-18 的 PLEXOS 单因素批次，D2 框架下未见重跑记录。原始车队预测的外部来源未在报告中查到；正文称其为规划假设而非预测（4_study_area_and_inputs.tex L70）。"
+
+- id: ev_fleet_count_residential
+  name: 居民车队车辆数（EV Residential Cars）
+  value: {2025: 218, 2030: 1862, 2035: 3421, 2040: 4598, 2050: 7365}
+  unit: 辆（逐年，取自 csv 同名列）
+  sensitivity: {}
+  source: "原稿 PLEXOS 输入 DataFiles/ev_data/EVforecast - Integrated.csv，列 'EV Residential Cars'"
+  report: "02_plan/D2_settings/04_ev.md §1 车辆数、§2 S1"
+  decided: "2026-10-28 作者：按原稿 PLEXOS 输入 csv，不修改（D2_模型设定.md §5）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "218/1862/3421/4598/7365 辆，与 csv、登记表一致；B/C 受控部分 2050 年 3,682.5 辆"
+  model_entry: "prepare_inputs.py L66、L69–70（列 'EV Residential Cars'）→ profiles.parquet residential_vehicles；model.py 同商业车队（L374、L413、L415、L417、L419）；进入：constraint: 同 ev_fleet_count_commercial"
+  notes: "核查发现该列逐年恰等于'商业 + 东居民'（2050 年 7,365 = 5,865 + 1,500），而'东 + 西居民'2050 年为 5,000，与 PLEXOS 对象 Units=5000 一致（04_ev.md S1）。作者 10-28 已决定不修改；正文宜说明车队序列取自原稿输入。"
+
+# ---------------------------------------------------------------------
+# 2. 电池容量与 SoC 窗口
+# ---------------------------------------------------------------------
+- id: ev_battery_nominal_capacity
+  name: 每车电池名义容量
+  value: 70
+  unit: kWh/车
+  sensitivity: {}
+  source: "原稿 PLEXOS EV 对象 Capacity = 70（S3/S4_parameters.json）"
+  report: "02_plan/D2_settings/04_ev.md §1 每车可用电量；reports/开源模型中的EV与电池退化表示.md §1（对照：PyPSA-Eur 50 kWh、venco.py 75 kWh、Balmorel 50 kWh）；reports/EV电池退化与容量衰减建模方法.md §3（Nagano et al. 2021 用 62 kWh）"
+  decided: "D2_模型设定.md §1（70 kWh × 90%）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.07 MWh/车"
+  model_entry: "model.py L206 ecap=.07*args.ev_capacity_scale；L377 floor_dep=.35*(.07 if model_fixes else ecap)；build_fixed_profile.py L18、L31–32 battery_mwh=0.07（均为硬编码，没有命令行参数）；进入：constraint: 经 ecap 进入 Store e_nom、e_max_pu、e_initial、出发下限；经 0.07 进入绝对下限 e_min_pu"
+  notes: "70 kWh 只有原稿输入作依据，报告中没有给出外部文献出处；开源模型取 50–75 kWh，可作为量级对照写入正文。"
+
+- id: ev_soh_capacity_scale
+  name: 车队平均健康状态（可用容量占名义容量比例，SOH）
+  value: 0.9
+  unit: "-（可用容量 = 70 × 0.9 = 63 kWh/车）"
+  sensitivity: {soh08: 0.8, E_W_worst_case: 0.8}
+  source: "作者决定；参考数据：Saxena et al. 2015, J. Power Sources 282:265–276, doi:10.1016/j.jpowsour.2015.01.072（摘要：EoL 为 70–80% 容量）；Geotab 2026 'EV battery health'（22,700 辆，年衰减 2.3%，8 年后 81.6%；早期结果 1.8%/年），accessed 2026-10-19"
+  report: "reports/R1_5_parameter_sources.md Item 2；reports/新基准参数与实现审阅.md S6、§8"
+  decided: "2026-10-19 作者：新基准含 fleet SOH 0.9（revision_master_plan.md）；D2_模型设定.md §1 可用容量 90%"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "ecap = 0.063 MWh/车；下限仍为 0.35 × 0.07，不随 SOH 缩放"
+  model_entry: "model.py L206 ecap=.07*0.9=0.063；用于 L413 e_nom、L415 e_max_pu 与 e_initial、L417 车辆增减电量、L383 出发下限；不进入 L377 绝对下限；build_fixed_profile.py L32 soh=0.9；进入：constraint: Store e_nom、e_max_pu、e_initial、出发下限；固定曲线（A 情景及 B/C 非参与部分负荷）"
+  notes: "作者决定优先。但两份报告都指出 0.9 没有直接文献来源：R1_5 建议基准用名义容量、0.8 作压力情景；审阅报告 S6 建议给出'车龄 × 年衰减率'的推导。正文应把 0.9 说成车队更替下的平均 SOH，而不是 V2G 造成的衰减，否则与 V2G 成本重复（审阅报告 §1.5）。SOH 只缩放上限和出发电量，不缩放 35% 下限（见 ev_soc_min）。"
+
+- id: ev_soc_min
+  name: SoC 下限（全时段，应急储备）
+  value: 0.35
+  unit: "名义容量的比例（绝对值 0.35 × 70 = 24.5 kWh/车，即可用容量的 38.9%）"
+  sensitivity: {}
+  source: "原稿 PLEXOS EV 对象 Min SoC = 35；先例：Balmorel EV addon EV_emergency = 50 kWh 电池的 20%（Balmorel_data EV_TECH_DATA.inc 注释 'ensure there is power for emergencies… 100 km'）；Nagano, Delage & Nakata 2021, Energies 14(10):2823, doi:10.3390/en14102823（SoC 窗口 30–90%，'maintain the batteries' life cycle within an acceptable range'）"
+  report: "reports/EV电池退化与容量衰减建模方法.md §7 方案 B（下限保持绝对能量 0.35 B_nom）；reports/新基准参数与实现审阅.md §4 第 3 点、A3；reports/开源模型中的EV与电池退化表示.md §3.1、§4.6"
+  decided: "2026-10-19 作者采纳审阅修正：absolute 35% floor (nominal 70 kWh)，SOH 只缩放上限和出发电量（revision_master_plan.md 2026-10-19，--model-fixes）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.35 × 0.07 = 0.0245 MWh/车 = 24.5 kWh/车，为可用容量 63 kWh 的 38.9%"
+  model_entry: "model.py L377 floor_dep=pd.Series(.35*(.07 if args.model_fixes else ecap))；L378 floor_base=floor_dep.copy()；L415 e_min_pu=count*floor/nom；进入：constraint: EV Store e_min_pu（全时段下限，B/C）"
+  notes: "依据为电化学与应急储备双重理由。正文旧表述'35% ≈ 14 kWh ≈ 70–80 km'对应 40 kWh 电池，与 70 kWh 不符；按 0.2 kWh/km，24.5 kWh 约为 122 km，正文需改（04_ev.md M1）。"
+
+- id: ev_soc_max
+  name: SoC 上限
+  value: 0.96
+  unit: "可用容量的比例（0.96 × 63 = 60.48 kWh/车，即名义容量的 86.4%）"
+  sensitivity: {}
+  source: "原稿 PLEXOS EV 对象 Max SoC = 96（S3/S4_parameters.json）；对照：venco.py maximum_soc 0.97、Nagano et al. 2021 上限 90%"
+  report: "02_plan/D2_settings/04_ev.md §1 SoC 上限；reports/开源模型中的EV与电池退化表示.md §3.3；reports/EV电池退化与容量衰减建模方法.md §6"
+  decided: "2026-10-19 作者：上限按 SOH 降额（revision_master_plan.md 2026-10-19 fixes）；PLEXOS 中 96% 未生效的问题在 PyPSA 中以硬约束修正"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "S3、S4 两车队 Max SoC 均为 96 → 0.96 × 0.063 = 0.06048 MWh/车（名义的 86.4%）"
+  model_entry: "model.py L414 maxsoc=param(cfg,obj,'Max SoC')/100；L415 e_max_pu=count*ecap*maxsoc/nom；固定曲线 build_fixed_profile.py L20 INITIAL_AND_MAX_SOC=0.96；进入：constraint: EV Store e_max_pu（B/C）；固定曲线的充电目标（A 及非参与部分）"
+  notes: "平时可调窗口 60.48 − 24.5 = 35.98 kWh/车。高 SoC 驻留的日历老化未计成本（报告 §7 方案 D 为可选项，未采用）。"
+
+- id: ev_initial_soc
+  name: 初始 SoC 与新增车辆带入的 SoC
+  value: 0.96
+  unit: 可用容量的比例
+  sensitivity: {}
+  source: "原稿 PLEXOS EV 对象 Initial SoC = 96"
+  report: "02_plan/D2_settings/04_ev.md §1 初始 SoC、车队增减的电量；reports/新基准参数与实现审阅.md A4"
+  decided: "沿用原稿输入（未见单独决定）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.96 × 0.063 = 0.06048 MWh/车 × 2025 年车辆数（B/C 乘 0.5）"
+  model_entry: "model.py L415 e_initial=float(count.iloc[0])*ecap*.96；L417 energy_arrivals=count.diff().fillna(0)*ecap*.96/hrs；L418 从行驶负荷中扣除；build_fixed_profile.py L20、L59、L63；进入：constraint: Store 初始电量；行驶负荷 p_set（车辆增减带入/带走的电量）"
+  notes: "车辆数减少的年份（商业 2036、2040，居民 2036）也按 96% 扣除电量，全期合计约 11 MWh，可忽略（04_ev.md L4）。"
+
+- id: ev_terminal_condition
+  name: 末年 EV 电量条件
+  value: "2050 年末电量 = 2049 年末电量 × 车辆数比值（每车 SoC 不变）"
+  unit: "-"
+  sensitivity: {}
+  source: "审阅报告 E1 的修正方案"
+  report: "reports/新基准参数与实现审阅.md E1、§7；02_plan/D2_settings/04_ev.md §1 末年稳态"
+  decided: "2026-10-19 作者采纳（revision_master_plan.md：steady final year for H2, EVs (fleet-ratio scaled), biomass）；D2_模型设定.md §1 设计 f"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "商业 5865/5759 = 1.01841，居民 7365/7269 = 1.01321（B/C 参与率在分子分母中抵消）；terminal_recycle 不生效"
+  model_entry: "model.py L551 steady=args.model_fixes and 存在 2049 年；L572 ratio=cnt[last]/cnt[last_prev]；L573 约束 <bus>_steady_final_year；L574 terminal_recycle 只在 steady=False 时生效；进入：constraint: ev_<group>_steady_final_year（B/C）"
+  notes: ""
+
+# ---------------------------------------------------------------------
+# 3. 自放电
+# ---------------------------------------------------------------------
+- id: ev_self_discharge
+  name: EV 车辆停放时的电量损失率（车辆待机功耗，含电池自放电）
+  value: 5.0e-4
+  unit: 1/h
+  sensitivity: {}
+  source: "作者说明（2026-10-28）：该参数代表的是电动汽车整车的停放电量损失（vampire drain：车载电子、BMS、远程通信、温控等待机功耗），而不是电芯本身的自放电，所以高于电芯每月 1–3% 的典型值。原稿 PLEXOS Self Discharge Rate = 0.05 %/h。整车待机功耗的一手文献待补"
+  report: "reports/新基准参数与实现审阅.md S10、§8；02_plan/D2_settings/04_ev.md M2"
+  decided: "2026-10-19 作者：保留 0.05%/h 并在正文说明（vampire drain）；2026-10-28 作者确认理由：车辆待机功耗而非电芯自放电。04_ev.md M2 按电芯自放电判断'偏大'，不适用"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "每小时 0.05%，每天 1.19%，30 天 30.2%；按比例作用于电量"
+  model_entry: "model.py L415 standing_loss=.0005（硬编码；L403 为分组分支，D2 不用）；n.snapshot_weightings.stores=1（L303，逐时）；build_fixed_profile.py L22、L69；进入：constraint: PyPSA Store 能量平衡 e_t = (1−0.0005)^1 · e_(t−1) + p_t（pypsa 1.2.4 define_store_constraints）；固定曲线递推"
+  notes: "5.0e-4/h 相当于每天 1.19%（63 kWh 电池约 0.75 kWh/天、约 31 W 待机功率）。A 情景每车每年约 264 kWh，占行驶耗电 3.6%（商业）/6.4%（居民）。正文应写成车辆待机功耗并补文献（整车停放耗电的实测或厂商数据）。注意：按比例作用于电量，SoC 低时损失也小，所以 B/C 压低 SoC 可减少损失；若实际待机功耗与 SoC 无关，这一部分 A→B 价值（粗估 ≤ 0.2–0.3 十亿円）会偏高，可在正文说明。"
+
+# ---------------------------------------------------------------------
+# 4. 效率
+# ---------------------------------------------------------------------
+- id: ev_station_efficiency
+  name: 充电桩（PCS）转换效率，每个方向
+  value: 0.93
+  unit: "-"
+  sensitivity: {low: 0.90, high: 0.95}
+  source: "Nichicon EV Power Station VSG3 官方规格（変換効率 EV 放電時 94%，定格出力時；https://www.nichicon.co.jp/products/v2h/vsg3/ 规格图）；Nichicon VCG 官方规格 90%（http://www.nichicon.co.jp/products/v2h/vcg/about/specs/）；AME 10 kW CHAdeMO 'Efficiency, typical 95 %'（Videgain Barranco & Covrig 2021, JRC123942, doi:10.2760/997207, Table 2）"
+  report: "reports/EV往返效率核实.md §1、§4"
+  decided: "D2_模型设定.md §1（作者，10-22 至 10-28）；报告推荐 §4"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.93"
+  model_entry: "model.py L207 es；L420 充电 Link efficiency=es*ebc；L422 放电 Link efficiency=ebd*es；L419 pnom=max(count)*kw_ev/es；L561 es·P_ch + ebd·P_dis ≤ N·a·kw；build_fixed_profile.py L32 station_eff=0.93；进入：constraint: 充放电 Link 效率与功率上限；固定曲线"
+  notes: "充电方向无公开值，按双向拓扑取对称值。额定点 94–95% 下调至 93%，以计入 10 kW 偏离额定点和车辆侧数百 W 辅助功耗。"
+
+- id: ev_battery_charge_efficiency
+  name: 电池充电效率
+  value: 0.98
+  unit: "-"
+  sensitivity: {low: 0.97, high: 0.99}
+  source: "Beckers et al. 2023, VPPC, doi:10.1109/VPPC60535.2023.10403325（电池包往返约 96%，Table II 三辆车 96.48–96.92%）"
+  report: "reports/EV往返效率核实.md §3、§4"
+  decided: "D2_模型设定.md §1；报告推荐 §3–§4"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "充电链 0.93 × 0.98 = 0.9114"
+  model_entry: "model.py L207 ebc；L420 充电 Link efficiency=es*ebc；build_fixed_profile.py L32、L55；进入：constraint: 充电 Link 效率（电网 → 电池）"
+  notes: ""
+
+- id: ev_battery_discharge_efficiency
+  name: 电池放电效率
+  value: 0.98
+  unit: "-"
+  sensitivity: {low: 0.97, high: 0.99}
+  source: "同 ev_battery_charge_efficiency（Beckers et al. 2023）"
+  report: "reports/EV往返效率核实.md §3、§4"
+  decided: "D2_模型设定.md §1；报告推荐 §3–§4"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "放电链 0.98 × 0.93 = 0.9114"
+  model_entry: "model.py L207 ebd；L422 放电 Link efficiency=ebd*es，p_nom=max(count)*kw_ev/ebd（model_fixes）；L561 ebd·P_dis；进入：constraint: 放电 Link 效率（电池 → 电网）与功率上限"
+  notes: "原稿车辆侧 95%/90% 相当于车载 AC 充电机加电池，在 CHAdeMO 直流架构下重复计入了变换损耗（报告 §0）。"
+
+- id: ev_round_trip_efficiency
+  name: 电网到电网往返效率（派生量）
+  value: 0.831
+  unit: "-（0.93 × 0.98 × 0.98 × 0.93）"
+  sensitivity: {low: 0.762, high: 0.885}
+  source: "实测对照：Schram et al. 2020, SEST, doi:10.1109/SEST48500.2020.9203459（摘要：87.0% ±1%，范围 79.1–87.8%）；Videgain Barranco & Covrig 2021, JRC, doi:10.2760/997207（约 80%）"
+  report: "reports/EV往返效率核实.md §2、§4；reports/新基准参数与实现审阅.md §0（核对无重复计入）"
+  decided: "D2_模型设定.md §1；报告推荐 §4"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.93 × 0.98 × 0.98 × 0.93 = 0.83065"
+  model_entry: "派生：L420 × L422 = (es·ebc)·(ebd·es)；进入：派生量，不单独进入"
+  notes: "敏感性 evlow 实际用 0.90/0.97/0.97（make_sensitivity_batch.py L26），对应 76.2%。"
+
+# ---------------------------------------------------------------------
+# 5. 功率
+# ---------------------------------------------------------------------
+- id: ev_charger_power
+  name: 每辆接入车的充放电共享功率（直流侧计量）
+  value: 10
+  unit: kW/接入车（DC，桩输出侧）
+  sensitivity: {low: 6, lhs_range: [6, 10]}
+  source: "nichicon2025v2g：CHAdeMO Association, 'Nichicon (10 kW) CHAdeMO Charger – NQC-TC103 Series'（4_study_area_and_inputs.tex L72）；AME 10 kW CHAdeMO 双向桩 'Maximum DC output power 10 kW'（JRC 2021 Table 2）；原稿 PLEXOS Max Charge/Discharge Rate = 10"
+  report: "reports/EV往返效率核实.md §1.7、§4 附加提示 3；reports/新基准参数与实现审阅.md S7"
+  decided: "2026-10-19 作者采纳审阅修正：DC-side metering of 10 kW（revision_master_plan.md，--model-fixes）；6 kW 与 6–10 kW 区间见 2026-10-21 LHS 设计"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "直流侧 10 kW/接入车；交流侧最大取电 10/0.93 = 10.75 kW；放电电池侧 10/0.98 = 10.20 kW、送到电网 9.30 kW"
+  model_entry: "model.py L208 kw_ev=10/1000；L419 充电 p_nom=max(count)·kw_ev/es，p_max_pu=count/max·a；L422 放电 p_nom=max(count)·kw_ev/ebd；L561（model_fixes）es·P_ch + ebd·P_dis ≤ N·a·kw_ev；build_fixed_profile.py L19 CHARGER_MW_PER_EV=0.01、L57；进入：constraint: <bus>_aggregate_mode（L561），以及 Link p_nom × p_max_pu"
+  notes: "交流侧最大取电 10/0.93 = 10.75 kW/车。Nichicon 第 3 代在售机型额定为 6 kW，正文应说明 10 kW 对应 9.9–10 kW 级产品。若改 --ev-charger-kw，固定曲线脚本 CHARGER_MW_PER_EV 须同步（04_ev.md L7）。"
+
+# ---------------------------------------------------------------------
+# 6. 出发约束
+# ---------------------------------------------------------------------
+- id: ev_departure_hour
+  name: 出发时刻
+  value: 7
+  unit: 时（JST），约束作用在 06:00 快照末的电量上
+  sensitivity: {}
+  source: "PyPSA-Eur config.default.yaml bev_dsm_restriction_time: 7（commit 6a0abaae88，L814–829）"
+  report: "reports/开源模型中的EV与电池退化表示.md §2.1–2.2、§4.5；reports/新基准参数与实现审阅.md S5、§4"
+  decided: "2026-10-20 作者：采用 PyPSA-Eur 默认值，07:00 出发（revision_master_plan.md）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "每天 06:00 快照（全期每年受约束小时数 = 当年天数，含周末）；PyPSA 快照 06:00 的 Store-e 是 06:00–07:00 末，即 07:00 的电量"
+  model_entry: "model.py L381 h_dep=(7−1)%24=6（model_fixes）；L382 dmask=(snapshots.hour==6)；L383 floor_dep[dmask]=max(floor, dep_soc·ecap)；进入：constraint: EV Store e_min_pu 在每天 06:00 快照"
+  notes: "商业车队实际 08:00 开始行驶，约束提前 1 小时，属保守（04_ev.md L6）。"
+
+- id: ev_departure_soc
+  name: 出发 SoC（受控部分）
+  value: 0.8
+  unit: "可用容量的比例（0.8 × 63 = 50.4 kWh/车，名义的 72%）"
+  sensitivity: {dep60: 0.6, pypsa_earth: 0.75}
+  source: "PyPSA-Eur config.default.yaml bev_dsm_restriction_value: 0.8；PyPSA-Earth 为 0.75"
+  report: "reports/开源模型中的EV与电池退化表示.md §2.1、§2.4、§4.5；reports/新基准参数与实现审阅.md S5（0.6 无来源）"
+  decided: "2026-10-20 作者：departure SoC 80% at 07:00 for the managed share（revision_master_plan.md）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.8 × 0.063 = 0.0504 MWh/车（名义的 72%）；出发时剩余窗口 60.48 − 50.4 = 10.08 kWh/车"
+  model_entry: "model.py L383 floor_dep[dmask]=np.maximum(0.0245, 0.8·ecap)；L415 e_min_pu=count·floor_dep/nom；进入：constraint: EV Store e_min_pu（06:00 快照，B/C 受控部分）"
+  notes: "约束作用在车队总电量上，含 06:00 时不在桩上的约 9.5% 车辆，属聚合局限。固定曲线脚本中的 0.6 不影响曲线，建议改为 0.8 使校核口径一致（04_ev.md L3）。"
+
+- id: ev_departure_groups
+  name: 出发约束适用的车队
+  value: [commercial, residential]
+  unit: "-"
+  sensitivity: {}
+  source: "作者设定（D2 以默认值运行）"
+  report: "02_plan/D2_settings/04_ev.md §1 出发约束适用范围"
+  decided: "D2_模型设定.md §1（7 点出发、出发 SOC 80%，未区分车队）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "commercial、residential 均适用，每天生效"
+  model_entry: "model.py L376 dep_groups=args.ev_departure_groups.split(',')；L415 floor_dep if key in dep_groups else floor_base；进入：constraint: 两个车队的 e_min_pu 都使用含出发下限的 floor_dep"
+  notes: "每天（含周末）都生效。"
+
+# ---------------------------------------------------------------------
+# 7. 参与率
+# ---------------------------------------------------------------------
+- id: ev_participation
+  name: 参与智能充电/V2G 的车队比例
+  value: 0.5
+  unit: "-（其余 50% 按无序充电固定曲线充电）"
+  sensitivity: {part25: 0.25, part75: 0.75, part100: 1.0, lhs_range: [0.25, 1.0]}
+  source: "PyPSA-Eur config.default.yaml bev_dsm_availability: 0.5；Brown et al. 2018, Energy 160:720–739, doi:10.1016/j.energy.2018.06.222（DSM 参与 25/50/100% 敏感性）；Muessel et al. 2023, iScience 26(10):107816, doi:10.1016/j.isci.2023.107816（朴素聚合高估灵活性约 10 倍）"
+  report: "reports/开源模型中的EV与电池退化表示.md §2.1；reports/能源系统模型中的电动车聚合.md；reports/EV电池退化与容量衰减建模方法.md §7 方案 B（ρ ∈ {0.25, 0.5}）"
+  decided: "2026-10-20 作者：采用 PyPSA-Eur 默认 --ev-participation 0.5（revision_master_plan.md）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "B/C：2050 年受控商业 2,932.5 辆（e_nom 184.75 MWh，交流充电 p_nom 31.53 MW），居民 3,682.5 辆（232.00 MWh，39.60 MW）；非参与负荷 = 0.5 × 固定曲线。A：不适用，全车队按固定曲线（L361–366）"
+  model_entry: "model.py L367 条件 ev_control!='fixed' and p<1；L372 非参与负荷 p_set=(1−0.5)·固定曲线；L374 df vehicles、drive_MWh ×0.5；其后 L413–L422、L558–L561 均用缩放后的 count；L278/L285 读固定曲线；进入：constraint: 车辆数 → Store e_nom/e_min/e_max、Link 功率、共享功率约束；行驶负荷 ×0.5；电网母线固定负荷 ev_nonparticipating_charge"
+  notes: "车辆数、行驶耗电、储能容量和充电功率都乘 0.5；非参与部分负荷为固定曲线 × 0.5（04_ev.md §1）。LHS 中 EV 灵活性对参与率的 PRCC 为 +0.94–0.96。"
+
+# ---------------------------------------------------------------------
+# 8. 电池退化：V2G 成本与循环上限
+# ---------------------------------------------------------------------
+- id: ev_v2g_cost
+  name: V2G 电池退化成本（按电池侧放电量计）
+  value: 3
+  unit: 円/kWh（电池侧放电）
+  sensitivity: {v2g0: 0, v2g2: 2, v2g5: 5, v2g10: 10, lhs_range: [0, 10]}
+  source: "Peterson, Apt & Whitacre 2010, J. Power Sources 195(8):2385–2392, doi:10.1016/j.jpowsour.2009.10.010（预印本 CMU CEIC WP 09-02 结论：V2G 2.70e-3 %/归一化 Wh，行驶 6.0e-3 %）；BNEF 2025-12-09 BEV 电池包 99 USD/kWh；推导：14,850 円/kWh × (2.7e-5–6.0e-5) / 0.20 = 2.0–4.5 円/kWh"
+  report: "reports/R1_5_parameter_sources.md Item 1（核心区间 2–5，单一中值 3）；reports/EV电池退化与容量衰减建模方法.md §1.1、§7 方案 A"
+  decided: "2026-10-19 作者：新基准含 V2G throughput cost 3 JPY/kWh（revision_master_plan.md）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.003 百万円/MWh = 3 円/kWh，按电池侧放电量计"
+  model_entry: "model.py L422 放电 Link marginal_cost=args.v2g_cost_jpy_per_kwh/1000；bus0=EV 电池母线；目标权重 L301 snapshot_weightings.objective=weight×discount；进入：objective: Σ_t 0.003 百万円/MWh × P_dis,batt(t) × 贴现权重（只在 C 中非零；B 由 L565 置零，A 无 EV Link）"
+  notes: "敏感性依据：0 = PyPSA-Eur 不计 V2G 成本（开源模型报告 §2.3）；2/5 = R1_5 核心区间端点；10 落在文献范围 0.4–20 円/kWh 内，但没有对应的单一来源（Sagaria et al. 2025 的 11–21 円/kWh 含基础设施成本，只能作上界）。成本必须放在放电 Link 上，不能放在 Store.marginal_cost 上（开源模型报告 §2.5）。"
+
+- id: ev_v2g_efc_cap
+  name: 年 V2G 等效全循环（EFC）上限
+  value: "不设上限"
+  unit: EFC/车·年
+  sensitivity: {efc50: 50, efc100: 100}
+  source: "上限水平无文献来源；方法见 TIMES STG_MAXCYC、oemof full_load_time_max；对照端点：Thingvad et al. 2021, IEEE TVT 70(8):7547–7557, doi:10.1109/TVT.2021.3093161（日吞吐 50.6 kWh，约 1–2 EFC/天）；Wang et al. 2016, J. Power Sources 332:193–203（约 20 天/年）"
+  report: "reports/EV电池退化与容量衰减建模方法.md §4、§5、§7 方案 C（{50,100,200} 标注为'示例'）；reports/开源模型中的EV与电池退化表示.md §4.3"
+  decided: "D2 参数中无此项（基准不设上限）；50/100 来自 2026-10-21 敏感性批次（make_sensitivity_batch.py L25）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "无 EFC 约束"
+  model_entry: "model.py L566–570（cap 为 None 时整段跳过）；L712–718 影子价格输出；进入：无（D2 不生成该约束）"
+  notes: "基准'不设上限'有依据（作者 D2 参数）；50/100 两档只是方法报告中的示例值，无文献出处，应作为阈值检验而非取值依据，并报告影子价格。旧基准下 V2G 为 105–239 EFC/车·年（revision_master_plan.md 2026-10-19），D2 下需重算。"
+
+# ---------------------------------------------------------------------
+# 9. 接入率与行驶耗电
+# ---------------------------------------------------------------------
+- id: ev_availability_profile
+  name: 逐时接入率（在桩车辆比例）数据来源
+  value: "原稿输入 ev_charging_share_2018_2050.csv，两车队均用 '~CS_JR Namie Commercial Area' 列"
+  unit: "-（0–1）"
+  sensitivity: {}
+  source: "mlit2025ir_data：MLIT 'Road Traffic Data (Traffic Volume, Travel Speed, Congestion, Etc.)'；mlit2023od：MLIT 'National Road Traffic Situation Survey: OD Trip Survey (FY2021 Results)'（4_study_area_and_inputs.tex L74）"
+  report: "02_plan/D2_settings/04_ev.md §1 接入率；reports/能源系统模型中的电动车聚合.md（Iwafune et al. 2019 日本道路交通普查先例）"
+  decided: "沿用原稿输入（revision_master_plan.md 开头：数据来自交通调查 OD 加道路逐时交通量，没有逐车出入记录）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "与 csv/100 逐时完全一致；平均 商业 0.727、居民 0.765；06:00 平均 0.906 / 0.901；最大 1.0"
+  model_entry: "prepare_inputs.py L68、L72：availability[name+'~CS_JR Namie Commercial Area']/100（每个车队取自己的列）；model.py L255 ×scale 并 clip(1)；L419 p_max_pu=count/max·a；L561 右端 N·a·kw；进入：constraint: 充放电 Link p_max_pu 与共享功率约束；固定曲线的交流功率上限"
+  notes: "居民车队也用商业区充电站列，正文需说明。车队聚合仍是灵活性的上界（聚合报告）。"
+
+- id: ev_availability_scale
+  name: 接入率缩放系数（可用率下降）
+  value: 1.0
+  unit: "-"
+  sensitivity: {avail08: 0.8, comb09: 0.9}
+  source: "敏感性依据：Dixon et al. 2022, eTransportation 13:100180, doi:10.1016/j.etran.2022.100180；Bucksteeg 2026 研讨会摘要（工作日晚间接入概率峰值约 25%，未经同行评审）"
+  report: "reports/R1_5_parameter_sources.md Item 3（建议 −10% 至 −20% 敏感性）"
+  decided: "D2 参数中无此项（基准 1.0）；0.8/0.9 来自 2026-10-21 敏感性批次"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "1.0（无缩放）"
+  model_entry: "model.py L253–255 df[column]=(df[column]*1).clip(upper=1)；L638–641 缩放时强制换用对应固定曲线；进入：constraint: 同 ev_availability_profile（乘 1）"
+  notes: ""
+
+- id: ev_traction_profile
+  name: 逐时行驶距离数据来源
+  value: "原稿输入 ev_data_2018_2050.csv（按车队同名列，每车每小时行驶距离）"
+  unit: "km/车·h（按 prepare_inputs.py 公式理解，单位待核）"
+  sensitivity: {}
+  source: "日本 OD 调查（作者 2026-10-28 确认）：逐时行驶距离由 OD 调查的日行驶数据得到；文献键 mlit2025ir_data、mlit2023od（同 ev_availability_profile）"
+  report: "02_plan/D2_settings/04_ev.md §1 每车行驶耗电、M4"
+  decided: "2026-10-28 作者：来源为日本 OD 调查，沿用原稿输入"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "profiles.parquet 与 csv 重算逐时完全一致；商业平均 4.13 km/车·h，居民 2.35 km/车·h"
+  model_entry: "prepare_inputs.py L67、L71 drive_MWh=vehicles×0.0002×drive；model.py L374（B/C ×0.5）、L418 Load <bus>_traction p_set=drive_MWh − energy_arrivals；进入：constraint: EV 母线功率平衡中的行驶负荷；固定曲线递推"
+  notes: "来源已确认。csv 的单位按 prepare_inputs.py 的公式为每车每小时 km（drive_MWh = 车辆数 × 0.0002 × drive）。附带观察：夜间 0–7 点商业车每车每小时仍有 0.28 kWh 行驶耗电，可在论文附录图中展示日内曲线供核对。"
+
+- id: ev_energy_per_km
+  name: 每公里行驶耗电
+  value: 0.2
+  unit: kWh/km
+  sensitivity: {}
+  source: "原稿 PLEXOS EV 对象 Efficiency = 200（Wh/km）；先例：Balmorel_data EV_TECH_DATA.inc 注释 'Profiles is made on 20 kWh/100 km'；PyPSA-Earth bev_plug_to_wheel_efficiency: 0.2"
+  report: "reports/开源模型中的EV与电池退化表示.md §2.4、§3.1"
+  decided: "沿用原稿输入（3_methods.tex L80：e_v = 0.0002 MWh/km）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "0.0002 MWh/km = 0.2 kWh/km；与 cfg Efficiency = 200 Wh/km 一致"
+  model_entry: "prepare_inputs.py L71 硬编码 .0002（MWh/km）；进入：constraint: 经行驶负荷进入（见 ev_traction_profile）"
+  notes: "只有开源模型的先例，没有日本车型或实测出处；正文如需引用可补国交省或厂商燃费数据。"
+
+- id: ev_annual_mileage
+  name: 每车年行驶里程（派生量，不是模型输入）
+  value: null
+  unit: km/车·年
+  sensitivity: {}
+  source: "不作为输入。模型使用的是由日本 OD 调查得到的每日（逐时）行驶距离，年里程只是由其累加得到的派生量（作者 2026-10-28）"
+  report: "02_plan/D2_settings/04_ev.md M4"
+  decided: "2026-10-28 作者：模型不使用年行驶里程，不需要单独的出处"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=doc_only"
+  code_now: "由输入推算：商业 36,226 km/车·年（7,245 kWh），居民 20,622 km/车·年（4,124 kWh），各年变化 < 3%"
+  model_entry: "无入口（由 ev_traction_profile 累加得到）；进入：不进入模型"
+  notes: "04_ev.md 认为日本自家用乘用车年均里程通常低于 1 万 km，但该数字也未核实。需补国交省（自動車輸送統計等）统计值后再判断是否修改行驶序列。"
+
+# ---------------------------------------------------------------------
+# 10. 车辆分组检验（R1.4）
+# ---------------------------------------------------------------------
+- id: ev_cohort_test
+  name: 车辆分组（cohort）检验设定
+  value: {base_cohorts: 1, test_cohorts: 3, theta: [0.5, 0.75, 1.0]}
+  unit: "-（theta：0 = 各组相同，1 = 离网车辆依次堆到第 1 组）"
+  sensitivity: {}
+  source: "方法依据：Taljegård et al. 2021, Energies 14(3):539, doi:10.3390/en14030539；Strobel & Pruckner 2024, ACM e-Energy, arXiv:2406.12755（分组后差距 10% 至 4%）；Muessel et al. 2023"
+  report: "reports/能源系统模型中的电动车聚合.md（结论与回复草稿：分组检验结果应作为聚合误差的下界，并报告氢能与储能容量变化）"
+  decided: "2026-10-19 至 10-22 作者运行（revision_master_plan.md：K=3，theta 0.5/0.75/1.0；只拆受控部分，A 不受影响）"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "base_cohorts = 1（生效）；test_cohorts/theta 只在敏感性中通过命令行设定"
+  model_entry: "model.py L384 args.ev_cohorts>1 时走分组分支（L384–409）；D2 走 L410–422 聚合分支；进入：D2 下不进入（单一聚合 Store）；K=3 与 theta 只用于敏感性"
+  notes: "theta = 1 不可行（商业第 1 组在 28 个假日小时低于下限；70 kWh 可用容量或 20 kW 桩时可行）。已有结果属常数路径版与年路径版框架（theta 0.5/0.75：flexB −7%/−18%，flexC −3%/−7%，交互项不变）。（2026-11-01 清理）F6 下已运行（sensF5：C0；sensF6：CH；coh3_t05、coh3_t075、coh4_t05 可行，coh4_t10 即 theta = 1 不可行，已重新验证）：EV 灵活性 C0 − A0 下降 3.9%–9.7%，CH − AH 下降 4.0%–9.9%，交互项 I^S_C = −0.13（基准 −0.14），挤出比例（S 参照）0.75–0.76（基准 0.75）；见补充材料 S7（revision_round1/04_manuscript/sections_F5/SI_S7_cohorts.md）。"
+
+# ---------------------------------------------------------------------
+# 11. 无序充电曲线（情景 A 与非参与部分）
+# ---------------------------------------------------------------------
+- id: ev_uncontrolled_charging_profile
+  name: 无序充电固定曲线的生成方法
+  value: "每小时在接入功率上限内尽早充回 96% 可用容量；参数与 D2 一致（0.07 × 0.9、桩 0.93、电池充电 0.98、初始与目标 96%、交流上限 N·a·0.01/0.93）"
+  unit: "-"
+  sensitivity: {av08: "fixed_fleet_charging_newbase_av08.parquet", av09: "fixed_fleet_charging_newbase_av09.parquet"}
+  source: "revision_round1/03_analysis/fixed_fleet_charging/build_fixed_profile.py --preset newbase（L18–33、L44–109）；输出 inputs/fixed_fleet_charging_newbase.parquet"
+  report: "02_plan/D2_settings/04_ev.md §1 非参与部分 / A 情景固定曲线（SHA-256 可复现）；reports/开源模型中的EV与电池退化表示.md §2.4（PyPSA-China 固定曲线先例）"
+  decided: "2026-10-19 作者：固定曲线须按 63 kWh 可用容量重建（revision_master_plan.md）；D2_模型设定.md §1：非参与部分按固定曲线充电"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "用当前 profiles.parquet 重建，SHA-256 3e0b0b15…08d09 与 inputs 文件完全一致（逐值差 0）；生成参数 0.063 MWh、0.93、0.98、0.0005/h、0.01 MW、目标 0.96、绝对下限，与 D2 一致；06:00 最低 SoC 0.96；全期充电/行驶 = 1.137（商业）、1.168（居民）；峰值 74.6 MW"
+  model_entry: "model.py L284–290 读取并检查覆盖；L361–366（A：100% 负荷 ev_fixed_charge）；L367–372（B/C：(1−p)·曲线）；L600 只在 fixed 时记录 SHA；生成脚本 build_fixed_profile.py --preset newbase（L18–33、L44–109）；进入：constraint: 电网母线外生负荷 p_set（A 全部；B/C 50%）"
+  notes: "若自放电（ev_self_discharge）或充电功率改值，必须重新生成本曲线及 av08/av09 版本。实测曲线每天 06:00 的 SoC 最低为 0.96，满足 80% 出发要求。"
+
+# ---------------------------------------------------------------------
+# 12. 成本边界
+# ---------------------------------------------------------------------
+- id: ev_battery_capex_in_system_cost
+  name: EV 购置与电池成本是否计入系统成本
+  value: "不计入"
+  unit: "-"
+  sensitivity: {}
+  source: "PyPSA-Eur doc/design/transport.md：'The cost of the vehicle batteries is not part of the system cost, since they are bought for mobility.'"
+  report: "reports/开源模型中的EV与电池退化表示.md §2.2；revision_master_plan.md 2026-10-20 审计（EV battery capex excluded (state in text)）"
+  decided: "不计入：revision_master_plan.md 2026-10-20 审计列为待在正文说明的事项；02_plan/审稿要求逐条清单.md R1.3c'不含，需说明'"
+  status: confirmed
+  verified: "2026-10-28 mapping/ev_map.yaml verdict=match"
+  code_now: "目标函数中没有 EV 电池或双向充电桩投资项"
+  model_entry: "model.py 目标函数只有：L465 新能源/氢能建设、L515 启动成本、L547 电网扩容、L581 生物质持有成本、各组件 marginal_cost；EV 部分只有 L422 V2G 成本；全文件无 capital_cost；进入：无"
+  notes: "V2G 带来的额外磨损由 ev_v2g_cost 计入；双向充电桩成本同样未计，需在 R1.3c 回复中说明。"
+
+- id: ev_control_regimes
+  name: EV 充电控制方式（A/B/C）
+  value: {A: fixed, B: charge_only, C: bidirectional}
+  unit: "--ev-control 取值"
+  sensitivity: {}
+  source: "审稿 R1.2a/R1.2b 要求：同一车队与出行需求下的无序充电（A）、只做智能充电不做 V2G（B），与智能充电 + V2G（C）比较"
+  report: "02_plan/审稿要求逐条清单.md R1.2；revision_round1/03_analysis/fixed_fleet_charging/README.md"
+  decided: "2026-10-20 前后按审稿要求设计；A 用固定充电曲线（fixed_fleet_charging_newbase.parquet），B 禁止放电，C 双向"
+  status: confirmed
+  verified: "2026-10-28 mapping/code_inventory.yaml（反向盘点，原为 orphan）"
+  code_now: "A/AH = --ev-control fixed；B/BH = charge_only；C/CH 不写参数，取 argparse 默认值 bidirectional"
+  model_entry: "--ev-control；src/make_reg1_batch.py DESIGN；model.py EV 链路与 _no_discharge 约束"
+  notes: "C 依赖 argparse 默认值，建议在批次脚本中显式写 --ev-control bidirectional。"

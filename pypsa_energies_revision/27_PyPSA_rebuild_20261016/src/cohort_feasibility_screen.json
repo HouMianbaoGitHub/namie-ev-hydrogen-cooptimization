@@ -1,0 +1,110 @@
+{
+  "theta0.5_commercial_c1": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.2670006566694069,
+    "max_hourly_drive_per_vehicle_kWh": 5.996
+  },
+  "theta0.5_commercial_c2": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.28063246196423186,
+    "max_hourly_drive_per_vehicle_kWh": 3.0000000000000004
+  },
+  "theta0.5_commercial_c3": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.45460243326079625,
+    "max_hourly_drive_per_vehicle_kWh": 3.0000000000000004
+  },
+  "theta0.5_residential_c1": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.5357235617892858,
+    "max_hourly_drive_per_vehicle_kWh": 3.9960000000000004
+  },
+  "theta0.5_residential_c2": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.5471835218,
+    "max_hourly_drive_per_vehicle_kWh": 2.428571428571429
+  },
+  "theta0.5_residential_c3": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.553014182064286,
+    "max_hourly_drive_per_vehicle_kWh": 2.0000000000000004
+  },
+  "theta0.75_commercial_c1": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.1557642540820771,
+    "max_hourly_drive_per_vehicle_kWh": 7.495000000000002
+  },
+  "theta0.75_commercial_c2": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.2293551129748879,
+    "max_hourly_drive_per_vehicle_kWh": 3.0000000000000004
+  },
+  "theta0.75_commercial_c3": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.4756526662308149,
+    "max_hourly_drive_per_vehicle_kWh": 3.0000000000000004
+  },
+  "theta0.75_residential_c1": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.49612203853060644,
+    "max_hourly_drive_per_vehicle_kWh": 4.995
+  },
+  "theta0.75_residential_c2": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.5455084383331094,
+    "max_hourly_drive_per_vehicle_kWh": 2.643699140401146
+  },
+  "theta0.75_residential_c3": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.5536588571428573,
+    "max_hourly_drive_per_vehicle_kWh": 2.0000000000000004
+  },
+  "theta1.0_commercial_c1": {
+    "hours_below_floor": 28,
+    "first_failure": "2025-05-02 17:00:00",
+    "worst_slack_share_of_capacity": -0.11768857142857142,
+    "max_hourly_drive_per_vehicle_kWh": 8.994000000000002
+  },
+  "theta1.0_commercial_c2": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.1775985235055415,
+    "max_hourly_drive_per_vehicle_kWh": 3.000149857635247
+  },
+  "theta1.0_commercial_c3": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.488420913408965,
+    "max_hourly_drive_per_vehicle_kWh": 3.0000000000000004
+  },
+  "theta1.0_residential_c1": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.27819735023396175,
+    "max_hourly_drive_per_vehicle_kWh": 5.994
+  },
+  "theta1.0_residential_c2": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.5273916720631935,
+    "max_hourly_drive_per_vehicle_kWh": 2.861812778603269
+  },
+  "theta1.0_residential_c3": {
+    "hours_below_floor": 0,
+    "first_failure": null,
+    "worst_slack_share_of_capacity": 0.5539123428571431,
+    "max_hourly_drive_per_vehicle_kWh": 2.0000000000000004
+  }
+}

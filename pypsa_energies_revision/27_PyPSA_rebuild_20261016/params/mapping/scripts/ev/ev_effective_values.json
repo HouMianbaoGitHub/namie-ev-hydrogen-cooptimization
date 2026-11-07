@@ -1,0 +1,622 @@
+{
+ "model_sha256": "9c806dbb972238fbae7743396f6371bcbcf80d458cf129bb2261108be8c7361c",
+ "model_lines": 824,
+ "profiles_sha256": "d5427b37e1910994be913187e63e1bf785ff938728590c9b5209a58e58c641ae",
+ "results": {
+  "d2_args": {
+   "model_fixes": true,
+   "tsam_segments": 0,
+   "ev_capacity_scale": 0.9,
+   "ev_station_eff": 0.93,
+   "ev_batt_charge_eff": 0.98,
+   "ev_batt_discharge_eff": 0.98,
+   "ev_charger_kw": 10.0,
+   "v2g_cost_jpy_per_kwh": 3.0,
+   "ev_departure_soc": 0.8,
+   "ev_departure_hour": 7,
+   "ev_departure_groups": "commercial,residential",
+   "ev_participation": 0.5,
+   "ev_availability_scale": 1,
+   "ev_max_soc": null,
+   "ev_cohorts": 1,
+   "ev_cohort_theta": 1.0,
+   "ev_v2g_efc_cap": null,
+   "fixed_charge_profile": "27_PyPSA_rebuild_20261016\\inputs\\fixed_fleet_charging_newbase.parquet",
+   "preset": "plexos",
+   "days_per_year": 0,
+   "only_year": null,
+   "end_year": null,
+   "extend_to": 2050
+  },
+  "designs": {
+   "A0": {
+    "scenario": "S3",
+    "ev_control": "fixed"
+   },
+   "AH": {
+    "scenario": "S4",
+    "ev_control": "fixed"
+   },
+   "B0": {
+    "scenario": "S3",
+    "ev_control": "charge_only"
+   },
+   "BH": {
+    "scenario": "S4",
+    "ev_control": "charge_only"
+   },
+   "C0": {
+    "scenario": "S3",
+    "ev_control": "bidirectional"
+   },
+   "CH": {
+    "scenario": "S4",
+    "ev_control": "bidirectional"
+   }
+  },
+  "ev_fleet_count_commercial": {
+   "by_year": {
+    "2025": 148.0,
+    "2030": 1492.0,
+    "2035": 2751.0,
+    "2040": 3628.0,
+    "2050": 5865.0
+   },
+   "constant_within_year": true,
+   "equals_csv": true,
+   "equals_registry": true,
+   "managed_2050": 2932.5
+  },
+  "ev_fleet_count_residential": {
+   "by_year": {
+    "2025": 218.0,
+    "2030": 1862.0,
+    "2035": 3421.0,
+    "2040": 4598.0,
+    "2050": 7365.0
+   },
+   "constant_within_year": true,
+   "equals_csv": true,
+   "equals_registry": true,
+   "managed_2050": 3682.5
+  },
+  "residential_equals_commercial_plus_east": true,
+  "ev_battery_nominal_capacity": {
+   "code": "L261",
+   "nominal_MWh": 0.07
+  },
+  "ev_soh_capacity_scale": {
+   "arg": 0.9,
+   "ecap_MWh": 0.06300000000000001
+  },
+  "ev_soc_min": {
+   "code": "L443",
+   "model_fixes": true,
+   "floor_MWh_per_vehicle": 0.0245,
+   "share_of_usable": 0.38888888888888884
+  },
+  "ev_soc_max": {
+   "code": "L460,L480",
+   "cfg_max_soc": {
+    "S3": {
+     "commercial": 0.96,
+     "residential": 0.96
+    },
+    "S4": {
+     "commercial": 0.96,
+     "residential": 0.96
+    }
+   },
+   "ev_max_soc_arg": null,
+   "emax_MWh_per_vehicle": 0.06048000000000001,
+   "share_of_nominal": 0.8640000000000001
+  },
+  "ev_initial_soc": {
+   "code_e_initial": "L469,L481",
+   "code_arrivals": "L470,L483",
+   "hardcoded": 0.96,
+   "cfg_initial_soc": {
+    "S3": {
+     "commercial": 0.96,
+     "residential": 0.96
+    },
+    "S4": {
+     "commercial": 0.96,
+     "residential": 0.96
+    }
+   }
+  },
+  "ev_self_discharge": {
+   "code": "L469,L481",
+   "per_hour": 0.0005,
+   "store_weighting": 1.0,
+   "per_day": 0.011931252337199827,
+   "per_30d": 0.30238648290904047,
+   "pypsa_formula": "e_t = (1-standing_loss)^w_stores * e_(t-1) + p_t * w_stores (pypsa 1.2.4 define_store_constraints)"
+  },
+  "ev_station_efficiency": {
+   "arg": 0.93,
+   "code": "L473,L474,L486,L488"
+  },
+  "ev_battery_charge_efficiency": {
+   "arg": 0.98,
+   "charge_link_eff": 0.9114
+  },
+  "ev_battery_discharge_efficiency": {
+   "arg": 0.98,
+   "discharge_link_eff": 0.9114
+  },
+  "ev_round_trip_efficiency": {
+   "value": 0.83064996
+  },
+  "ev_charger_power": {
+   "arg": 10.0,
+   "code_kw": "L263",
+   "code_shared": "L642",
+   "dc_kW": 10.0,
+   "ac_max_charge_kW": 10.75268817204301,
+   "battery_side_max_discharge_kW": 10.204081632653063,
+   "grid_side_max_discharge_kW": 9.3,
+   "model_fixes": true
+  },
+  "ev_departure_hour": {
+   "arg": 7,
+   "code": "L447",
+   "constrained_snapshot_hour": 6,
+   "meaning": "Store-e at snapshot 06:00 = energy at end of 06:00-07:00 = 07:00",
+   "constrained_hours_equal_days": true
+  },
+  "ev_departure_soc": {
+   "arg": 0.8,
+   "floor_MWh_per_vehicle": 0.050400000000000014,
+   "share_of_nominal": 0.7200000000000001,
+   "window_left_MWh": 0.010079999999999999,
+   "code": "L449",
+   "dead_code_dep_floor": "L442,L446"
+  },
+  "ev_departure_groups": {
+   "arg": "commercial,residential",
+   "code": "L469,L481"
+  },
+  "ev_participation": {
+   "arg": 0.5,
+   "code_scale": "L440",
+   "code_nonpart": "L438",
+   "applies_to_designs": "B, C only (A: whole fleet on fixed profile)",
+   "groups": {
+    "commercial": {
+     "managed_vehicles_2050": 2932.5,
+     "e_nom_MWh": 184.74750000000003,
+     "charge_p_nom_MW_AC": 31.532258064516128,
+     "discharge_p_nom_MW_batt": 29.9234693877551,
+     "managed_drive_GWh_total": 295.88334986800004
+    },
+    "residential": {
+     "managed_vehicles_2050": 3682.5,
+     "e_nom_MWh": 231.99750000000006,
+     "charge_p_nom_MW_AC": 39.59677419354839,
+     "discharge_p_nom_MW_batt": 37.5765306122449,
+     "managed_drive_GWh_total": 212.08695849599997
+    }
+   }
+  },
+  "ev_v2g_cost": {
+   "arg": 3.0,
+   "marginal_cost_MJPY_per_MWh": 0.003,
+   "code": "L474,L488",
+   "measured_on": "discharge Link p0 (bus0 = EV battery bus) -> battery side",
+   "active_in": "C only (B: discharge == 0; A: no EV links)"
+  },
+  "ev_v2g_efc_cap": {
+   "arg": null,
+   "code": "L647,L798"
+  },
+  "ev_availability_profile": {
+   "commercial": {
+    "source_column": "EV JR Namie Commercial Area~CS_JR Namie Commercial Area",
+    "max_abs_diff": 0.0,
+    "mean": 0.7267711413577647,
+    "mean_at_06": 0.9059528222409435,
+    "max": 1.0
+   },
+   "residential": {
+    "source_column": "EV Residential Cars~CS_JR Namie Commercial Area",
+    "max_abs_diff": 0.0,
+    "mean": 0.765470176039034,
+    "mean_at_06": 0.9007763268744734,
+    "max": 1.0
+   }
+  },
+  "ev_availability_scale": {
+   "arg": 1,
+   "code": "L311"
+  },
+  "ev_traction_profile": {
+   "commercial": {
+    "max_abs_diff_MWh": 0.0,
+    "mean_km_per_vehicle_hour": 4.1327522992137045,
+    "annual_km_per_vehicle_mean": 36225.79923076923,
+    "annual_km_per_vehicle_min": 35763.23,
+    "annual_km_per_vehicle_max": 36682.88,
+    "annual_kWh_per_vehicle_mean": 7245.159846153847,
+    "night_0_6_kWh_per_vehicle_hour": 0.27807184980142013
+   },
+   "residential": {
+    "max_abs_diff_MWh": 0.0,
+    "mean_km_per_vehicle_hour": 2.3526364170878966,
+    "annual_km_per_vehicle_mean": 20622.125,
+    "annual_km_per_vehicle_min": 20423.52,
+    "annual_km_per_vehicle_max": 20991.16,
+    "annual_kWh_per_vehicle_mean": 4124.425,
+    "night_0_6_kWh_per_vehicle_hour": 0.19970862919725596
+   }
+  },
+  "ev_energy_per_km": {
+   "code": "L71 (prepare_inputs.py)",
+   "MWh_per_km": 0.0002,
+   "cfg_Efficiency_Wh_per_km": {
+    "S3": 200.0,
+    "S4": 200.0
+   }
+  },
+  "ev_annual_mileage": {
+   "commercial": {
+    "km": 36225.79923076923,
+    "kWh": 7245.159846153847
+   },
+   "residential": {
+    "km": 20622.125,
+    "kWh": 4124.425
+   }
+  },
+  "ev_cohort_test": {
+   "arg_cohorts": 1,
+   "arg_theta": 1.0,
+   "code_branch": "L450,L716"
+  },
+  "ev_terminal_condition": {
+   "steady": true,
+   "ratio": {
+    "commercial": 1.0184059732592463,
+    "residential": 1.0132067684688404
+   },
+   "code": "L635,L636,L654",
+   "terminal_recycle_active": false
+  },
+  "ev_battery_capex_in_system_cost": {
+   "objective_terms": [
+    [
+     376,
+     "n.add('Generator','import',bus='electricity',p_nom=market+gmax,marginal_cost=(df.price_JPY_MWh+args.import_adder_jpy_per_kwh*1000)/1e6)  # wholesale + network charges"
+    ],
+    [
+     378,
+     "n.add('Generator','export',bus='electricity',p_nom=export_limit+gmax,p_max_pu=(1-df['curt_rate']*args.series_curtail_scale).clip(0,1) if 'curt_rate' in df.columns else ((1-df['curt_flag']*(1-args.expo"
+    ],
+    [
+     388,
+     "n.add('Generator','biomass_sale',bus='biomass_fuel',p_nom=100000*bu,sign=-1,marginal_cost=-fprice/1e6/bu)"
+    ],
+    [
+     396,
+     "n.add('Link','electrolyzer',bus0='electricity',bus1='hydrogen',p_nom=big(500*a_el,H2_PHYS['electrolyzer_MW']),efficiency=hu/a_el,marginal_cost=(4/a_el)/1e6)"
+    ],
+    [
+     407,
+     "n.add('Generator','h2_sale',bus='hydrogen',p_nom=cap_kgph*hu,sign=-1,marginal_cost=-args.h2_sale_price/hu/1e6)"
+    ],
+    [
+     474,
+     "n.add('Link',bus+'_discharge',bus0=bus,bus1='electricity',p_nom=(float(count_k.max())*kw_ev/ebd if args.model_fixes else pnom),p_max_pu=availability,efficiency=ebd*es,marginal_cost=args.v2g_cost_jpy_p"
+    ],
+    [
+     488,
+     "n.add('Link',bus+'_discharge',bus0=bus,bus1='electricity',p_nom=(float(count.max())*kw_ev/ebd if args.model_fixes else pnom),p_max_pu=availability,efficiency=ebd*es,marginal_cost=args.v2g_cost_jpy_per"
+    ],
+    [
+     545,
+     "cost=(buildvar*costs).sum();model.add_objective(model.objective.expression+cost,overwrite=True)"
+    ],
+    [
+     596,
+     "if args.h2_uc:model.add_objective(model.objective.expression+startup_cost,overwrite=True)"
+    ],
+    [
+     628,
+     "model.add_objective(model.objective.expression+(gbuild*gpv).sum(),overwrite=True)"
+    ],
+    [
+     662,
+     "model.add_objective(model.objective.expression+holding_expression,overwrite=True)"
+    ]
+   ],
+   "ev_terms": []
+  },
+  "ev_uncontrolled_charging_profile": {
+   "script": "revision_round1\\03_analysis\\fixed_fleet_charging\\build_fixed_profile.py",
+   "script_params": {
+    "usable_MWh": 0.06300000000000001,
+    "station_eff": 0.93,
+    "battery_charge_eff": 0.98,
+    "standing_loss": 0.0005,
+    "charger_MW": 0.01,
+    "target_soc": 0.96,
+    "absolute_floor": true,
+    "departure_soc_check_only": 0.6
+   },
+   "d2_params": {
+    "usable_MWh": 0.06300000000000001,
+    "station_eff": 0.93,
+    "battery_charge_eff": 0.98,
+    "standing_loss": 0.0005,
+    "charger_MW": 0.01,
+    "target_soc": 0.96,
+    "absolute_floor": true,
+    "departure_soc_check_only": 0.8
+   },
+   "differing": {
+    "departure_soc_check_only": [
+     0.6,
+     0.8
+    ]
+   },
+   "sha256_input": "3e0b0b157477544f2edb7580f636037f8573a1d100211fe3f76c446e04e08d09",
+   "d2_arg": "27_PyPSA_rebuild_20261016\\inputs\\fixed_fleet_charging_newbase.parquet",
+   "d2_arg_resolves_to_this_file": true,
+   "commercial": {
+    "min_soc": 0.7175589674036286,
+    "min_soc_at_06": 0.9599999999999999,
+    "charge_GWh": 672.9185287446608,
+    "drive_GWh": 591.7666997360001,
+    "floor_shortfall_max": 0.0,
+    "charge_over_drive": 1.137134835476319
+   },
+   "residential": {
+    "min_soc": 0.8979978463492063,
+    "min_soc_at_06": 0.9599999999999999,
+    "charge_GWh": 495.3143402108138,
+    "drive_GWh": 424.17391699199993,
+    "floor_shortfall_max": 0.0,
+    "charge_over_drive": 1.1677152233293864
+   },
+   "peak_total_MW": 74.61268357568571,
+   "index_matches_profiles": true,
+   "sha256_rebuilt": "3e0b0b157477544f2edb7580f636037f8573a1d100211fe3f76c446e04e08d09",
+   "rebuilt_max_abs_diff_MW": 0.0,
+   "rebuilt_check": {
+    "feasible_floor": true,
+    "feasible_departure_check_only": true
+   }
+  }
+ },
+ "checks": [
+  {
+   "check": "A/B/C ev_control",
+   "ok": true,
+   "detail": {
+    "A0": {
+     "scenario": "S3",
+     "ev_control": "fixed"
+    },
+    "AH": {
+     "scenario": "S4",
+     "ev_control": "fixed"
+    },
+    "B0": {
+     "scenario": "S3",
+     "ev_control": "charge_only"
+    },
+    "BH": {
+     "scenario": "S4",
+     "ev_control": "charge_only"
+    },
+    "C0": {
+     "scenario": "S3",
+     "ev_control": "bidirectional"
+    },
+    "CH": {
+     "scenario": "S4",
+     "ev_control": "bidirectional"
+    }
+   }
+  },
+  {
+   "check": "hourly snapshots (tsam_segments=0, days_per_year=0, full horizon)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "fleet commercial: profiles.parquet == csv == registry",
+   "ok": true,
+   "detail": {
+    "2025": 148.0,
+    "2030": 1492.0,
+    "2035": 2751.0,
+    "2040": 3628.0,
+    "2050": 5865.0
+   }
+  },
+  {
+   "check": "fleet residential: profiles.parquet == csv == registry",
+   "ok": true,
+   "detail": {
+    "2025": 218.0,
+    "2030": 1862.0,
+    "2035": 3421.0,
+    "2040": 4598.0,
+    "2050": 7365.0
+   }
+  },
+  {
+   "check": "nominal capacity 0.07 MWh = registry 70 kWh",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "SOH arg = registry",
+   "ok": true,
+   "detail": 0.9
+  },
+  {
+   "check": "SoC floor = 0.35 x 70 kWh (absolute)",
+   "ok": true,
+   "detail": 0.0245
+  },
+  {
+   "check": "SoC max: cfg Max SoC = 0.96 for all EV objects, --ev-max-soc unset",
+   "ok": true,
+   "detail": {
+    "S3": {
+     "commercial": 0.96,
+     "residential": 0.96
+    },
+    "S4": {
+     "commercial": 0.96,
+     "residential": 0.96
+    }
+   }
+  },
+  {
+   "check": "initial SoC 0.96 hardcoded = cfg Initial SoC = registry",
+   "ok": true,
+   "detail": {
+    "S3": {
+     "commercial": 0.96,
+     "residential": 0.96
+    },
+    "S4": {
+     "commercial": 0.96,
+     "residential": 0.96
+    }
+   }
+  },
+  {
+   "check": "EV standing loss 5e-4 per hourly snapshot = registry",
+   "ok": true,
+   "detail": "L469,L481"
+  },
+  {
+   "check": "ev_station_efficiency arg = registry",
+   "ok": true,
+   "detail": 0.93
+  },
+  {
+   "check": "ev_battery_charge_efficiency arg = registry",
+   "ok": true,
+   "detail": 0.98
+  },
+  {
+   "check": "ev_battery_discharge_efficiency arg = registry",
+   "ok": true,
+   "detail": 0.98
+  },
+  {
+   "check": "round trip = registry 0.831 (3 d.p.)",
+   "ok": true,
+   "detail": 0.83064996
+  },
+  {
+   "check": "charger 10 kW DC (model_fixes shared-power constraint)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "departure: hour 7 -> snapshot 06:00 every day",
+   "ok": true,
+   "detail": 6
+  },
+  {
+   "check": "departure SoC 0.8 x usable = 50.4 kWh",
+   "ok": true,
+   "detail": 0.050400000000000014
+  },
+  {
+   "check": "departure groups = registry",
+   "ok": true,
+   "detail": "commercial,residential"
+  },
+  {
+   "check": "participation 0.5 = registry",
+   "ok": true,
+   "detail": 0.5
+  },
+  {
+   "check": "V2G cost 3 JPY/kWh -> 0.003 MJPY/MWh",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "no V2G EFC cap in D2",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "availability = csv/100 (own fleet column, ~CS_JR Namie Commercial Area)",
+   "ok": true,
+   "detail": {
+    "commercial": 0.0,
+    "residential": 0.0
+   }
+  },
+  {
+   "check": "availability scale 1.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "drive_MWh = vehicles x 0.0002 x csv km",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "0.0002 MWh/km = registry 0.2 kWh/km",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "D2 uses 1 cohort (aggregate branch)",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "check": "steady final year active (model_fixes, 2049 present)",
+   "ok": true,
+   "detail": {
+    "commercial": 1.0184059732592463,
+    "residential": 1.0132067684688404
+   }
+  },
+  {
+   "check": "no EV battery / charger capex term in objective",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "check": "fixed profile generator parameters = D2 (except departure_soc, check-only)",
+   "ok": true,
+   "detail": {
+    "departure_soc_check_only": [
+     0.6,
+     0.8
+    ]
+   }
+  },
+  {
+   "check": "fixed profile SoC at 06:00 >= departure SoC 0.8",
+   "ok": true,
+   "detail": {
+    "commercial": 0.9599999999999999,
+    "residential": 0.9599999999999999
+   }
+  },
+  {
+   "check": "fixed profile reproducible (SHA-256 or values)",
+   "ok": true,
+   "detail": [
+    "3e0b0b157477",
+    "3e0b0b157477",
+    0.0
+   ]
+  }
+ ]
+}

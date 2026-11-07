@@ -1,0 +1,668 @@
+# =====================================================================
+# 登记表 params/grid_econ.yaml → 模型代码 映射与核对（D2 设定）
+# 生成日期：2026-10-28
+# 依据：src/model.py（当前 739 行版本，= bigmem model_reg1.py）；src/default_D2_args.txt；
+#       D2 = argparse 默认值 ← PRESET_PLEXOS（L622–631）← D2 参数文件（L634 parser.set_defaults 后 parse_args）
+# 计算：params/mapping/scripts/grid_econ/compute_grid_econ.py（→ effective_values.json）
+#       params/mapping/scripts/grid_econ/check_price_model.py（→ price_model_values.json）
+# 行号均指当前 model.py；登记表中的行号对应旧的 723 行版本，多处已偏移（见 grid_econ_map.md §4）。
+# verdict：match / mismatch / not_in_code / doc_only / cannot_verify
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# 1. 经济设定
+# ---------------------------------------------------------------------
+- id: discount_rate
+  registry_value: 0.03
+  d2_arg: "无命令行参数（硬编码 1.03）"
+  code: "model.py L115–116 W2050() = 1.03^-(YEND-2025)/0.03（PERP=True）；L297 discount = 1.03^-(y-2024)；L298 末年权重 = W2050；L301 snapshot_weightings.objective = weight×discount；L579 生物质持有费同一贴现"
+  enters: "目标函数：所有运行成本与收入的贴现权重；投资现值见 S*_annuity.json（3% 隐含）"
+  effective_value: "3%；2025 年运行贴现 0.9709；W2050 = 15.9202"
+  verdict: match
+  check: "compute_grid_econ.py：W2050 闭式 = Σ_{t≥2050} 1.03^-(t-2024) = 15.9202"
+  notes: "折现率不可从命令行修改，与登记表 notes 一致。"
+
+- id: wacc_build_cost
+  registry_value: 0.03
+  d2_arg: "--wacc 未给出，argparse 默认 0.03；PLEXOS 方法下不使用"
+  code: "model.py L155 annuity_pv 中 crf 用 args.wacc，仅 investment_method='annuity'（L172–173）时调用；PLEXOS 方法下投资系数直接取 S*_annuity.json（L50–54、L464）"
+  enters: "目标函数：新建机组投资现值系数（L464–465）"
+  effective_value: "风光单位现值 ÷ 1.03^-(y-2025) − 原造价 = 33.356 千円/kW（与建设年无关），即造价一次付清、FO&M 按 3% 永续，等价于 WACC = 折现率 = 3%"
+  verdict: match
+  check: "compute_grid_econ.py：S2_annuity.json 风/光/屋顶 2025–2050 逐年 fom_part 在 33.355–33.358 之间"
+  notes: "--wacc 在 D2 中被静默忽略（与登记表 investment_cost_method notes 一致）。"
+
+- id: investment_cost_method
+  registry_value: "PLEXOS 方法：一次性造价现值 + FO&M 永续现值；只替换氢能造价部分"
+  d2_arg: "--preset plexos → investment_method='plexos'（PRESET_PLEXOS L631）"
+  code: "model.py L172–173 investment_pv → scale_annuity（L56–85）；L210–211；L464–465 costs = ann[(obj,y)]/1e6/bsc，cost = Σ buildvar×costs"
+  enters: "目标函数：annual_build × 单位现值"
+  effective_value: "PLEXOS 方法生效；scale_annuity 只改了 78 行氢能记录（3 设备 × 26 年），风光 78 行与 S2_annuity.json 原值逐位相同"
+  verdict: match
+  check: "compute_grid_econ.py：unchanged_by_scale_annuity = True（风光）；h2_rows_changed_by_scale_annuity = 78"
+  notes: "--h2-capex、--h2-capex-scale、--h2-life、--h2-om-set、--re-fom-jpy-per-kw、--wacc 在 PLEXOS 方法下不起作用（与登记表一致）。"
+
+- id: discounting_convention
+  registry_value: "capex 1.03^-(y−2025)；operations 1.03^-(y−2024)"
+  d2_arg: "无"
+  code: "运行：model.py L297；投资：S*_annuity.json 的 pv_per_unit（prepare_inputs.py L42 读入），scale_annuity 中氢能同样用 d = 1.03^-(y-2025)（L76）"
+  enters: "目标函数"
+  effective_value: "运行 2025 年权重 0.9709 = 1.03^-1；风光 pv_per_unit/1.03^-(y-2025) − Build Cost CSV = 常数 33.356，证明投资按 1.03^-(y-2025) 贴现"
+  verdict: match
+  check: "compute_grid_econ.py：fom_part 逐年不变（若投资贴现口径不同，fom_part 会按 1.03 的幂次逐年漂移）"
+  notes: ""
+
+- id: end_treatment
+  registry_value: "永续（2050 年条件无限重复），Limit Capital Cost Perpetuity by Economic Life = True"
+  d2_arg: "PRESET_PLEXOS 不设 no_perpetuity；D2 未给 --no-perpetuity → PERP = True（L634）"
+  code: "model.py L112、L115–116、L298（2050 年快照权重 = W2050）、L579（生物质持有费）；投资侧：S*_annuity.json 中造价一次付清、FO&M 永续（无寿命末重置）"
+  enters: "目标函数：2050 年运行项权重；投资现值"
+  effective_value: "PERP = True；W2050 = 15.9202；2050 年占运行权重 47.76%"
+  verdict: match
+  check: "compute_grid_econ.py：PERP、W2050、share_2050_in_operating_weight = 0.4776"
+  notes: "风光现值只含一次造价和永续 FO&M，2050 年后不计重置造价，与登记表『少计』说明一致。"
+
+- id: end_treatment_robustness
+  registry_value: "截断年金（2050 年按一年计，不计 2050 年后年金），用年金方法实现"
+  d2_arg: "不在 D2 中；需 --no-perpetuity --investment-method annuity"
+  code: "model.py L116（PERP=False 时 W2050 = 1.03^-(YEND-2024)）、L147–151 vintage_pv 截断；L634 PERP 设定。代码没有阻止『--no-perpetuity + PLEXOS 方法』组合（scale_annuity 不读 PERP）"
+  enters: "敏感性"
+  effective_value: "D2 中不生效；make_attribend_batch.py L32 的 L5c_annuity_trunc 是登记表认可的组合，L30 L5a_plexos_trunc 与 make_attribrev_batch.py L30 r4_truncated 是不一致组合"
+  verdict: doc_only
+  check: "检查 batch 文件中出现 --no-perpetuity 时是否同时有 --investment-method annuity"
+  notes: "建议在 main() 中对『PLEXOS 方法 + --no-perpetuity』报错或警告（只建议，未改代码）。"
+
+- id: currency_price_base_year
+  registry_value: 2024
+  d2_arg: "无"
+  code: "无入口；grid_pv_per_mw 注释写 'million JPY, 2024'（L95）。所有成本直接相加，不做通胀换算"
+  enters: "不进入模型（正文口径）"
+  effective_value: "代码中无基准年概念；输入为各自口径的名义值"
+  verdict: doc_only
+  check: "无（口径声明）"
+  notes: "登记表决定『统一写为 2024 年価格（実質）』只是标注，输入数值并未换算；正文须说明各项成本未作年份换算。"
+
+- id: capex_onshore_wind
+  registry_value: "{2025: 293, 2030: 248, 2040: 177, 2050: 127} 千円/kW，几何插值"
+  d2_arg: "无（PLEXOS 方法读 inputs/S*_annuity.json）"
+  code: "model.py L50–54 load_annuity；L210–211；L464 costs（NewOnshoreWInd OnshoreWind，每单元 40,000 kW = UNIT_KW L110，bsc 40）"
+  enters: "目标函数：annual_build × 单位现值"
+  effective_value: "建设年造价（现值÷贴现因子−FO&M 部分）：2025 293.35、2030 248.00、2035 209.66、2040 177.24、2050 126.68 千円/kW；逐年比值恒为 0.966968（几何插值）；单位现值（2025 年币值）2025 326.71、2030 242.70、2040 135.18、2050 76.43 千円/kW"
+  verdict: match
+  check: "compute_grid_econ.py：wind_per_kW_by_year；锚点差 ≤ 0.35 千円/kW（登记表取整）"
+  notes: "实际锚点是 2020 年 347、2030 248、2050 126.68；2025 年 293.35 为插值。CAPEX 字典（L101–102，线性插值）只在年金法中使用。"
+
+- id: capex_pv_utility
+  registry_value: "{2025: 189, 2030: 172, 2040: 142, 2050: 118} 千円/kW"
+  d2_arg: "无"
+  code: "同上（NewUtilityPV UtilityPV，每单元 20,000 kW）"
+  enters: "目标函数"
+  effective_value: "2025 189.15、2030 172.00、2035 156.41、2040 142.23、2050 117.61 千円/kW；逐年比值 0.981175；单位现值 2025 222.50、2050 72.10 千円/kW"
+  verdict: match
+  check: "compute_grid_econ.py：solar_per_kW_by_year"
+  notes: ""
+
+- id: capex_pv_rooftop
+  registry_value: "{2025: 265, 2030: 234, 2040: 182, 2050: 141} 千円/kW"
+  d2_arg: "无"
+  code: "同上（NewRooftopPV RooftopPV，每单元 20 kW）"
+  enters: "目标函数"
+  effective_value: "2025 265.39、2030 234.00、2035 206.32、2040 181.91、2050 141.42 千円/kW；逐年比值 0.975135；单位现值 2025 298.75、2050 83.48 千円/kW"
+  verdict: match
+  check: "compute_grid_econ.py：roof_per_kW_by_year"
+  notes: ""
+
+- id: re_fom
+  registry_value: 1000
+  d2_arg: "--re-fom-jpy-per-kw 默认 1000，但 PLEXOS 方法下不使用"
+  code: "包含在 S*_annuity.json 的 pv_per_unit 中（PLEXOS c15/c16）；现有机组的 FO&M Charge 在 model.py 中无任何引用"
+  enters: "目标函数（新建机组，随投资现值）；现有机组不进入"
+  effective_value: "FO&M 部分 = 33.356 千円/kW（永续现值，按建设年计）= 1,000/0.03 × 8,766/8,760，相当于 1,000.7 円/kW·年"
+  verdict: match
+  check: "compute_grid_econ.py：fom_part_range = 33.355–33.358；fom_1000_over_r_x_8766_over_8760 = 33.356"
+  notes: "8766/8760 因子来自 PLEXOS 按平均年小时数计 FO&M，差 0.07%，可忽略。"
+
+- id: re_lifetime
+  registry_value: 30
+  d2_arg: "无"
+  code: "inputs/S*_parameters.json Technical Life / Economic Life = 30/30；model.py L130 tech_life 只用于年金法；PLEXOS 方法下寿命只体现在原稿现值中"
+  enters: "间接（PLEXOS 现值）"
+  effective_value: "S1–S4 风、光、屋顶均为 30/30；PLEXOS 方法下累计容量不退役（L446–448）"
+  verdict: match
+  check: "compute_grid_econ.py：S*_interface_and_fleet.lifetimes"
+  notes: ""
+
+- id: existing_re_retirement
+  registry_value: false
+  d2_arg: "无"
+  code: "model.py L310–311 fixed_solar / fixed_wind 为常数，对所有年份相同；L467、L471 容量约束 = 常数 + 新建累计"
+  enters: "约束：wind_year_capacity、solar_year_capacity（S0 无新建候选时为 Generator p_nom）"
+  effective_value: "现有 103 MW 光伏、38 MW 风电 2025–2050 全期在役"
+  verdict: match
+  check: "代码阅读 L310–315、L467–471"
+  notes: ""
+
+- id: generator_side_kw_charge
+  registry_value: 0
+  d2_arg: "无（--re-fom-jpy-per-kw 仅年金法）"
+  code: "PLEXOS 方法下无 kW 部分入口；fees 敏感性只改 L319、L321 的电量部分"
+  enters: "不进入"
+  effective_value: "0"
+  verdict: match
+  check: "代码阅读 L166（唯一用到 re_fom_jpy_per_kw 的位置，在 annuity_pv 中）"
+  notes: ""
+
+# ---------------------------------------------------------------------
+# 2. 电网接口与网费
+# ---------------------------------------------------------------------
+- id: grid_interface_mw
+  registry_value: 118
+  d2_arg: "--market-limit-mw 118（PRESET_PLEXOS 为 None，被 D2 覆盖）"
+  code: "model.py L317 market = args.market_limit_mw；L318 gmax = 0；L319 import p_nom = market + gmax；L320–321 export p_nom = export_limit + gmax"
+  enters: "约束：import / export Generator p_nom"
+  effective_value: "118 MW（买、卖），S0–S4 相同；PLEXOS 文件中的 150 MW 被覆盖"
+  verdict: match
+  check: "compute_grid_econ.py：S*_interface_and_fleet.import_p_nom/export_p_nom = 118；运行后 build_stats.json market_purchase_mw/market_sale_mw"
+  notes: ""
+
+- id: grid_reinforcement_levels
+  registry_value: [150, 200]
+  d2_arg: "不在 D2；make_sensitivity_batch.py L36 grid150 = --grid-max-mw 32，grid200 = --grid-max-mw 82"
+  code: "model.py L540–550：grid_build 内生变量，上限 gmax，L549–550 import/export ≤ market + 累计扩容"
+  enters: "敏感性（内生扩容）"
+  effective_value: "D2 中 gmax = 0；敏感性批次采用『内生扩容、上限 32/82 MW』的做法"
+  verdict: doc_only
+  check: "检查敏感性批次是否同时给出 --grid-capex-jpy-per-kw 等四个参数（见下面四条）"
+  notes: "登记表要求明确『外生给定』还是『内生扩容』；现有批次是内生扩容，且在 D2 参数下扩容免费（见 grid_reinforcement_capex）。"
+
+- id: grid_reinforcement_capex
+  registry_value: 105000
+  d2_arg: "D2 未给出；PRESET_PLEXOS 未设 → argparse 默认 --grid-capex-jpy-per-kw 0"
+  code: "model.py L94–99 grid_pv_per_mw = capex×1000×(crf+fom)/1e6 × annuity_factor(y)；L546–547 进入目标函数（仅 gmax>0）"
+  enters: "目标函数：grid_build × grid_pv_per_mw（仅扩容情景）"
+  effective_value: "D2 参数下 0 円/kW → 每 MW 扩容现值 0；按登记表四个值（105,000、1.9%、28 年、3%）计算，2031 年建设每 MW 现值 211.9 百万円（年值 7.59 百万円/MW）"
+  verdict: mismatch
+  check: "compute_grid_econ.py：grid_pv_per_MW_2031_D2_args = 0 vs grid_pv_per_MW_2031_registry = 211.906"
+  notes: "差值 105,000 円/kW。原因：该值只写在 PRESET_NEWBASE（L619），D2 改用 PRESET_PLEXOS 后未写入 default_D2_args.txt。D2 基准 gmax=0，不受影响；在 D2 上做 grid150/grid200（或 LHS 的 grid_expansion_mw）时扩容免费。"
+
+- id: grid_reinforcement_fom
+  registry_value: 0.019
+  d2_arg: "D2 未给出 → argparse 默认 --grid-fom 0.01"
+  code: "model.py L98"
+  enters: "目标函数（仅扩容情景）"
+  effective_value: "0.01/年"
+  verdict: mismatch
+  check: "compute_grid_econ.py：effective_args_D2.grid_fom"
+  notes: "差 0.009/年；原因同 grid_reinforcement_capex。D2 基准无影响。"
+
+- id: grid_reinforcement_life
+  registry_value: 28
+  d2_arg: "D2 未给出 → argparse 默认 --grid-life 40"
+  code: "model.py L96–97 crf = w/(1-(1+w)^-L)"
+  enters: "目标函数（仅扩容情景）"
+  effective_value: "40 年（crf 0.04326，登记表 28 年为 0.05329）"
+  verdict: mismatch
+  check: "compute_grid_econ.py：grid_pv_per_MW_2031_*.crf"
+  notes: "差 12 年；原因同上。D2 基准无影响。"
+
+- id: grid_reinforcement_start_year
+  registry_value: 2031
+  d2_arg: "D2 未给出 → argparse 默认 --grid-start-year 2030"
+  code: "model.py L541 gup = gmax if y >= grid_start_year else 0"
+  enters: "约束：grid_build 上限（仅扩容情景）"
+  effective_value: "2030"
+  verdict: mismatch
+  check: "compute_grid_econ.py：effective_args_D2.grid_start_year"
+  notes: "早 1 年；原因同上。D2 基准无影响。"
+
+- id: grid_reinforcement_max_mw
+  registry_value: 82
+  d2_arg: "D2 未给出 → --grid-max-mw 0；敏感性 grid200 为 82"
+  code: "model.py L318 gmax；L541–543 grid_build、grid_installed 上限"
+  enters: "约束（仅扩容情景）"
+  effective_value: "D2 = 0（不扩容，与 grid_interface_mw 基准 118 MW 一致）；grid200 = 82"
+  verdict: doc_only
+  check: "make_sensitivity_batch.py L36"
+  notes: "登记表 code_now『0』与 D2 一致；82 MW 只用于扩容情景。"
+
+- id: network_import_adder
+  registry_value: 0
+  d2_arg: "--import-adder-jpy-per-kwh 0；fees 敏感性 2（make_reg1_batch.py L13）"
+  code: "model.py L319 import marginal_cost = (price_JPY_MWh + adder×1000)/1e6"
+  enters: "目标函数：进口成本"
+  effective_value: "0 円/kWh；fees 算例 +2 円/kWh"
+  verdict: match
+  check: "compute_grid_econ.py：effective_args_D2.import_adder_jpy_per_kwh"
+  notes: ""
+
+- id: network_export_deduction
+  registry_value: 0
+  d2_arg: "--export-deduction-jpy-per-kwh 0；fees 敏感性 1"
+  code: "model.py L321 export marginal_cost = −(price_JPY_MWh − deduction×1000)/1e6，sign = −1"
+  enters: "目标函数：出口收入"
+  effective_value: "0 円/kWh；fees 算例 −1 円/kWh"
+  verdict: match
+  check: "compute_grid_econ.py：effective_args_D2.export_deduction_jpy_per_kwh"
+  notes: ""
+
+- id: renewable_surcharge
+  registry_value: "不计入"
+  d2_arg: "无"
+  code: "model.py 无相应项（L319、L321 只有批发价与网费）"
+  enters: "不进入"
+  effective_value: "0"
+  verdict: match
+  check: "代码阅读 L319–321"
+  notes: ""
+
+# ---------------------------------------------------------------------
+# 3. 东北电价模型（外生）
+# ---------------------------------------------------------------------
+- id: model_boundary
+  registry_value: "浪江单节点；接口为边界；东北电价与区域弃电外生"
+  d2_arg: "无"
+  code: "model.py L305 单一 electricity 母线；L319、L321 import/export 两个 Generator；电价与 curt_rate 来自 --price-series（L228–236）"
+  enters: "模型结构"
+  effective_value: "单母线 + 外生价格与弃电率"
+  verdict: match
+  check: "代码阅读"
+  notes: ""
+
+- id: price_series
+  registry_value: "inputs/tohoku_price_plan_ref2024.parquet"
+  d2_arg: "--price-series {INP}tohoku_price_plan_ref2024.parquet；--price-scale 未给，默认 1"
+  code: "model.py L228–236：键 (min(year, ylast), 月, 日, 时)，ylast = 2050；price×1000 → 円/MWh；L239 × price_scale"
+  enters: "目标函数：import/export marginal_cost（L319、L321）"
+  effective_value: "与 price_model/future_prices.parquet 完全相同；227,904 个快照全部映射，无缺失"
+  verdict: match
+  check: "compute_grid_econ.py：price_file_identical_to_price_model_output = True；price_missing_snapshots = 0"
+  notes: ""
+
+- id: price_reference_year
+  registry_value: 2024
+  d2_arg: "无（价格文件已固定）"
+  code: "build_future_prices.py L19 REF = 2024；价格文件 ts 为 2024 年"
+  enters: "间接（价格文件）"
+  effective_value: "2024"
+  verdict: match
+  check: "check_price_model.py：REF"
+  notes: ""
+
+- id: price_plan_portfolio
+  registry_value: "pv 9.82/12.95/16.16/33.8 GW；onshore 2.271/3.132/4.672/18.2；offshore 0.139/2.608/4.553/8.8；demand 79.6/79.1/78.0/116.0 TWh"
+  d2_arg: "无"
+  code: "build_future_prices.py L90–97 读 tohoku_penetration_beta.csv（scenario = plan）"
+  enters: "间接（价格文件）"
+  effective_value: "2025/2030/2035/2050 各值与登记表逐位相同"
+  verdict: match
+  check: "check_price_model.py：plan_portfolio"
+  notes: ""
+
+- id: price_offshore_shape
+  registry_value: "Renewables.ninja 2024，MERRA-2，Vestas V164 8 MW，110 m，7 个海域按容量加权"
+  d2_arg: "无"
+  code: "build_future_prices.py L78–85 SITES 权重"
+  enters: "间接（价格文件）"
+  effective_value: "权重 315/514/415/730/915/684/950 MW（合计 4,523），与登记表相同；风机型号与轮毂高度未存于数据文件"
+  verdict: cannot_verify
+  check: "check_price_model.py：SITES"
+  notes: "ninja CSV 以 header=false 下载，没有元数据；V164/110 m 只见于代码注释（L75），无法从数据核实。权重部分一致。"
+
+- id: price_onshore_pv_shape
+  registry_value: "光伏 9.05 GW、陆上风电 2.24 GW 归一；CF 13.6% / 23.5%"
+  d2_arg: "无"
+  code: "build_future_prices.py L20、L73–74"
+  enters: "间接（价格文件）"
+  effective_value: "PV_REF_GW 9.05、WIND_REF_GW 2.24；复算 CF 13.61%、23.51%"
+  verdict: match
+  check: "check_price_model.py：pv_shape_cf_2024、onshore_shape_cf_2024"
+  notes: ""
+
+- id: price_net_export_fixed
+  registry_value: "2024 年逐时实绩（年合计 35.2 TWh）"
+  d2_arg: "无"
+  code: "build_future_prices.py L33、L87"
+  enters: "间接（价格文件）"
+  effective_value: "35.24 TWh"
+  verdict: match
+  check: "check_price_model.py：net_export_2024_TWh"
+  notes: ""
+
+- id: interconnector_extra_export
+  registry_value: "{2027: 0, 2028: 1920, 2030: 2720, 2032: 3670, 2050: 3670} MW"
+  d2_arg: "无"
+  code: "build_future_prices.py L26 DATC、L98–100"
+  enters: "间接（价格文件）"
+  effective_value: "DATC 相同（另含 2024: 0）；2050 年额外外送 15.76 TWh"
+  verdict: match
+  check: "check_price_model.py：DATC、extra_export_TWh_2050"
+  notes: ""
+
+- id: interconnector_split_threshold
+  registry_value: 5500
+  d2_arg: "无"
+  code: "build_future_prices.py L27 T_SPLIT"
+  enters: "间接（价格文件）"
+  effective_value: "5500 MW"
+  verdict: match
+  check: "check_price_model.py：T_SPLIT"
+  notes: ""
+
+- id: price_must_run_thermal
+  registry_value: 2491
+  d2_arg: "无"
+  code: "build_future_prices.py L42 T_MIN = fit.tohoku_thermal.quantile(0.001)"
+  enters: "间接（价格文件）"
+  effective_value: "2,491.2 MW"
+  verdict: match
+  check: "check_price_model.py：T_MIN_MW（从 processed parquet 复算，不运行原脚本）"
+  notes: ""
+
+- id: price_supply_curve
+  registry_value: "250 MW 分箱中位数（每箱 ≥20 h，区间外取端值）+ 月×时中位残差"
+  d2_arg: "无"
+  code: "build_future_prices.py L36–41（分箱 250、counts ≥ 20）、L45–47（np.interp 区间外取端值）、L50–51（月×时中位残差）、L54–57"
+  enters: "间接（价格文件）"
+  effective_value: "同登记表"
+  verdict: match
+  check: "代码阅读"
+  notes: ""
+
+- id: price_nuclear_tohoku
+  registry_value: "{capacity_GW: 0.825, cf: 0.72, from_year: 2025}"
+  d2_arg: "无"
+  code: "build_future_prices.py L21、L96（y >= 2025）"
+  enters: "间接（价格文件）"
+  effective_value: "0.825 GW × 0.72 = 594 MW，自 2025 年起，至 2050 年不变"
+  verdict: match
+  check: "check_price_model.py：NUC_GW、NUC_CF"
+  notes: ""
+
+- id: price_model_validation
+  registry_value: "corr 0.682/0.753/0.750；MAE 2.556/2.233/2.082"
+  d2_arg: "无"
+  code: "validate_price_model.py → validation_metrics.csv"
+  enters: "不进入模型（验证说明）"
+  effective_value: "validation_metrics.csv 中数值与登记表相同"
+  verdict: doc_only
+  check: "check_price_model.py：validation"
+  notes: ""
+
+- id: price_floor
+  registry_value: 0.01
+  d2_arg: "无"
+  code: "build_future_prices.py L22、L56–57；model.py 只在 beta≠0 时另设 10 円/MWh 下限（L242、L252），D2 中 beta = 0 不触发"
+  enters: "目标函数（经价格）"
+  effective_value: "价格文件与模型内价格最小值均为 0.01 円/kWh；地板小时 2025 266、2030 271、2040 1,162、2050 2,783（模型年，非闰年少 2 月 29 日；汇总表 2,786）"
+  verdict: match
+  check: "compute_grid_econ.py：price_min_model、floor_hours_model"
+  notes: "登记表行号『L236』现为 L252。"
+
+- id: price_series_check
+  registry_value: "{2025: 11.434, 2030: 10.684, 2035: 9.701, 2040: 9.254, 2045: 8.319, 2050: 7.570}"
+  d2_arg: "无"
+  code: "model.py L228–239 映射后逐年均值"
+  enters: "核对用"
+  effective_value: "11.434 / 10.685 / 9.700 / 9.254 / 8.317 / 7.566"
+  verdict: match
+  check: "compute_grid_econ.py：mean_price_by_year（差 ≤ 0.004，来自非闰年跳过 2024-02-29）"
+  notes: ""
+
+- id: regional_curtailment_rate
+  registry_value: null
+  d2_arg: "--price-series（curtail_rate 列）；--series-curtail-scale 默认 1"
+  code: "model.py L236 df['curt_rate']；L321 export p_max_pu"
+  enters: "约束：export p_max_pu"
+  effective_value: "按区域 VRE 电量加权：2025 1.17%、2030 0.92%、2035 2.33%、2040 5.32%、2050 14.78%（future_prices_summary.csv）；按小时简单平均（grid_conditions_by_year.csv 的 curtail_share 列口径）：0.31%、0.28%、0.81%、1.99%、6.89%"
+  verdict: match
+  check: "compute_grid_econ.py：summary_curtail_pct_of_VRE、curt_rate_mean_hourly_by_year_pct"
+  notes: "登记表 value 为 null，决定为『保留电价模型的值』，代码直接使用价格文件，故判 match。注意 model.py L272 输出的 curtail_share 是小时平均，不是占 VRE 比例，报告时不要混用。"
+
+- id: export_curtailment_application
+  registry_value: "export p_max_pu = 1 − curtail_rate × 1.0（作用于 118 MW 接口）"
+  d2_arg: "--series-curtail-scale 未给，默认 1.0"
+  code: "model.py L321 p_max_pu = (1 − curt_rate × series_curtail_scale).clip(0,1)，乘在 export p_nom（118 + gmax）上"
+  enters: "约束：export Generator p_max_pu"
+  effective_value: "最小 p_max_pu 0.278；curt_rate > 0 的小时全部处于 0.01 円/kWh 地板（0 个例外）；按 118 MW 计每年最多少送 2025 3,161、2040 20,624、2050 71,182 MWh，按地板价至多 0.71 百万円/年"
+  verdict: match
+  check: "compute_grid_econ.py：curt_hours_not_at_floor = 0、export_lost_MWh_cap_by_year"
+  notes: "登记表『≤0.7 百万円/年』得到复算确认（未贴现上界）。"
+
+- id: tohoku_tokyo_interconnector_plan
+  registry_value: "现 5.73 GW；2027-11 后名义 10.28 GW 等"
+  d2_arg: "无"
+  code: "仅通过 DATC（build_future_prices.py L26）间接体现"
+  enters: "背景事实"
+  effective_value: "—"
+  verdict: doc_only
+  check: "无"
+  notes: ""
+
+# ---------------------------------------------------------------------
+# 4. 可再生能源（浪江）
+# ---------------------------------------------------------------------
+- id: existing_pv_mw
+  registry_value: 103
+  d2_arg: "无"
+  code: "model.py L310 fixed_solar = Σ Units × Max Capacity（对象名含 'UtilityPV' 或等于 'Namie RooftopPV'）"
+  enters: "约束：solar_year_capacity（L471）；Generator solar p_nom（L312、L314）"
+  effective_value: "103 MW（FH2R 20 + 酒井 1 号 20 + 酒井 2 号 16 + 谷津田 38 + 浪江屋顶 9；NewUtilityPV Units = 0 也被匹配，贡献 0），S0–S4 相同"
+  verdict: match
+  check: "compute_grid_econ.py：fixed_solar_MW = 103"
+  notes: "子串匹配写法不稳妥（登记表已指出）。"
+
+- id: existing_wind_mw
+  registry_value: 38
+  d2_arg: "无"
+  code: "model.py L311 fixed_wind = Fukushima Revitalization OnshoreWind 38 × 1"
+  enters: "约束：wind_year_capacity（L467）"
+  effective_value: "38 MW"
+  verdict: match
+  check: "compute_grid_econ.py：fixed_wind_MW = 38"
+  notes: ""
+
+- id: new_build_limit_wind
+  registry_value: null
+  d2_arg: "无"
+  code: "model.py L437 年上限 = Max Units Built in Year × bsc；L460–463 total_build ≤ Max Units Built × bsc；L313 Generator p_nom = 38 + 1,200"
+  enters: "约束：annual_build 上界、total_build_wind"
+  effective_value: "每年 ≤ 120 MW（3 × 40），总计 ≤ 1,200 MW；风电 p_nom 1,238 MW（S1–S4）"
+  verdict: match
+  check: "compute_grid_econ.py：new_limits.wind"
+  notes: "登记表 value 为 null，与决定『沿用原稿上限』（code_now 1,200 MW、120 MW/年）比较。建议把 value 填为 1200 并另列年上限 120。"
+
+- id: new_build_limit_pv_utility
+  registry_value: null
+  d2_arg: "无"
+  code: "同上（NewUtilityPV UtilityPV）"
+  enters: "约束"
+  effective_value: "每年 ≤ 40 MW，总计 ≤ 400 MW"
+  verdict: match
+  check: "compute_grid_econ.py：new_limits.solar"
+  notes: "同上，建议填 value。"
+
+- id: new_build_limit_pv_rooftop
+  registry_value: null
+  d2_arg: "无"
+  code: "同上（NewRooftopPV RooftopPV）"
+  enters: "约束"
+  effective_value: "每年 ≤ 0.4 MW，总计 ≤ 60 MW"
+  verdict: match
+  check: "compute_grid_econ.py：new_limits.roof"
+  notes: "同上。"
+
+- id: re_profile_source
+  registry_value: "Renewables.ninja 2024，MERRA-2，inputs/namie_renewables_ninja_2024.parquet"
+  d2_arg: "--renewable-profile {INP}namie_renewables_ninja_2024.parquet；--renewable-scale 默认 1"
+  code: "model.py L222–227 按 (月,日,时) 覆盖 profiles.parquet 中的 solar_pu、wind_pu；L237–238 缩放并 clip ≤ 1"
+  enters: "约束：Generator p_max_pu（L314–315）与 wind/solar_year_capacity（L467、L471）"
+  effective_value: "parquet 与 raw/ninja/namie_pv_2024.csv、namie_h80_wind_2024.csv 逐值相同（8,784 h，最大差 0）"
+  verdict: match
+  check: "compute_grid_econ.py：parquet_*_vs_*.csv"
+  notes: ""
+
+- id: pv_profile_spec
+  registry_value: "{tilt 35, azimuth 180, system_loss 0.10, tracking 0, dataset merra2}"
+  d2_arg: "无"
+  code: "fetch_ninja.py L16–17、L24 的默认参数（数据文件中无元数据）"
+  enters: "间接（出力曲线）"
+  effective_value: "fetch_ninja.py 默认值与登记表相同；模型年 CF 15.854%（非闰年 1,388.8 h）"
+  verdict: cannot_verify
+  check: "compute_grid_econ.py：pv_cf_by_year、pv_flh_2025"
+  notes: "下载时 header=false，CSV 不含请求参数，无法证明该文件确实按默认参数下载；CF 与登记表 code_now 一致。"
+
+- id: wind_profile_spec
+  registry_value: "{turbine Vestas V90 2000, hub_height 80 m, dataset merra2, file namie_h80_wind_2024.csv}"
+  d2_arg: "无"
+  code: "inputs/namie_renewables_ninja_2024.parquet 的 wind_pu"
+  enters: "间接（出力曲线）"
+  effective_value: "wind_pu 与 namie_h80_wind_2024.csv 逐值相同（不是 100 m 的 namie_wind_2024.csv，后者 CF 34.49%）；CF 32.325%（非闰年 2,831.6 h）"
+  verdict: cannot_verify
+  check: "compute_grid_econ.py：parquet_wind_pu_vs_namie_h80_wind_2024.csv"
+  notes: "所用文件已确认；80 m 只能从文件名得知，风机型号无元数据可查。"
+
+- id: wind_cf_validation
+  registry_value: null
+  d2_arg: "无"
+  code: "—"
+  enters: "不进入（对照说明）"
+  effective_value: "模型风电 CF 32.3%（非闰年）、32.29%（2024 全年 8,784 h）"
+  verdict: doc_only
+  check: "compute_grid_econ.py：wind_cf_by_year"
+  notes: ""
+
+- id: wind_scale_sensitivity
+  registry_value: "{base: 1.0, low: 0.75}"
+  d2_arg: "D2 未给 → --wind-scale 1.0；敏感性 wind075 = --wind-scale 0.75（make_reg1_batch.py L23）"
+  code: "model.py L238 wind_pu × renewable_scale × wind_scale，clip ≤ 1；argparse --wind-scale 默认 1.0；L237 光伏不乘 wind_scale"
+  enters: "约束：wind p_max_pu（L315）与 wind_year_capacity（L467）"
+  effective_value: "基准 32.3%；0.75 时 24.24%（最大值 0.991×0.75 < 1，clip 不起作用）；光伏不变"
+  verdict: match
+  check: "compute_grid_econ.py：wind_scale_075_cf_2025 = 24.243"
+  notes: "已实现；登记表 code_now『无此参数』与 model_entry『需新增』已过时，应更新为 L238。wind_scale 还进入 L274 的 wind_value_factor 输出（只是报告）。"
+
+- id: re_profile_time_mapping
+  registry_value: "JST，按 (月,日,时) 映射；1 月 1 日 00–08 时由 2025-01-01 同时段补齐"
+  d2_arg: "无"
+  code: "model.py L224–227（key = (month, day, hour)，interpolate + bfill + ffill）"
+  enters: "约束（出力曲线）"
+  effective_value: "ninja 文件覆盖 2024-01-01 09:00 至 2025-01-01 08:00（local_time），(1,1,0..8) 只来自 2025-01-01 行，不冲突；映射后无 NaN；光伏日内峰值 11 时"
+  verdict: match
+  check: "compute_grid_econ.py：nan_after_mapping = 0、pv_diurnal_peak_hour = 11"
+  notes: ""
+
+# ---------------------------------------------------------------------
+# 5. 负荷、水电与生物质
+# ---------------------------------------------------------------------
+- id: load_annual_trajectory
+  registry_value: "{2024: 50.266, 2050: 109.118} GWh/yr"
+  d2_arg: "无"
+  code: "model.py L306 Load fixed_load p_set = profiles.parquet load_MW"
+  enters: "约束：电力平衡（负荷）"
+  effective_value: "模型 2025 50.622、2030 62.266、2035 78.455、2040 86.549、2045 94.067、2050 109.118 GWh；峰值 7.62 → 16.42 MW；2024 年 50.266 GWh 只在 load_2024_2050.csv 中（模型从 2025 年开始）"
+  verdict: match
+  check: "compute_grid_econ.py：load_GWh_by_year、load_csv_2024_GWh"
+  notes: "非零负荷节点 3 个，与登记表一致。"
+
+- id: load_hourly_shape
+  registry_value: null
+  d2_arg: "无"
+  code: "inputs/profiles.parquet load_MW"
+  enters: "约束：电力平衡"
+  effective_value: "2050 年 / 2025 年逐时之比恒为 2.1555（形状不变）"
+  verdict: match
+  check: "compute_grid_econ.py：load_2050_over_2025_ratio"
+  notes: "与登记表 code_now 一致；曲线对应的日历年无法从文件判断。"
+
+- id: hydro_ukedo
+  registry_value: null
+  d2_arg: "无"
+  code: "model.py L316 hydro p_nom = Ukedo Gawa Hydro Max Capacity（1），无 marginal_cost；L591、L597–599 月度电量上限（hydro_monthly.parquet × 1000 MWh）"
+  enters: "约束：hydro_month_{y}_{m}"
+  effective_value: "1 MW，边际成本 0；月度上限 0.4464/0.5952/0.5208/0.5952/0.6696/0.744/0.744/0.744/0.744/0.6696/0.6696/0.5952 GWh，年合计 7.7376，可发 7.6896 GWh（6、9 月上限 > 720 h）；26 年相同"
+  verdict: match
+  check: "compute_grid_econ.py：hydro_monthly_2025_GWh、hydro_achievable_GWh_1MW、hydro_years_identical"
+  notes: ""
+
+- id: biomass_namie
+  registry_value: null
+  d2_arg: "无"
+  code: "model.py L324 Store biomass_stock（e_nom 100,000 GJ，e_initial 10,000 GJ）；L325 Link biomass（输入 20 GJ/h，效率 0.1 MWh/GJ → 2 MW）；L326–331 出售价（BiomassMarket 列）；L576–581 持有费 10 円/GJ·年"
+  enters: "目标函数（出售收入、持有费）与电力平衡"
+  effective_value: "2 MW、热耗 10 GJ/MWh、库存 10,000 GJ（最多 1 GWh）、持有费 10 円/GJ·年、出售价 2025 22.90、2050 33.30 円/GJ；CSV 只到 2050 年"
+  verdict: match
+  check: "compute_grid_econ.py：biomass"
+  notes: "--extend-to 2060 时 2051–2060 年出售价为 NaN（L328 map 无对应年份），见 horizon_extension_2060。"
+
+# ---------------------------------------------------------------------
+# 6. 规划期、时间与预见方式
+# ---------------------------------------------------------------------
+- id: planning_horizon
+  registry_value: [2025, 2050]
+  d2_arg: "--extend-to 未给 → 2050；--end-year 未给"
+  code: "model.py L634 YEND = extend_to、HEND = end_year or YEND；profiles.parquet 2025-01-01 至 2050-12-31"
+  enters: "模型范围"
+  effective_value: "2025–2050"
+  verdict: match
+  check: "compute_grid_econ.py：effective_args_D2.extend_to = 2050"
+  notes: ""
+
+- id: time_resolution
+  registry_value: "逐小时全年，合计 227,904 个快照"
+  d2_arg: "--days-per-year 0、--tsam-segments 0（默认）"
+  code: "model.py L218–221、L276"
+  enters: "模型范围"
+  effective_value: "227,904 个快照；2025 8,760 h、2028 8,784 h"
+  verdict: match
+  check: "compute_grid_econ.py：snapshots、hours_per_year_sample"
+  notes: ""
+
+- id: time_zone
+  registry_value: "JST，时间戳为小时起点"
+  d2_arg: "无"
+  code: "—"
+  enters: "数据约定"
+  effective_value: "风光取 ninja local_time（JST），光伏峰值 11 时；价格 ts 为 2024 年 JST（price_model 数据说明）；负荷时区与小时起点约定无法从文件判断"
+  verdict: cannot_verify
+  check: "pv_diurnal_peak_hour"
+  notes: "登记表自身也写明负荷时区待查。"
+
+- id: leap_year_handling
+  registry_value: "闰年用 2024-02-29；非闰年跳过；按日历日期映射"
+  d2_arg: "无"
+  code: "model.py L224–227、L231–236（按月日时取值）"
+  enters: "数据映射"
+  effective_value: "价格无缺失；非闰年 8,760 h、闰年 8,784 h；非闰年风电 CF 32.325% 对全年 32.285%"
+  verdict: match
+  check: "compute_grid_econ.py：price_missing_snapshots、hours_per_year_sample"
+  notes: ""
+
+- id: horizon_extension_2060
+  registry_value: 2060
+  d2_arg: "不在 D2；ext2060 = --extend-to 2060（make_reg1_batch.py L14、L23）"
+  code: "model.py L43–48 extend_years（复制 2050 行到 2051–2060，用于 profiles、hydro、固定充电曲线）；L50–54 load_annuity（2051+ 单位现值 = 2050 值 × 1.03^-(y-2050)）；L234 价格 min(year, 2050)；L115–116 W2050 用 YEND"
+  enters: "敏感性"
+  effective_value: "单位现值记录 156 → 216 行；2055 年 = 2050 年 × 0.8626；末年永续权重 W(2060) = 11.846；2052/2056/2060 年为 8,760 h"
+  verdict: doc_only
+  check: "compute_grid_econ.py：ext2060_*"
+  notes: "2051–2060 年生物质出售价为 NaN（marginal_cost NaN 在 linopy 中如何处理未核实，属 cannot_verify 细节）；登记表说『无实际影响』，建议在 L328 后加 ffill。"
+
+- id: foresight_base
+  registry_value: "完全预见，确定性"
+  d2_arg: "无"
+  code: "单次 n.optimize.solve_model（L653）覆盖全部年份"
+  enters: "模型结构"
+  effective_value: "完全预见"
+  verdict: match
+  check: "代码阅读"
+  notes: ""
+
+- id: foresight_robustness
+  registry_value: "{myopic: 5 年窗口, rolling: 10 年前瞻、5 年锁定}"
+  d2_arg: "不在 D2"
+  code: "src/rolling.py；model.py L449–455 fix_builds；L635 --fix-builds 与永续同时使用（且无 --h2-no-build-from）时 parser.error"
+  enters: "敏感性"
+  effective_value: "D2（永续）下无法直接运行，与登记表一致"
+  verdict: doc_only
+  check: "代码阅读 L635"
+  notes: "登记表行号 L619 现为 L635。"

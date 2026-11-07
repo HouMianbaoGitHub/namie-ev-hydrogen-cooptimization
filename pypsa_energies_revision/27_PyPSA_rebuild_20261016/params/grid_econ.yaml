@@ -1,0 +1,1027 @@
+# =====================================================================
+# 电网、市场、可再生能源、负荷与经济设定 参数登记表
+# （energies-4608521 返修，PyPSA 主模型 D2 默认设定）
+# 生成日期：2026-10-28
+#
+# 用途：记录有依据的最终采用值及其出处。今后检查参数一律以本表为准，
+#       不以代码中的现值为准。code_now 只供对照。
+# 状态：confirmed 已有作者决定或报告推荐且无矛盾；conflict 资料之间数值矛盾（各方数值并列，不作取舍）；
+#       no_source 查不到依据（value 为 null）；author_to_decide 需作者决定口径或取舍。
+#
+# 资料清单（按优先级）
+#  1. 作者决定
+#     - revision_round1/02_plan/D2_模型设定.md 第 1 节（设计意图，10-22 至 10-28）、第 5 节（检查记录）
+#     - revision_round1/02_plan/revision_master_plan.md（按日期追加，后者覆盖前者；
+#       关键条目：10-19 L204、10-20 L222、10-22 L254–258、10-23 L263–264、10-27 L289、10-28 L308–330）
+#  2. 报告（revision_round1/reports/）
+#     - 东北输配电费与发电侧课金.md
+#     - 东北出力制御现状与展望.md
+#     - 东北海上风电项目与连系线计划.md
+#     - 东北风光装机规划与需求.md
+#     - 送电接口扩容成本与上限.md
+#     - 高比例可再生电价情景与长时储能需求.md（价格地板部分）
+#     - 规划期末处理方法综述.md
+#     - 新基准参数与实现审阅.md、R1_5_parameter_sources.md（本表范围内无直接相关数值）
+#     - 电价模型：revision_round1/03_analysis/price_model/（build_future_prices.py、validate_price_model.py、
+#       validation_metrics.csv、future_prices_summary.csv、data/README.md）；
+#       装机路径 revision_round1/03_analysis/tohoku_penetration_beta.py / .csv（scenario = plan）
+#  3. 代码核查：revision_round1/02_plan/D2_settings/03_grid_market_re.md、01_investment.md（2026-10-28）
+#  4. 代码与输入（只读）
+#     - 27_PyPSA_rebuild_20261016/src/model.py（723 行版本；argparse L618，PRESET_NEWBASE L587–604，
+#       PRESET_PLEXOS L606–615，CAPEX 常数 L85–86）
+#     - 27_PyPSA_rebuild_20261016/src/default_D2_args.txt（D2 = --preset plexos + 该文件参数）
+#     - 27_PyPSA_rebuild_20261016/inputs/S*_parameters.json、S*_annuity.json、profile_summary.json
+#  5. 原稿正文（作为一手文献的转引来源）：revision_round1/04_manuscript/latex/
+#     （3_methods.tex、4_study_area_and_inputs.tex、appendix_A.tex、appendix_B.tex、references_no_auto_update.bib）
+#
+# 行号均指 model.py，另注明的除外。报告路径相对 revision_round1/。
+# 货币：除另注明外为名义日元；网费为税抜（不含消费税）。
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# 1. 经济设定
+# ---------------------------------------------------------------------
+- id: discount_rate
+  name: 社会折现率
+  value: 0.03
+  unit: "1/yr"
+  sensitivity: null
+  source: "MLIT (2023) Report on the Review of the Social Discount Rate（页码未核）; ANRE/METI (2025) Technical Specifications for Various Power Generation Sources by Cost Working Group（页码未核）。参考：OCCTO 第89回広域系統整備委員会 資料2（2025-05-30）p.48、p.51：長期展望 CBA 折现率 4%，同时考虑 1–2%"
+  report: "04_manuscript/latex/3_methods.tex L34（引用 MLIT_2023_DiscountRateReview、meti_cost_wg_2025）；reports/送电接口扩容成本与上限.md §4"
+  decided: "原稿沿用；2026-10 作者确认 D2 折现率 3%"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "3%；2025 年运行贴现 0.9709；W2050 = 15.9202"
+  model_entry: "model.py L115–116 W2050() = 1.03^-(YEND-2025)/0.03（PERP=True）；L297 discount = 1.03^-(y-2024)；L298 末年权重 = W2050；L301 snapshot_weightings.objective = weight×discount；L579 生物质持有费同一贴现；进入：目标函数：所有运行成本与收入的贴现权重；投资现值见 S*_annuity.json（3% 隐含）"
+  notes: "折现率没有命令行参数，敏感性需改代码。OCCTO CBA 的 4% 只作对照，不是本模型的设定。"
+
+- id: wacc_build_cost
+  name: 投资年金利率（WACC）
+  value: 0.03
+  unit: "1/yr"
+  sensitivity: null
+  source: "PLEXOS 12.0 Help, Generator.WACC / Main.LTPlan4：'the cost is also treated as a lump sum, if the Economic Life is entirely inside the planning horizon and the value of WACC is not the same as the Discount Rate'"
+  report: "reports/规划期末处理方法综述.md §2.1、§3 (e)；02_plan/D2_settings/01_investment.md 表 1『经济寿命』行"
+  decided: "原稿 PLEXOS 设定（WACC = 折现率），D2 沿用"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "风光单位现值 ÷ 1.03^-(y-2025) − 原造价 = 33.356 千円/kW（与建设年无关），即造价一次付清、FO&M 按 3% 永续，等价于 WACC = 折现率 = 3%"
+  model_entry: "model.py L155 annuity_pv 中 crf 用 args.wacc，仅 investment_method='annuity'（L172–173）时调用；PLEXOS 方法下投资系数直接取 S*_annuity.json（L50–54、L464）；进入：目标函数：新建机组投资现值系数（L464–465）"
+  notes: "WACC = 折现率时，30 年年金的现值等于一次性造价，所以寿命长短不改变期内成本（D2_模型设定.md §5，10-28 第 4 行）。"
+
+- id: investment_cost_method
+  name: 投资成本计法
+  value: "PLEXOS 方法：新建机组按建设年一次性造价现值计入（Build Cost × 1.03^-(y−2025)），FO&M 以永续现值计入；只替换氢能设备的造价部分"
+  unit: "-"
+  sensitivity: {alternative: "年金法（vintage annuity，--investment-method annuity）作对照"}
+  source: "PLEXOS 12.0 Help, Generator.BuildCost：'The Build Cost is treated as a lump sum incurred when the unit is built, or an annuity if Economic Life and WACC ... are defined'"
+  report: "02_plan/D2_模型设定.md §1『成本方法』；reports/规划期末处理方法综述.md §2.1"
+  decided: "2026-10-27 作者（D2：PLEXOS 的投资计算更接近厂商实际）；2026-10-28 修正 scale_annuity 换算错误"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "PLEXOS 方法生效；scale_annuity 只改了 78 行氢能记录（3 设备 × 26 年），风光 78 行与 S2_annuity.json 原值逐位相同"
+  model_entry: "model.py L172–173 investment_pv → scale_annuity（L56–85）；L210–211；L464–465 costs = ann[(obj,y)]/1e6/bsc，cost = Σ buildvar×costs；进入：目标函数：annual_build × 单位现值"
+  notes: "PLEXOS 方法下 --h2-capex、--h2-capex-scale、--h2-life、--h2-om-set、--re-fom-jpy-per-kw、--wacc 被静默忽略（01_investment.md M4）。新建设备期内不退役（2025–2050 无机组达到 30 年寿命）。"
+
+- id: discounting_convention
+  name: 贴现时点口径
+  value: {capex: "1.03^-(y−2025)，相当于建设年年初支付", operations: "1.03^-(y−2024)，相当于年末"}
+  unit: "-"
+  sensitivity: null
+  source: "原稿 PLEXOS LT Annuities Diagnostics（Model S2 LT 2025-2050，c14 Discount Factor，2025 年 = 0.9709）"
+  report: "02_plan/D2_settings/01_investment.md 表 1『运行贴现』『投资贴现』行、问题 L5"
+  decided: "与原稿 PLEXOS 一致，D2 沿用"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "运行 2025 年权重 0.9709 = 1.03^-1；风光 pv_per_unit/1.03^-(y-2025) − Build Cost CSV = 常数 33.356，证明投资按 1.03^-(y-2025) 贴现"
+  model_entry: "运行：model.py L297；投资：S*_annuity.json 的 pv_per_unit（prepare_inputs.py L42 读入），scale_annuity 中氢能同样用 d = 1.03^-(y-2025)（L76）；进入：目标函数"
+  notes: "不是错误，但论文方法部分应写明两种时点。"
+
+- id: end_treatment
+  name: 规划期末处理
+  value: "2026-10-30 起默认：截断到 2050 年（全技术年金，年金法残值，见 h2.yaml default_F5）；此前 F3/F4 为永续（2050 年条件无限重复），PLEXOS Limit Capital Cost Perpetuity by Economic Life = True"
+  unit: "-"
+  sensitivity: {robustness: "截断年金（见 end_treatment_robustness）", extension: "延长到 2060 年（见 horizon_extension_2060）"}
+  source: "PLEXOS 12.0 Help, LTPlan.EndEffectsMethod：'Perpetuity (value = 1) It is assumed that the last year repeats an infinite number of times'；LTPlan.LimitCapitalCostPerpetuitybyEconomicLife：'True (value = -1, default) Annuity calculation for capital cost extends beyond the end of the horizon, but the term of annuity is limited by the Economic Life.'"
+  report: "reports/规划期末处理方法综述.md §2.1、§3 (c)、§4.3；02_plan/D2_settings/01_investment.md S1"
+  decided: "2026-10-27 作者（D2：PLEXOS 方法 + 永续）；2026-10-28 作者：维持 D2 设定，在正文写明 Limit 选项及其含义，截断年金作稳健性"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "PERP = True；W2050 = 15.9202；2050 年占运行权重 47.76%"
+  model_entry: "model.py L112、L115–116、L298（2050 年快照权重 = W2050）、L579（生物质持有费）；投资侧：S*_annuity.json 中造价一次付清、FO&M 永续（无寿命末重置）；进入：目标函数：2050 年运行项权重；投资现值"
+  notes: "Limit…=True 的含义：资本年金只付到经济寿命末（风光、燃料电池、储罐为 30 年），而 2050 年的运行被永续；因此 2050 年后的设备更换不计成本，是『少计』而非重复计算（综述 §3 (c)）。在 WACC = 折现率时，一次性造价与按寿命年金的现值相同。2050 年（含永续）占运营时间权重 47.8%（03_grid_market_re.md 表 1）。原稿电解槽未设 Economic Life（PLEXOS 诊断表 c6 = 1），若关闭 Limit 选项须先补寿命（01_investment.md L3）。"
+
+- id: end_treatment_robustness
+  name: 期末处理稳健性检验（截断年金）的实现口径
+  value: "截断年金（2050 年按一年计，不计 2050 年后年金）"
+  unit: "-"
+  sensitivity: null
+  source: "PyPSA v1.4.0 pathway-planning 文档与 optimize.py::define_objective（Type II，截断年金）；GenX compute_overnight_capital_cost"
+  report: "reports/规划期末处理方法综述.md §1、§3 (I1)；02_plan/D2_settings/01_investment.md M3"
+  decided: 2026-10-28 作者同意分组建议（第 6 组）：截断检验改用年金方法实现，正文说明
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "D2 中不生效；make_attribend_batch.py L32 的 L5c_annuity_trunc 是登记表认可的组合，L30 L5a_plexos_trunc 与 make_attribrev_batch.py L30 r4_truncated 是不一致组合"
+  model_entry: "model.py L116（PERP=False 时 W2050 = 1.03^-(YEND-2024)）、L147–151 vintage_pv 截断；L634 PERP 设定。代码没有阻止『--no-perpetuity + PLEXOS 方法』组合（scale_annuity 不读 PERP）；进入：敏感性"
+  notes: "01_investment.md M3：『PLEXOS 方法 + --no-perpetuity』前后不一致（2040 年建燃料电池的 FO&M 多计约 229 千円/kW），且 attrib 结果显示该组合下不建氢。建议截断检验只用年金法（L5c 口径）。需作者确认。"
+
+- id: static_snapshot_method
+  name: 静态单年模型（--static-year）的成本与运行口径
+  value: "单一年份 Y 运行一次（8,760/8,784 h，不贴现）；装机按年化成本计：造价(Y) × CRF(r, 寿命) + 年 FO&M + 寿命内换堆（按 r 折现后用同一 CRF 年化）；储氢、EV、生物质库存首尾相接（e_cyclic）；建设上限只用总上限"
+  unit: "-"
+  sensitivity: "年份 2030/2035/2040/2050；r = --wacc（默认 0.03，可做 2%/5% 敏感性）"
+  source: "静态（overnight）容量规划的通行做法：GenX 单年模式、Sepulveda et al. 2021 Nature Energy（单一目标年设计空间）"
+  report: "02_plan/revision_master_plan.md 2026-10-29 静态快照"
+  decided: 2026-10-29 作者同意试做静态模式（不研究何时建，只看建多少、怎么用）
+  status: confirmed
+  verified: "2026-10-29 回归：不加 --static-year 时新旧代码 F3 S2 每年 3 天 NPV 完全相同（52.86223020857565）；静态 S2 2040 HiGHS optimal、自检通过"
+  code_now: "model.py static_annual_cost；寿命用 tech_life（电解槽 20/25/30/35 年按建设年插值、燃料电池 20、储罐 30、风光 30）；氢能造价用 --capex-*，FO&M 用 --h2-fom，换堆用 --h2-stack-repl（电解槽 40 年 > 寿命，故不换堆；燃料电池 10 年换一次）；风光造价用 CAPEX 字典与 --re-fom-jpy-per-kw"
+  model_entry: "model.py STATIC 全局；build() 中时间切片、discount=1、e_cyclic、ykey 总上限；ledger 与 v2g 影子价格的贴现系数取 1；进入：静态快照分析"
+  notes: "与路径模型不同，设备系统寿命在静态模式中起作用（进入 CRF）。npv_billion_JPY 在静态模式中是年净值（十亿円/年），不可与路径 NPV 直接比较"
+
+- id: h2_annuity_method
+  name: 氢能年金法（--h2-annuity）：路径模型中氢能投资按有限寿命年金计
+  value: "仅氢能三项（电解槽、燃料电池、储罐）：每台设备从建设年起每年付 年成本(建设年) = 造价 × (CRF(r, 寿命) × (1 + 寿命内换堆) + FO&M)，与静态模式同一公式；寿命到期退役（vintage 容量约束）；寿命跨过 2050 年的，到期后按 2050 年年成本永续更新（vintage_pv）。风电、光伏、电网扩容仍按 F3 的 PLEXOS 方法"
+  unit: "-"
+  sensitivity: "与 F3（PLEXOS 方法：一次性 capex + 永续 FO&M 和换堆，永续期内寿命到期后的更新不计成本）对比首建年份与氢能价值"
+  source: "等效年金法（GenX、PyPSA-Eur 的通行做法）；寿命见 h2_el_system_life、h2_fc_system_life、h2_tank_life"
+  report: "02_plan/revision_master_plan.md 2026-10-29 F3 年金法"
+  decided: "2026-10-29 作者同意：F3 年金法只改氢能成本口径（造价、FO&M、换堆与 F3 相同；寿命用登记表核实值），S1 不变"
+  status: confirmed
+  verified: "2026-10-29 回归（同为 8 线程 Gurobi）：不加 --h2-annuity 时新旧代码 F3 S2 每年 3 天 NPV 完全相同（52.862230208575575），annual_build 逐字节相同；静态 2040 S2 = 2.64898706728411（AOBA 2 线程 2.648987067284102）；--h2-annuity 3 天 S2 optimal、自检通过、账本残差 1e-10；check_all --remote ALL PASS（82 项）"
+  code_now: "model.py h2_unit_annual_cost（static_annual_cost 与 h2_annuity_pv 共用）；investment_pv 中 --h2-annuity 时氢能键改用 vintage_pv；build() 中氢能三项用 vintage 容量约束（到期退役），其余技术仍逐年累加"
+  model_entry: "model.py investment_pv、h2_annuity_pv、build() 装机约束；进入：F3 年金法算例（S2、CH）"
+  notes: "年金在寿命期内的现值 = 建设年支付 capex 的现值（基准都是 2025），两种方法只在寿命到期后的更新是否计成本上不同。2025–2030 年建的电解槽（寿命 20–25 年）会在 2050 年前退役，需要时由模型重建"
+
+- id: all_annuity_method
+  name: 全技术年金法（--all-annuity）：F3 成本下所有新建设备按有限寿命年金计，期末用永续年金或截断年金
+  value: "所有新建候选设备（陆上风电、大型光伏、屋顶光伏、电解槽、燃料电池、储罐）每台从建设年起每年付年成本，寿命到期退役（vintage 容量约束）。氢能年成本 = h2_unit_annual_cost（造价 × (CRF(r, 寿命) × (1 + 寿命内换堆) + FO&M)，与静态模式和 --h2-annuity 相同）；风光年成本 = 造价 × CRF(r, 30) + --re-fom-jpy-per-kw，造价由 F3 的 PLEXOS 单位现值反推：造价 = PV/1.03^-(y-2025) − 1,000 円/kW·年/0.03（PLEXOS 几何插值，与登记表 capex_onshore_wind 线性插值在中间年份相差约 1%）。期末：默认永续 → 寿命到期后按 2050 年年成本永续更新（永续年金）；加 --no-perpetuity → 年金只计到 2050 年、2050 年按一年计（截断年金 = 年金法残值）"
+  unit: "-"
+  sensitivity: "R1.3 期末处理对照：F3（PLEXOS 不对称永续）vs 永续年金 vs 截断年金（2050、2060）；情景 S1、S2、C0、CH"
+  source: "等效年金法；截断年金即 PyPSA 多期规划（Type II）与 GenX 的期末口径，见 end_treatment_robustness；永续年金见 h2_annuity_method"
+  report: "02_plan/revision_master_plan.md 2026-10-29 全技术年金"
+  decided: "2026-10-29 作者：永续年金与截断年金须对所有未来投资设备一致采用年金（不只氢能），按 F3 设定各跑一组；同日加截断到 2060 年一组"
+  status: confirmed
+  verified: "2026-10-29 回归（8 线程 Gurobi，每年 3 天）：不加 --all-annuity 时 F3 S2 NPV = 52.862230208575575，与改动前相同；--all-annuity 永续 S2 optimal（26.761）、--all-annuity --no-perpetuity S2 optimal（15.527），自检通过、账本残差 ≤2e-10；截断首建早于永续（2043 vs 2048），与早建高年金在截断下不计 2050 后部分一致；--all-annuity --no-perpetuity --extend-to 2060 S2 3 天 optimal（17.088）、自检通过，装机延续到 2060，同日加测不加选项 NPV 仍为 52.862230208575575"
+  code_now: "model.py investment_pv 中 args.all_annuity 分支；build() 中 investment_method=='annuity' or all_annuity 时所有候选技术用 vintage 容量约束；main() 参数校验（不与 --static-year、--investment-method annuity、--h2-annuity、--h2-cost-flat-from、--fix-builds 组合；可与 --extend-to 组合：2051 年起按 2050 年条件与造价，截断年金计到延长后的末年）"
+  model_entry: "model.py investment_pv、vintage_pv、build() 装机约束；进入：R1.3 期末处理对照算例"
+  notes: "电解槽换堆周期 40 年 > 寿命 20–35 年，年金法下不换堆（F3 中按永续每 40 年计 11%）；燃料电池 20 年寿命内第 10 年换堆一次。现有风光仍按 existing_re_retirement 不退役。电网扩容在 F3 中不启用。"
+
+- id: currency_price_base_year
+  name: 货币与价格基准年
+  value: 2024
+  unit: "JPY（年份待定）"
+  sensitivity: null
+  source: null
+  report: "无报告给出统一基准年。现有各项口径不一：接口扩容造价按 2025 年价格（送电接口扩容成本与上限.md §5.3）；网费按 2026-11 起费率、税抜（东北输配电费与发电侧课金.md）；电价为 JEPX 2024 名义值；风光造价沿用原稿逐年值（基准年未写）"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：统一写为 2024 年価格（実質）
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "代码中无基准年概念；输入为各自口径的名义值"
+  model_entry: "无入口；grid_pv_per_mw 注释写 'million JPY, 2024'（L95）。所有成本直接相加，不做通胀换算；进入：不进入模型（正文口径）"
+  notes: "需作者决定是否统一为某一年的实际价格，或在正文声明为名义值且不做通胀调整。"
+
+- id: capex_onshore_wind
+  name: 陆上风电造价路径
+  value: {2025: 293, 2030: 248, 2040: 177, 2050: 127}
+  unit: "千円/kW（锚点年；中间年几何插值）"
+  sensitivity: null
+  source: "原稿正文 Appendix A Table A1 引 ANRE/METI (2025) Cost Working Group Technical Specifications 与 Hydrogen Council (2020)（页码未核，数值与一手资料的对应关系未核实）"
+  report: "04_manuscript/latex/appendix_A.tex Table A1；4_study_area_and_inputs.tex L50；02_plan/D2_settings/01_investment.md 表 2、问题 L2"
+  decided: 2026-10-28 作者同意分组建议（第 3 组）：沿用原稿造价路径，出处写原稿论文所引文献
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "建设年造价（现值÷贴现因子−FO&M 部分）：2025 293.35、2030 248.00、2035 209.66、2040 177.24、2050 126.68 千円/kW；逐年比值恒为 0.966968（几何插值）；单位现值（2025 年币值）2025 326.71、2030 242.70、2040 135.18、2050 76.43 千円/kW"
+  model_entry: "model.py L50–54 load_annuity；L210–211；L464 costs（NewOnshoreWInd OnshoreWind，每单元 40,000 kW = UNIT_KW L110，bsc 40）；进入：目标函数：annual_build × 单位现值"
+  notes: "D2_模型设定.md §1 未写风光造价，01_investment.md 建议补『沿用原稿 PLEXOS 逐年值』。需作者确认是否沿用，并补核 METI 一手页码。"
+
+- id: capex_pv_utility
+  name: 地面光伏造价路径
+  value: {2025: 189, 2030: 172, 2040: 142, 2050: 118}
+  unit: "千円/kW（锚点年；中间年几何插值）"
+  sensitivity: null
+  source: "原稿正文 Appendix A Table A1 引 ANRE/METI (2025) Cost Working Group（页码未核）"
+  report: "04_manuscript/latex/appendix_A.tex Table A1；02_plan/D2_settings/01_investment.md 表 2"
+  decided: 2026-10-28 作者同意分组建议（第 3 组）：沿用原稿造价路径，出处写原稿论文所引文献
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2025 189.15、2030 172.00、2035 156.41、2040 142.23、2050 117.61 千円/kW；逐年比值 0.981175；单位现值 2025 222.50、2050 72.10 千円/kW"
+  model_entry: "同上（NewUtilityPV UtilityPV，每单元 20,000 kW）；进入：目标函数"
+  notes: "同 capex_onshore_wind。D2 基准各情景均未新建光伏。"
+
+- id: capex_pv_rooftop
+  name: 屋顶光伏造价路径
+  value: {2025: 265, 2030: 234, 2040: 182, 2050: 141}
+  unit: "千円/kW（锚点年；中间年几何插值）"
+  sensitivity: null
+  source: "原稿正文 Appendix A Table A1 引 ANRE/METI (2025) Cost Working Group（页码未核）"
+  report: "04_manuscript/latex/appendix_A.tex Table A1；02_plan/D2_settings/01_investment.md 表 2"
+  decided: 2026-10-28 作者同意分组建议（第 3 组）：沿用原稿造价路径，出处写原稿论文所引文献
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2025 265.39、2030 234.00、2035 206.32、2040 181.91、2050 141.42 千円/kW；逐年比值 0.975135；单位现值 2025 298.75、2050 83.48 千円/kW"
+  model_entry: "同上（NewRooftopPV RooftopPV，每单元 20 kW）；进入：目标函数"
+  notes: "同 capex_onshore_wind。"
+
+- id: re_fom
+  name: 风光固定运维费（FO&M）
+  value: 1000
+  unit: "円/kW·年"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/01_investment.md 问题 L2（『是否偏低…待确认，本次没有核对来源』）"
+  decided: 2026-10-28 作者同意分组建议（第 3 组）：沿用原稿 1,000 円/kW·年
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "FO&M 部分 = 33.356 千円/kW（永续现值，按建设年计）= 1,000/0.03 × 8,766/8,760，相当于 1,000.7 円/kW·年"
+  model_entry: "包含在 S*_annuity.json 的 pv_per_unit 中（PLEXOS c15/c16）；现有机组的 FO&M Charge 在 model.py 中无任何引用；进入：目标函数（新建机组，随投资现值）；现有机组不进入"
+  notes: "建议对照調達価格等算定委員会或 METI コスト検証WG 的运转维持费假设补出处。newbase 曾用 2,193（1,000 + 発電側課金 kW 部分 1,193），D2 不计网费，故不加。"
+
+- id: re_lifetime
+  name: 风光技术寿命与经济寿命
+  value: 30
+  unit: "yr"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/01_investment.md 表 1『经济寿命』行；D2_模型设定.md §5（10-28）"
+  decided: 2026-10-28 作者同意分组建议（第 3 组）：沿用原稿 30 年（期内不退役）
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "S1–S4 风、光、屋顶均为 30/30；PLEXOS 方法下累计容量不退役（L446–448）"
+  model_entry: "inputs/S*_parameters.json Technical Life / Economic Life = 30/30；model.py L130 tech_life 只用于年金法；PLEXOS 方法下寿命只体现在原稿现值中；进入：间接（PLEXOS 现值）"
+  notes: "没有找到 30 年的文献出处。D2 下 2025–2050 年新建机组都不到 30 年，且 WACC = 折现率，所以寿命不影响期内成本；只通过 Limit 选项影响 2050 年后的不对称（见 end_treatment）。"
+
+- id: existing_re_retirement
+  name: 现有风光机组是否按寿命退役
+  value: false
+  unit: "-"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『现有风电』行与『待确认』节"
+  decided: 2026-10-28 作者同意分组建议（第 3 组）：期内不退役（寿命 30 年 > 规划期）
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "现有 103 MW 光伏、38 MW 风电 2025–2050 全期在役"
+  model_entry: "model.py L310–311 fixed_solar / fixed_wind 为常数，对所有年份相同；L467、L471 容量约束 = 常数 + 新建累计；进入：约束：wind_year_capacity、solar_year_capacity（S0 无新建候选时为 Generator p_nom）"
+  notes: "现有光伏约 2018–2020 年投运，按 30 年寿命在 2048–2050 年到期。原稿与返修稿都未处理，需作者决定。"
+
+- id: generator_side_kw_charge
+  name: 発電側課金 kW 部分（作为新建风光固定成本附加）
+  value: 0
+  unit: "円/kW·年"
+  sensitivity: {candidate: "1,193（无折扣）/ 756（割引 A-1）；现有 FIT/FIP 电源在调达期间豁免"}
+  source: "東北電力ネットワーク「託送供給等約款 料金一覧」（8-1_067.pdf）p.3：系統連系受電サービス 基本料金 109.37 円/kW·月（税込，2026-11-01 起），割引 A-1 −40.03；東北電力NW「発電側課金の概要」（FIT/FIP 豁免条款）"
+  report: "reports/东北输配电费与发电侧课金.md §0、§3.1–3.3、§5"
+  decided: "2026-10-27 作者：D2 不计网费（审稿人未提出）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "0"
+  model_entry: "PLEXOS 方法下无 kW 部分入口；fees 敏感性只改 L319、L321 的电量部分；进入：不进入"
+  notes: "若网费敏感性要与报告口径完整一致，需在 PLEXOS 方法下另加 kW 部分（每 kW 永续现值约 1,193/0.03 = 39.8 千円），目前未实现。"
+
+# ---------------------------------------------------------------------
+# 2. 电网接口与网费
+# ---------------------------------------------------------------------
+- id: grid_interface_mw
+  name: 浪江与东北电网的接口容量
+  value: 118
+  unit: "MW（买入、卖出双向）"
+  sensitivity: {reinforced: [150, 200]}
+  source: "東北電力ネットワーク「系統の予想潮流等に関する情報」福島県 送電線一覧（2026-07-03 作成），sys_capa_local06_line_202607_02.csv：652A 浪江線 66 kV×2 回線，設備容量 216 MW，運用容量 118 MW（熱容量），予想潮流 −215 MW，N-1電制可適用量 62 MW"
+  report: "reports/送电接口扩容成本与上限.md §0 第 1 条、§2.1 表 2-1、§6 第 10 行"
+  decided: "2026-10-19 作者（基准 118 MW）；2026-10-27 D2 确认（R1.6a）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "118 MW（买、卖），S0–S4 相同；PLEXOS 文件中的 150 MW 被覆盖"
+  model_entry: "model.py L317 market = args.market_limit_mw；L318 gmax = 0；L319 import p_nom = market + gmax；L320–321 export p_nom = export_limit + gmax；进入：约束：import / export Generator p_nom"
+  notes: "同一线路预想逆潮流 −215 MW、空容量『–』，已被其他电源占满；把 118 MW 全部作为浪江的买卖接口是上界假设，正文须限定。bib 中 tohoku2025fukushima 应更新为 2026-07-03 版并补 URL。原稿正文 4_study_area_and_inputs.tex L13 与 3_methods.tex L36、L113 仍写 150 MW 基准，需改。福島送電共用送電線接 TEPCO PG，不计入本接口。"
+
+- id: grid_reinforcement_levels
+  name: 接口扩容敏感性的总容量
+  value: [150, 200]
+  unit: "MW（扩容后总接口）"
+  sensitivity: {high: 300}
+  source: "東北電力NW 予想潮流等一覧表（2026-07-03）：双回热容量 216 MW；送出方向 N-1 電制可適用量 +62 MW（约 180 MW）；同地区 TEPCO 66 kV 双回线设备容量 230–258 MW（TEPCO PG 福島県予想潮流一覧 2026-09-02）"
+  report: "reports/送电接口扩容成本与上限.md §2.2、§5.4 第 2 条（建议扫描 118/150/200/300 MW）"
+  decided: "2026-10-19 作者（reinforcement cases total 150/200/300 MW）；本表任务说明列 150、200"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "D2 中 gmax = 0；敏感性批次采用『内生扩容、上限 32/82 MW』的做法"
+  model_entry: "model.py L540–550：grid_build 内生变量，上限 gmax，L549–550 import/export ≤ market + 累计扩容；进入：敏感性（内生扩容）"
+  notes: "200 MW（66 kV 改建级）与 300 MW（154 kV 新路径）是工程推断，UNVERIFIED。须明确敏感性是『外生给定 150/200 MW』还是『内生扩容、上限 32/82 MW 并计成本』；两种做法结果不同。"
+
+- id: grid_reinforcement_capex
+  name: 接口扩容造价
+  value: 105000
+  unit: "円/kW（2025 年价格）"
+  sensitivity: {low: 40000, high: 160000}
+  source: "OCCTO「送変電設備の標準的単価」（2026-03-10，第11回計画評価及び検証小委員会 資料1 別紙）シート4（77 kV 鉄塔2回線 1.4～6.7 億円/km，中位 4.1）、シート6（77 kV GIS 引出 0.8～2.9 億円/回線）、シート7（275 kV GIS 変圧器 18.3～36.1 億円/台）"
+  report: "reports/送电接口扩容成本与上限.md §5.1、§5.3"
+  decided: "2026-10-19 作者采用（newbase 预设）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=mismatch"
+  code_now: "D2 参数下 0 円/kW → 每 MW 扩容现值 0；按登记表四个值（105,000、1.9%、28 年、3%）计算，2031 年建设每 MW 现值 211.9 百万円（年值 7.59 百万円/MW）"
+  model_entry: "model.py L94–99 grid_pv_per_mw = capex×1000×(crf+fom)/1e6 × annuity_factor(y)；L546–547 进入目标函数（仅 gmax>0）；进入：目标函数：grid_build × grid_pv_per_mw（仅扩容情景）"
+  notes: "构成：66 kV 双回改建 10 km + 4 个 GIS 间隔 + 1 台 275/66 kV 变压器 + 15% 调查用地设计（15% 与线路长度 10 km 均为 UNVERIFIED 假设）。在 D2 下做内生扩容必须显式给出该值，否则免费（01_investment.md M4）。报告指出扩容边际收益约 1.2 十亿円/MW，远高于成本，结果由上限决定。"
+
+- id: grid_reinforcement_fom
+  name: 接口扩容固定运维费率
+  value: 0.019
+  unit: "造价比例/年"
+  sensitivity: {low: 0.015, high: 0.023}
+  source: "OCCTO 第29回広域系統整備委員会 資料1-(2)（2018-01-15）p.11：送電線 1.5 %/年，FC 及変電所関連設備 2.3 %/年"
+  report: "reports/送电接口扩容成本与上限.md §4、§5.3（按线路 54%、变电 46% 加权 = 1.87%）"
+  decided: "2026-10-19 作者采用（newbase 预设）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=mismatch"
+  code_now: "0.01/年"
+  model_entry: "model.py L98；进入：目标函数（仅扩容情景）"
+  notes: ""
+
+- id: grid_reinforcement_life
+  name: 接口扩容资产寿命
+  value: 28
+  unit: "yr（3% 下的等效单一寿命）"
+  sensitivity: {low_cost: "60/45（期待年数）", high_cost: 22}
+  source: "減価償却資産の耐用年数等に関する省令 別表第一（送電線 36 年）、別表第二 31号（変電 22 年）；OCCTO 第89回 資料2（2025-05-30）p.48、p.51（架空線期待年数 60 年，交流変電 40–50 年）"
+  report: "reports/送电接口扩容成本与上限.md §4、§5.3"
+  decided: "2026-10-19 作者采用（newbase 预设）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=mismatch"
+  code_now: "40 年（crf 0.04326，登记表 28 年为 0.05329）"
+  model_entry: "model.py L96–97 crf = w/(1-(1+w)^-L)；进入：目标函数（仅扩容情景）"
+  notes: "grid_pv_per_mw 用年金乘 annuity_factor（含永续），即扩容按年金无限期重置计价，与 PLEXOS 方法下其他设备的『一次付清 + Limit』口径不同，写方法时需说明。"
+
+- id: grid_reinforcement_start_year
+  name: 接口扩容最早可用年
+  value: 2031
+  unit: "year"
+  sensitivity: {early: 2029, late: 2035}
+  source: "福島送電「共用送電線網整備事業の完了について」（2024-08-02）：2017-09 签约→2020-01 首批运用→2024-07 全部竣工；OCCTO 第89回 資料4（2025-05-30）：東北東京間連系線 2027-11 完成"
+  report: "reports/送电接口扩容成本与上限.md §5.3（判断值，UNVERIFIED）"
+  decided: "2026-10-19 作者采用（newbase 预设）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=mismatch"
+  code_now: "2030"
+  model_entry: "model.py L541 gup = gmax if y >= grid_start_year else 0；进入：约束：grid_build 上限（仅扩容情景）"
+  notes: "报告自述为判断值（另加 1–2 年接続検討与用地手续）。"
+
+- id: grid_reinforcement_max_mw
+  name: 接口扩容上限（叠加在 118 MW 之上）
+  value: 82
+  unit: "MW（总接口 200 MW）"
+  sensitivity: {low: 62, high: 182}
+  source: "東北電力NW 予想潮流等一覧表（2026-07-03）：浪江線 N-1電制可適用量 62 MW；南相馬 275/66 kV 運用容量 228 MW、予想潮流 −442 MW、N-1電制可適用量 0"
+  report: "reports/送电接口扩容成本与上限.md §2.2、§5.3"
+  decided: "2026-10-19 作者（扩容情景至 200/300 MW）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "D2 = 0（不扩容，与 grid_interface_mw 基准 118 MW 一致）；grid200 = 82"
+  model_entry: "model.py L318 gmax；L541–543 grid_build、grid_installed 上限；进入：约束（仅扩容情景）"
+  notes: "82 MW 依据工程推断（66 kV 改建后 N-1 约 200 MW），UNVERIFIED；62 MW 仅适用于送出方向。"
+
+- id: network_import_adder
+  name: 进口网费加价（托送费）
+  value: 0
+  unit: "円/kWh（税抜）"
+  sensitivity: {fees: 2.0, range: [1.2, 3.0]}
+  source: "東北電力ネットワーク プレスリリース「託送供給等約款の変更届出について」（2026-09-11）別紙 p5：特別高圧 平均単価 2.05 円/kWh（税抜，2026-11-01 起）；託送供給等約款 料金一覧 p2：特別高圧標準接続送電サービス 基本料金 531.30 円/kW·月、電力量料金 0.97 円/kWh（税込）"
+  report: "reports/东北输配电费与发电侧课金.md §0、§2.3"
+  decided: "2026-10-27 作者：D2 不计网费（审稿人未提出）；2/1 円/kWh 为敏感性"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "0 円/kWh；fees 算例 +2 円/kWh"
+  model_entry: "model.py L319 import marginal_cost = (price_JPY_MWh + adder×1000)/1e6；进入：目标函数：进口成本"
+  notes: "网费为 0 时进出口同价，毛进出口不唯一，只能报告逐时净流量（03_grid_market_re.md M3）。D2 S2 2049 年电解槽耗电约 1/3 来自净进口，对网费敏感；fees 算例显示氢能价值 AH/BH/CH 由 4.58/4.24/3.62 降至 2.03/1.65/1.19（修正前造价）。"
+
+- id: network_export_deduction
+  name: 出口扣减（発電側課金电量部分 + 平衡成本）
+  value: 0
+  unit: "円/kWh（税抜）"
+  sensitivity: {fees: 1.0, range: [0.3, 2.0]}
+  source: "東北電力NW 託送供給等約款 料金一覧 p3：系統連系受電サービス 電力量料金 0.33 円/kWh（税込，2026-11 起）= 0.30 税抜；資源エネルギー庁「FIP制度当初のバランシングコストについて」（2021-01-12 合同会議 資料1）PDF p.8：2026 年度 0.7 円/kWh"
+  report: "reports/东北输配电费与发电侧课金.md §0、§5"
+  decided: "2026-10-27 作者：D2 不计网费；2/1 円/kWh 为敏感性"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "0 円/kWh；fees 算例 −1 円/kWh"
+  model_entry: "model.py L321 export marginal_cost = −(price_JPY_MWh − deduction×1000)/1e6，sign = −1；进入：目标函数：出口收入"
+  notes: "2024 年以后新 FIP 电源的バランシングコスト修订值 UNVERIFIED。"
+
+- id: renewable_surcharge
+  name: 再エネ賦課金
+  value: "不计入"
+  unit: "-"
+  sensitivity: null
+  source: "経済産業省 ニュースリリース 2026-03-19：2026 年度 4.18 円/kWh（一手页面未能读取，二次来源一致）"
+  report: "reports/东北输配电费与发电侧课金.md §1.4（转移支付，系统成本口径不计）"
+  decided: "2026-10-20 作者（master plan：再エネ賦課金 excluded (transfer)）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "0"
+  model_entry: "model.py 无相应项（L319、L321 只有批发价与网费）；进入：不进入"
+  notes: ""
+
+# ---------------------------------------------------------------------
+# 3. 东北电价模型（外生）
+# ---------------------------------------------------------------------
+- id: model_boundary
+  name: 模型边界
+  value: "浪江单节点；以与东北电网的接口为边界；东北电价与区域弃电外生"
+  unit: "-"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_模型设定.md §1『模型边界』"
+  decided: "2026-10-22 作者（算了东京就得算北海道，边界必须在接口）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "单母线 + 外生价格与弃电率"
+  model_entry: "model.py L305 单一 electricity 母线；L319、L321 import/export 两个 Generator；电价与 curt_rate 来自 --price-series（L228–236）；进入：模型结构"
+  notes: "作者决定，不需文献出处。"
+
+- id: price_series
+  name: 东北电价序列
+  value: "东北发电组合电价（规划组合，参考年 2024），inputs/tohoku_price_plan_ref2024.parquet"
+  unit: "円/kWh（逐时，2025–2050）"
+  sensitivity: null
+  source: "JEPX スポット市場 取引結果 エリアプライス東北（FY2023–2025）；東北電力ネットワーク でんき予報 エリア需給実績（eria_jukyu_YYYYMM_02.csv、juyo_YYYY_tohoku_nQ.csv）"
+  report: "03_analysis/price_model/build_future_prices.py、data/README.md；revision_master_plan.md L255"
+  decided: "2026-10-22 作者（唯一默认价格，除非审稿人要求不另设价格情景）；D2_模型设定.md §1（10-24）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "与 price_model/future_prices.parquet 完全相同；227,904 个快照全部映射，无缺失"
+  model_entry: "model.py L228–236：键 (min(year, ylast), 月, 日, 时)，ylast = 2050；price×1000 → 円/MWh；L239 × price_scale；进入：目标函数：import/export marginal_cost（L319、L321）"
+  notes: "价格映射键为 (min(year,2050), 月, 日, 时)；2051 年后取 2050 年价格。"
+
+- id: price_reference_year
+  name: 电价模型参考年（天气与市场）
+  value: 2024
+  unit: "calendar year（JST）"
+  sensitivity: null
+  source: "同 price_series"
+  report: "03_analysis/price_model/build_future_prices.py L19；revision_master_plan.md L255"
+  decided: "2026-10-22 作者"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2024"
+  model_entry: "build_future_prices.py L19 REF = 2024；价格文件 ts 为 2024 年；进入：间接（价格文件）"
+  notes: "与浪江风光出力同为 2024 年，天气同步。"
+
+- id: price_plan_portfolio
+  name: 东北规划电源组合与需求路径（电价模型输入）
+  value:
+    pv_GW: {2025: 9.82, 2030: 12.95, 2035: 16.16, 2050: 33.8}
+    onshore_GW: {2025: 2.271, 2030: 3.132, 2035: 4.672, 2050: 18.2}
+    offshore_GW: {2025: 0.139, 2030: 2.608, 2035: 4.553, 2050: 8.8}
+    demand_TWh: {2025: 79.6, 2030: 79.1, 2035: 78.0, 2050: 116.0}
+  unit: "GW / TWh（中间年线性插值，见 tohoku_penetration_beta.csv）"
+  sensitivity: null
+  source: "OCCTO「2026年度供給計画の取りまとめ」（2026-03-30）図3-3 p.20（东北光伏 FY2030 1,295、FY2035 1,616 万 kW；风电合计 574、728 万 kW）；OCCTO マスタープラン 資料編（第23回 資料1-3，2023-03）p.45（2050 东北陆上风电 18,246、海上 8,824、光伏 33,780 MW）、p.44（需求配赋，推算约 116 TWh）；OCCTO「需要想定（2026年度）」（2026-01-21）別添表3-1 p.16；資源エネルギー庁 次世代電力系統WG 第12回 資料1-1（2026-08-06）p.8（FY2025 末光伏 982、风电 241 万 kW）"
+  report: "reports/东北风光装机规划与需求.md §1、§4、§5、§6；reports/东北海上风电项目与连系线计划.md §4.2；03_analysis/tohoku_penetration_beta.py"
+  decided: "2026-10-22 作者（规划组合 plan portfolio）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2025/2030/2035/2050 各值与登记表逐位相同"
+  model_entry: "build_future_prices.py L90–97 读 tohoku_penetration_beta.csv（scenario = plan）；进入：间接（价格文件）"
+  notes: "陆上风电 = 供給計画风电合计 − 已选定海上风电（2035 年后线性插值到 2050 年 18.2 GW）；海上风电取项目清单的『计划值』（含 Round 1 再公募与有望区域），不是『延迟调整值』，因此 2035 年风电合计 9.2 GW 高于供給計画的 7.28 GW。2050 年需求 116 TWh 为报告按配赋规则推算（113–126 TWh）。供給計画的风电展望历史上系统性偏高（风光报告 §4.1）。"
+
+- id: price_offshore_shape
+  name: 东北海上风电出力曲线（电价模型）
+  value: "Renewables.ninja 2024，MERRA-2，Vestas V164 8 MW，110 m，7 个海域按容量加权"
+  unit: "p.u."
+  sensitivity: null
+  source: "Renewables.ninja（Staffell & Pfenninger 2016, Energy 114:1224–1239）；海域与容量见 reports/东北海上风电项目与连系线计划.md §2"
+  report: "03_analysis/price_model/build_future_prices.py L75–85"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=cannot_verify"
+  code_now: "权重 315/514/415/730/915/684/950 MW（合计 4,523），与登记表相同；风机型号与轮毂高度未存于数据文件"
+  model_entry: "build_future_prices.py L78–85 SITES 权重；进入：间接（价格文件）"
+  notes: "OCCTO 第76回 資料1-1 p.5 脚注同样用 Renewables.ninja 设定洋上风电利用率 36%。"
+
+- id: price_onshore_pv_shape
+  name: 东北陆上风电、光伏、需求的逐时形状（电价模型）
+  value: "东北 NW 2024 年实绩（加回出力制御量）÷ 2024 年平均装机：光伏 9.05 GW、陆上风电 2.24 GW"
+  unit: "p.u."
+  sensitivity: null
+  source: "東北電力ネットワーク エリア需給実績 CSV（2024 年）；装机为 FY2023/FY2024 年末值平均（次世代電力系統WG 第12回 資料1-1 p.8）"
+  report: "03_analysis/price_model/build_future_prices.py L20、L72–74；reports/东北风光装机规划与需求.md §3"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "PV_REF_GW 9.05、WIND_REF_GW 2.24；复算 CF 13.61%、23.51%"
+  model_entry: "build_future_prices.py L20、L73–74；进入：间接（价格文件）"
+  notes: ""
+
+- id: price_net_export_fixed
+  name: 东北净外送（固定为 2024 年逐时值）
+  value: "2024 年逐时实绩（年合计 35.2 TWh），扩容后按 interconnector_extra_export 放大"
+  unit: "MW（逐时）"
+  sensitivity: null
+  source: "東北電力ネットワーク エリア需給実績 2024 年『連系線』列（东北全部连系线净合计，负值为送出）"
+  report: "03_analysis/price_model/build_future_prices.py L4–7、L33；data/README.md §5"
+  decided: "2026-10-22 作者（净出口固定为 2024 年，随连系线扩容放大）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "35.24 TWh"
+  model_entry: "build_future_prices.py L33、L87；进入：间接（价格文件）"
+  notes: "水力、地热、生物质、抽水蓄能、蓄电池同样固定为 2024 年逐时值，没有反馈。"
+
+- id: interconnector_extra_export
+  name: 东北—东京连系线扩容带来的额外外送能力
+  value: {2027: 0, 2028: 1920, 2030: 2720, 2032: 3670, 2050: 3670}
+  unit: "MW（相对 2024 年 5.73 GW 的增量；中间年线性插值）"
+  sensitivity: null
+  source: "OCCTO「東北東京間連系線増強後の運用容量の見通しと対応」第85回広域系統整備委員会 資料2（2024-12-25）：2027-11 完成后实际运用容量约 680–850 万 kW，2030 年度以后约 780–910 万 kW，2032-01 前后约 920–960 万 kW（取中点减 573 万 kW）"
+  report: "reports/东北海上风电项目与连系线计划.md §5.2；03_analysis/price_model/build_future_prices.py L23–26"
+  decided: "2026-10-22 作者（随连系线扩容放大）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "DATC 相同（另含 2024: 0）；2050 年额外外送 15.76 TWh"
+  model_entry: "build_future_prices.py L26 DATC、L98–100；进入：间接（价格文件）"
+  notes: "マスタープラン的 HVDC（日本海路线 400 万 kW 等）未计入，投运年 UNVERIFIED。额外外送只在 thermal need < 5,500 MW 时启用，且不超过把 thermal need 抬回 5,500 MW。2050 年额外外送 15.8 TWh。"
+
+- id: interconnector_split_threshold
+  name: 连系线满载（东北与东京分断）的 thermal need 阈值
+  value: 5500
+  unit: "MW"
+  sensitivity: null
+  source: "JEPX FY2024–25 东北≠东京分断小时与东北 NW 需給実績（本项目计算：thermal need 低于该值时 ≥50% 小时分断）"
+  report: "03_analysis/price_model/build_future_prices.py L27–29；revision_master_plan.md L255"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "5500 MW"
+  model_entry: "build_future_prices.py L27 T_SPLIT；进入：间接（价格文件）"
+  notes: "由数据拟合的判断阈值，不是官方值。"
+
+- id: price_must_run_thermal
+  name: 东北火电最低出力（must-run）
+  value: 2491
+  unit: "MW"
+  sensitivity: null
+  source: "東北電力NW エリア需給実績 FY2023–2025 火力出力的 0.1% 分位数（本项目计算）"
+  report: "03_analysis/price_model/build_future_prices.py L42；revision_master_plan.md L255（2.49 GW）"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2,491.2 MW"
+  model_entry: "build_future_prices.py L42 T_MIN = fit.tohoku_thermal.quantile(0.001)；进入：间接（价格文件）"
+  notes: "thermal need < T_MIN 时价格 = 0.01 円/kWh，差额记为区域弃电。"
+
+- id: price_supply_curve
+  name: 电价供给曲线与月-时修正
+  value: "thermal need 按 250 MW 分箱取 JEPX 东北价中位数（每箱 ≥20 h，区间外取端值），加月×时中位残差"
+  unit: "円/kWh"
+  sensitivity: null
+  source: "JEPX エリアプライス東北 与 東北電力NW エリア需給実績，FY2023–FY2025（FY2022 燃料危机年排除）"
+  report: "03_analysis/price_model/build_future_prices.py L36–57"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "同登记表"
+  model_entry: "build_future_prices.py L36–41（分箱 250、counts ≥ 20）、L45–47（np.interp 区间外取端值）、L50–51（月×时中位残差）、L54–57；进入：间接（价格文件）"
+  notes: ""
+
+- id: price_nuclear_tohoku
+  name: 东北核电出力（电价模型）
+  value: {capacity_GW: 0.825, cf: 0.72, from_year: 2025}
+  unit: "GW / -"
+  sensitivity: null
+  source: "女川 2 号机 82.5 万 kW（日本原子力産業協会 会長コラム 2024-12-23 确认已重启）；FY2025 实绩核电发电 5.21 TWh（東北電力NW エリア需給実績）；东通 1 号未计入"
+  report: "reports/东北风光装机规划与需求.md §1、§2；03_analysis/price_model/build_future_prices.py L21"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "0.825 GW × 0.72 = 594 MW，自 2025 年起，至 2050 年不变"
+  model_entry: "build_future_prices.py L21、L96（y >= 2025）；进入：间接（价格文件）"
+  notes: "マスタープラン 2050 东北核电 5,518 MW，本模型未采用（保持 0.825 GW 至 2050）。"
+
+- id: price_model_validation
+  name: 电价模型验证（逐年留一）
+  value: {corr: {FY2023: 0.682, FY2024: 0.753, FY2025: 0.750}, MAE: {FY2023: 2.556, FY2024: 2.233, FY2025: 2.082}}
+  unit: "- / 円/kWh"
+  sensitivity: null
+  source: "JEPX エリアプライス東北 FY2023–2025 实绩"
+  report: "03_analysis/price_model/validation_metrics.csv、validate_price_model.py；revision_master_plan.md L255"
+  decided: "2026-10-22（作为模型说明与验证报告）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "validation_metrics.csv 中数值与登记表相同"
+  model_entry: "validate_price_model.py → validation_metrics.csv；进入：不进入模型（验证说明）"
+  notes: "日内形状与持续曲线基本复现；月均水平偏差 2–3 円（燃料与邻区，在模型边界外）。日均值相关系数 0.48–0.63。"
+
+- id: price_floor
+  name: 价格地板
+  value: 0.01
+  unit: "円/kWh"
+  sensitivity: null
+  source: "JEPX 最低约定价 0.01 円/kWh（Sakaguchi & Fujii 2021 提到九州常出现 0.01 円/kWh）"
+  report: "reports/高比例可再生电价情景与长时储能需求.md §4 第 2 条；03_analysis/price_model/build_future_prices.py L22、L56–57"
+  decided: "2026-10-22 作者（价格模型方法）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "价格文件与模型内价格最小值均为 0.01 円/kWh；地板小时 2025 266、2030 271、2040 1,162、2050 2,783（模型年，非闰年少 2 月 29 日；汇总表 2,786）"
+  model_entry: "build_future_prices.py L22、L56–57；model.py 只在 beta≠0 时另设 10 円/MWh 下限（L242、L252），D2 中 beta = 0 不触发；进入：目标函数（经价格）"
+  notes: "地板小时数：2025 年 266、2030 年 271、2040 年 1,162、2050 年 2,786（future_prices_summary.csv）。氢能加速建设主要来自地板小时（revision_master_plan.md L302–305）。"
+
+- id: price_series_check
+  name: 电价序列逐年均值（核对用）
+  value: {2025: 11.434, 2030: 10.684, 2035: 9.701, 2040: 9.254, 2045: 8.319, 2050: 7.570}
+  unit: "円/kWh"
+  sensitivity: null
+  source: "03_analysis/price_model/future_prices_summary.csv（模型输出）"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『电价序列』行"
+  decided: "派生值"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "11.434 / 10.685 / 9.700 / 9.254 / 8.317 / 7.566"
+  model_entry: "model.py L228–239 映射后逐年均值；进入：核对用"
+  notes: "风电价值因子 1.00（2025）/ 0.90（2035）/ 0.60（2050），光伏 0.68/0.58/0.34。"
+
+- id: regional_curtailment_rate
+  name: 东北区域弃电率（出力制御率）
+  value: null
+  unit: "% of VRE"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "03_analysis/price_model/future_prices_summary.csv；reports/东北出力制御现状与展望.md §1.1、§2.1–2.3、§4.2"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：保留电价模型的值（2050 年 14.8 %）；官方 / OCCTO 高值（约 30 %）作敏感性
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "按区域 VRE 电量加权：2025 1.17%、2030 0.92%、2035 2.33%、2040 5.32%、2050 14.78%（future_prices_summary.csv）；按小时简单平均（grid_conditions_by_year.csv 的 curtail_share 列口径）：0.31%、0.28%、0.81%、1.99%、6.89%"
+  model_entry: "model.py L236 df['curt_rate']；L321 export p_max_pu；进入：约束：export p_max_pu"
+  notes: "价格模型：2025 1.2%、2035 2.3%、2050 14.8%。官方实绩：FY2024 1.3%、FY2025 3.1%（資源エネルギー庁 次世代電力系統WG 第12回 資料1-1 p.6）；FY2026 见通し 4.0%（同 p.6）。2035 年无制限無補償事业者见通し 16–23%（1,127–1,709 h；同 WG 参考資料1 p.16–19）。OCCTO 第76回 資料1-1 p.5：北海道+东北 2050 年 32.7%，HVDC 2 GW 后 26.8%。マスタープラン全国 2050 年 12%（含需求立地与蓄电池 7%）。价格模型在 2025 年低于实绩、2035 年远低于官方见通し；但官方 2035 值只针对无制限無補償类电源，口径不同。浪江新建风光属于无制限無補償ルール。"
+
+- id: export_curtailment_application
+  name: 区域弃电对浪江外送的作用方式
+  value: "export p_max_pu = 1 − curtail_rate × 1.0（作用于 118 MW 接口容量）"
+  unit: "-"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『外送弃电限制』行、问题 M2；reports/东北出力制御现状与展望.md §3.2『建模口径提醒』"
+  decided: "随价格序列（2026-10-22）采用；未单独决定"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "最小 p_max_pu 0.278；curt_rate > 0 的小时全部处于 0.01 円/kWh 地板（0 个例外）；按 118 MW 计每年最多少送 2025 3,161、2040 20,624、2050 71,182 MWh，按地板价至多 0.71 百万円/年"
+  model_entry: "model.py L321 p_max_pu = (1 − curt_rate × series_curtail_scale).clip(0,1)，乘在 export p_nom（118 + gmax）上；进入：约束：export Generator p_max_pu"
+  notes: "curt_rate>0 的小时全部处于价格地板，该限制对目标函数影响 ≤0.7 百万円/年。现实中出力制御作用于发电设备出力，而非只削外送，『削外送』是偏乐观的简化，须在正文说明。报告结果时应把地板小时的出口单列。"
+
+- id: tohoku_tokyo_interconnector_plan
+  name: 东北—东京连系线计划（背景事实）
+  value: {current_GW: 5.73, nominal_after_2027_11_GW: 10.28, effective_2027_GW: [6.8, 8.5], effective_2030s_GW: [7.8, 9.1], effective_2032_GW: [9.2, 9.6]}
+  unit: "GW（东京方向运用容量）"
+  sensitivity: null
+  source: "OCCTO 第101回広域系統整備委員会 資料1（2026-05-22）（工期 2027-11 不变，费用 3,539 億円）；OCCTO 第85回 資料2（2024-12-25）（实际运用容量预测）；OCCTO マスタープラン（2023-03）HVDC 日本海路线 400 万 kW 等"
+  report: "reports/东北海上风电项目与连系线计划.md §5.1–5.3；reports/送电接口扩容成本与上限.md §1.4"
+  decided: "2026-10-22 作者（价格模型只计交流增强，HVDC 不计）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "—"
+  model_entry: "仅通过 DATC（build_future_prices.py L26）间接体现；进入：背景事实"
+  notes: "日本海 HVDC 首期 200 万 kW 实施案提交期限延长一年，投运推测 2030 年代中期（UNVERIFIED）。"
+
+# ---------------------------------------------------------------------
+# 4. 可再生能源（浪江）
+# ---------------------------------------------------------------------
+- id: existing_pv_mw
+  name: 浪江现有光伏容量
+  value: 103
+  unit: "MW"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『现有光伏』行；04_manuscript/latex/4_study_area_and_inputs.tex L8"
+  decided: 2026-10-28 作者同意分组建议（第 4 组）：沿用原稿 103 MW，正文说明来源及与環境省カルテ 83.6 MW 的差异
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "103 MW（FH2R 20 + 酒井 1 号 20 + 酒井 2 号 16 + 谷津田 38 + 浪江屋顶 9；NewUtilityPV Units = 0 也被匹配，贡献 0），S0–S4 相同"
+  model_entry: "model.py L310 fixed_solar = Σ Units × Max Capacity（对象名含 'UtilityPV' 或等于 'Namie RooftopPV'）；进入：约束：solar_year_capacity（L471）；Generator solar p_nom（L312、L314）"
+  notes: "原稿 PLEXOS：103 MW。環境省 自治体排出量カルテ（浪江町，FY2023 数据）FIT/FIP 光伏 83.6 MW（81.8 + 1.8）。FH2R 20 MW 光伏（NEDO 2020，nedo2020fh2r）可能不在 FIT/FIP 统计内，但两者差额是否由此解释未核实。L294 的子串匹配同时命中 NewUtilityPV（Units = 0），写法不稳妥。"
+
+- id: existing_wind_mw
+  name: 浪江现有风电容量
+  value: 38
+  unit: "MW"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『现有风电』行；04_manuscript/latex/4_study_area_and_inputs.tex L8；reports/送电接口扩容成本与上限.md §1.3"
+  decided: 2026-10-28 作者同意分组建议（第 4 组）：沿用原稿 38 MW，正文说明其并网口径（是否经本接口外送待正文核实措辞）
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "38 MW"
+  model_entry: "model.py L311 fixed_wind = Fukushima Revitalization OnshoreWind 38 × 1；进入：约束：wind_year_capacity（L467）"
+  notes: "原稿 PLEXOS：38 MW（出处未记录）。環境省 自治体排出量カルテ（FY2023 数据）：浪江町无风电记录。另据福島県「阿武隈風力プロジェクトについて」（2025-12-24 时点），阿武隈風力约 147 MW 事业地包括浪江町，但经福島送電共用送電線接入 TEPCO PG，不经浪江与东北的 66 kV 接口。需作者确认 38 MW 的来源，以及它是否应计在本接口之后。"
+
+- id: new_build_limit_wind
+  name: 新建陆上风电上限
+  value: null
+  unit: "MW"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『新建风光上限』行；04_manuscript/latex/4_study_area_and_inputs.tex Table 3"
+  decided: 2026-10-28 作者同意分组建议（第 4 组）：沿用原稿上限，正文说明来源
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "每年 ≤ 120 MW（3 × 40），总计 ≤ 1,200 MW；风电 p_nom 1,238 MW（S1–S4）"
+  model_entry: "model.py L437 年上限 = Max Units Built in Year × bsc；L460–463 total_build ≤ Max Units Built × bsc；L313 Generator p_nom = 38 + 1,200；进入：约束：annual_build 上界、total_build_wind"
+  notes: "原稿 PLEXOS：新建 1,200 MW。環境省 自治体排出量カルテ（namie_renewable_plan）陆上风电潜力 1,183.8 MW（含现有）。模型上限（含现有 1,238 MW）高于潜力。年上限 120 MW/年 无出处；D2 S2 中 2025 年和 2050 年年上限起作用。"
+
+- id: new_build_limit_pv_utility
+  name: 新建地面光伏上限
+  value: null
+  unit: "MW"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1；04_manuscript/latex/4_study_area_and_inputs.tex Table 3"
+  decided: 2026-10-28 作者同意分组建议（第 4 组）：沿用原稿上限，正文说明来源
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "每年 ≤ 40 MW，总计 ≤ 400 MW"
+  model_entry: "同上（NewUtilityPV UtilityPV）；进入：约束"
+  notes: "原稿 PLEXOS：400 MW（另有现有地面光伏 94 MW）。自治体排出量カルテ地面光伏潜力 375.8 MW。年上限无出处。D2 各情景都不新建光伏，所以上限目前不起作用。"
+
+- id: new_build_limit_pv_rooftop
+  name: 新建屋顶光伏上限
+  value: null
+  unit: "MW"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1；04_manuscript/latex/4_study_area_and_inputs.tex Table 3"
+  decided: 2026-10-28 作者同意分组建议（第 4 组）：沿用原稿上限，正文说明来源
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "每年 ≤ 0.4 MW，总计 ≤ 60 MW"
+  model_entry: "同上（NewRooftopPV RooftopPV）；进入：约束"
+  notes: "原稿 PLEXOS：60 MW。自治体排出量カルテ屋顶光伏潜力 104.9 MW。年上限无出处。"
+
+- id: re_profile_source
+  name: 浪江风光逐时出力数据
+  value: "Renewables.ninja，2024 年天气，MERRA-2，inputs/namie_renewables_ninja_2024.parquet"
+  unit: "p.u."
+  sensitivity: null
+  source: "Pfenninger & Staffell (2016) Energy 114:1251–1265, doi:10.1016/j.energy.2016.08.060；Staffell & Pfenninger (2016) Energy 114:1224–1239, doi:10.1016/j.energy.2016.08.068"
+  report: "revision_master_plan.md L256；02_plan/D2_模型设定.md §1『天气』"
+  decided: "2026-10-22 作者（改用 2024 年天气）；D2_模型设定.md §1（10-24）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "parquet 与 raw/ninja/namie_pv_2024.csv、namie_h80_wind_2024.csv 逐值相同（8,784 h，最大差 0）"
+  model_entry: "model.py L222–227 按 (月,日,时) 覆盖 profiles.parquet 中的 solar_pu、wind_pu；L237–238 缩放并 clip ≤ 1；进入：约束：Generator p_max_pu（L314–315）与 wind/solar_year_capacity（L467、L471）"
+  notes: "原稿为 2019 年天气（光伏相关系数 1.000，风电 0.998）。Staffell & Pfenninger 的风电偏差校正基于欧洲数据，日本未校正（见 wind_cf_validation）。"
+
+- id: pv_profile_spec
+  name: 光伏出力参数
+  value: {tilt_deg: 35, azimuth_deg: 180, system_loss: 0.10, tracking: 0, dataset: "merra2"}
+  unit: "-"
+  sensitivity: null
+  source: "原稿正文 4_study_area_and_inputs.tex L50（35° 倾角）；Renewables.ninja API 参数"
+  report: "03_analysis/price_model/fetch_ninja.py L16–17、L24；02_plan/D2_settings/03_grid_market_re.md 问题 L2"
+  decided: "2026-10-22 作者（与原稿 2019 曲线同参数）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=cannot_verify"
+  code_now: "fetch_ninja.py 默认值与登记表相同；模型年 CF 15.854%（非闰年 1,388.8 h）"
+  model_entry: "fetch_ninja.py L16–17、L24 的默认参数（数据文件中无元数据）；进入：间接（出力曲线）"
+  notes: "坐标未记录在数据文件中，建议在设定文档补写。"
+
+- id: wind_profile_spec
+  name: 风电出力参数
+  value: {turbine: "Vestas V90 2000", hub_height_m: 80, dataset: "merra2", file: "namie_h80_wind_2024.csv"}
+  unit: "-"
+  sensitivity: null
+  source: "Renewables.ninja API 参数；与原稿 2019 曲线相关系数 0.998"
+  report: "revision_master_plan.md L256；02_plan/D2_settings/03_grid_market_re.md 表 1『风电曲线的轮毂高度』行、问题 L2"
+  decided: "2026-10-22 作者（沿用原稿 V90、80 m）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=cannot_verify"
+  code_now: "wind_pu 与 namie_h80_wind_2024.csv 逐值相同（不是 100 m 的 namie_wind_2024.csv，后者 CF 34.49%）；CF 32.325%（非闰年 2,831.6 h）"
+  model_entry: "inputs/namie_renewables_ninja_2024.parquet 的 wind_pu；进入：间接（出力曲线）"
+  notes: "D2_模型设定.md §1 未写轮毂高度，建议补入。fetch_ninja.py 默认高度为 100 m，80 m 文件由命令行参数指定。"
+
+- id: wind_cf_validation
+  name: 浪江风电容量因子与东北实际的比较
+  value: null
+  unit: "%"
+  sensitivity: null
+  source: "资料之间不一致，见 notes"
+  report: "02_plan/D2_settings/03_grid_market_re.md 问题 M1；reports/东北风光装机规划与需求.md §2（实绩隐含 CF 表）；reports/东北出力制御现状与展望.md §2.3（⑫ 脚注）"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：ninja 2024 为基准；新增 --wind-scale 敏感性，把 CF 缩放到东北实际约 24–26 %（scale ≈ 0.75–0.80）
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "模型风电 CF 32.3%（非闰年）、32.29%（2024 全年 8,784 h）"
+  model_entry: "—；进入：不进入（对照说明）"
+  notes: "浪江 ninja 2024：32.3%。东北陆上风电 2024 历年实际（含出力制御，按平均装机 2.24 GW）：23.5%（价格模型 on_shape，本表复算 0.235）。东北风电 FY2024 实际：26.0%、FY2023 25.2%、FY2025 30.4%（风光报告，按年初年末装机平均，含港湾海上风电）。原稿 2019 年曲线：29.4%。OCCTO 第76回 資料1-1 p.5 脚注假设陆上风电利用率 23%。原稿正文写『约 30%』（4_study_area_and_inputs.tex L50）。各值口径（年份、日历年/财年、分母）不同。"
+
+- id: wind_scale_sensitivity
+  name: 只缩放风电出力的敏感性
+  value: {base: 1.0, low: 0.75}
+  unit: "倍率"
+  sensitivity: {proposed: "把风电 CF 校正到约 25%（≈ 25/32.3 = 0.77 倍）"}
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 问题 M1 建议 (2)；D2_模型设定.md §5（10-28 风电出力行）"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：新增 --wind-scale（只缩放风电），敏感性 0.75
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "基准 32.3%；0.75 时 24.24%（最大值 0.991×0.75 < 1，clip 不起作用）；光伏不变"
+  model_entry: "model.py L238 wind_pu × renewable_scale × wind_scale，clip ≤ 1；argparse --wind-scale 默认 1.0；L237 光伏不乘 wind_scale；进入：约束：wind p_max_pu（L315）与 wind_year_capacity（L467）"
+  notes: "风电是 S1、S2 新建的主要技术；利用小时偏高可能抬高地板小时的本地余电、电解槽可用的廉价电和 NPV。目标 CF 取 23.5% 还是 25% 需作者决定。"
+
+- id: re_profile_time_mapping
+  name: 风光出力的时间映射
+  value: "JST，按（月, 日, 时）映射到各模型年；1 月 1 日 00–08 时由 2025-01-01 同时段数据回卷补齐"
+  unit: "-"
+  sensitivity: null
+  source: "Renewables.ninja 输出 local_time 列（JST）"
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『时区（风光）』『光伏日内峰值』行、问题 L1"
+  decided: "核查确认（2026-10-28）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "ninja 文件覆盖 2024-01-01 09:00 至 2025-01-01 08:00（local_time），(1,1,0..8) 只来自 2025-01-01 行，不冲突；映射后无 NaN；光伏日内峰值 11 时"
+  model_entry: "model.py L224–227（key = (month, day, hour)，interpolate + bfill + ffill）；进入：约束（出力曲线）"
+  notes: "1 月 1 日 08→09 时有一次天气年份接缝，影响可忽略。"
+
+# ---------------------------------------------------------------------
+# 5. 负荷、水电与生物质
+# ---------------------------------------------------------------------
+- id: load_annual_trajectory
+  name: 非 EV 负荷年用电量路径
+  value: {2024: 50.266, 2050: 109.118}
+  unit: "GWh/yr"
+  sensitivity: null
+  source: "浪江町「地球温暖化対策総合計画」（Namie2024ClimatePlan，bib 年份 2023，114 pp.，页码未核）；年度市町村用电量基础：ANRE 電力調査統計（METI2025MunicipalElectricityDemand）"
+  report: "04_manuscript/latex/4_study_area_and_inputs.tex L19；02_plan/D2_settings/03_grid_market_re.md 表 1『负荷』行"
+  decided: "原稿沿用"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "模型 2025 50.622、2030 62.266、2035 78.455、2040 86.549、2045 94.067、2050 109.118 GWh；峰值 7.62 → 16.42 MW；2024 年 50.266 GWh 只在 load_2024_2050.csv 中（模型从 2025 年开始）"
+  model_entry: "model.py L306 Load fixed_load p_set = profiles.parquet load_MW；进入：约束：电力平衡（负荷）"
+  notes: "中间年的增长形状来自原稿 PLEXOS 文件，计划书逐年值未核对。10 个负荷节点中只有 3 个非零（JR Center Residential、Commercial Area、Fujihashi Industrial Park）。bib 键名为 2024、年份字段为 2023，需统一。R2.2 要求需求扰动，主框架下尚未做。"
+
+- id: load_hourly_shape
+  name: 非 EV 负荷逐时形状及其数据年份
+  value: null
+  unit: "-"
+  sensitivity: null
+  source: "构造方法有出处：商业与工业为 SII BEMS 数据库（SII2016BEMS），住宅为新地町 50 户 2018 年智能电表数据（kobashiRapidRiseDecarbonization2022b），气象变量来自气象厅（JMA_past_weather_2025）。逐时曲线对应的日历年未见记载"
+  report: "04_manuscript/latex/appendix_B.tex L6、L28；4_study_area_and_inputs.tex L19；02_plan/D2_settings/03_grid_market_re.md 问题 L5"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：沿用原稿，出处写原稿数据来源
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2050 年 / 2025 年逐时之比恒为 2.1555（形状不变）"
+  model_entry: "inputs/profiles.parquet load_MW；进入：约束：电力平衡"
+  notes: "住宅数据为 2018 年，但构造曲线所用的气象年与日历年未记录，无法确认是否为 2018 年。与 2024 年的风光、电价天气不同步（只按日历日期对齐）。需查原稿负荷生成脚本。"
+
+- id: hydro_ukedo
+  name: 请戸川水电（容量与月度电量上限）
+  value: null
+  unit: "MW / GWh/月"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『水电』行、问题 L6"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：沿用原稿
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "1 MW，边际成本 0；月度上限 0.4464/0.5952/0.5208/0.5952/0.6696/0.744/0.744/0.744/0.744/0.6696/0.6696/0.5952 GWh，年合计 7.7376，可发 7.6896 GWh（6、9 月上限 > 720 h）；26 年相同"
+  model_entry: "model.py L316 hydro p_nom = Ukedo Gawa Hydro Max Capacity（1），无 marginal_cost；L591、L597–599 月度电量上限（hydro_monthly.parquet × 1000 MWh）；进入：约束：hydro_month_{y}_{m}"
+  notes: "数值来自原稿 PLEXOS 约束 GenMaxEneMonth，出处未记录。6、9 月上限按 744 h 计，不起作用；月内可任意调度。规模小，对结果影响可忽略。"
+
+- id: biomass_namie
+  name: 浪江生物质发电
+  value: null
+  unit: "MW / GJ"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『生物质』行、问题 L7–L8；01_investment.md 问题 L6"
+  decided: 2026-10-28 作者同意分组建议（第 5 组）：沿用原稿（D2 下几乎不起作用）
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2 MW、热耗 10 GJ/MWh、库存 10,000 GJ（最多 1 GWh）、持有费 10 円/GJ·年、出售价 2025 22.90、2050 33.30 円/GJ；CSV 只到 2050 年"
+  model_entry: "model.py L324 Store biomass_stock（e_nom 100,000 GJ，e_initial 10,000 GJ）；L325 Link biomass（输入 20 GJ/h，效率 0.1 MWh/GJ → 2 MW）；L326–331 出售价（BiomassMarket 列）；L576–581 持有费 10 円/GJ·年；进入：目标函数（出售收入、持有费）与电力平衡"
+  notes: "数值来自原稿 PLEXOS，出处与库存单位未记录。实际上不起作用，正文不应描述为『2 MW 可调电源』。"
+
+# ---------------------------------------------------------------------
+# 6. 规划期、时间与预见方式
+# ---------------------------------------------------------------------
+- id: planning_horizon
+  name: 规划期
+  value: [2025, 2050]
+  unit: "year"
+  sensitivity: {extension: 2060}
+  source: null
+  report: "02_plan/D2_模型设定.md §1；04_manuscript/latex/3_methods.tex L12"
+  decided: "原稿设定，D2 沿用"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "2025–2050"
+  model_entry: "model.py L634 YEND = extend_to、HEND = end_year or YEND；profiles.parquet 2025-01-01 至 2050-12-31；进入：模型范围"
+  notes: "建模设定，不需文献出处。"
+
+- id: time_resolution
+  name: 时间分辨率
+  value: "逐小时，全年（非闰年 8,760 h，闰年 8,784 h；合计 227,904 个快照）"
+  unit: "h"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『闰年』行；inputs/profile_summary.json"
+  decided: "原稿设定，D2 沿用"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "227,904 个快照；2025 8,760 h、2028 8,784 h"
+  model_entry: "model.py L218–221、L276；进入：模型范围"
+  notes: ""
+
+- id: time_zone
+  name: 时区与时间戳约定
+  value: "JST，时间戳为小时起点（hour-beginning）"
+  unit: "-"
+  sensitivity: null
+  source: "日本不实行夏令时；JEPX 時刻コード与 eria_jukyu 30 分时段的换算见 price_model/data/README.md §3"
+  report: "03_analysis/price_model/data/README.md §3；02_plan/D2_settings/03_grid_market_re.md 表 1『时区』行"
+  decided: "核查确认（2026-10-28）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=cannot_verify"
+  code_now: "风光取 ninja local_time（JST），光伏峰值 11 时；价格 ts 为 2024 年 JST（price_model 数据说明）；负荷时区与小时起点约定无法从文件判断"
+  model_entry: "—；进入：数据约定"
+  notes: "负荷时区待从原稿负荷生成脚本确认。"
+
+- id: leap_year_handling
+  name: 闰年处理
+  value: "闰年（2028、2032…2048）使用 2024-02-29 的价格与天气；非闰年跳过该日；按日历日期映射，星期几不对齐"
+  unit: "-"
+  sensitivity: null
+  source: null
+  report: "02_plan/D2_settings/03_grid_market_re.md 表 1『闰年』行、问题 L4"
+  decided: "核查确认（2026-10-28）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "价格无缺失；非闰年 8,760 h、闰年 8,784 h；非闰年风电 CF 32.325% 对全年 32.285%"
+  model_entry: "model.py L224–227、L231–236（按月日时取值）；进入：数据映射"
+  notes: "--extend-to 2060 时 2052、2056、2060 年按 2050 年复制，为 8,760 h。"
+
+- id: horizon_extension_2060
+  name: 延长到 2060 年的期末效应检验
+  value: 2060
+  unit: "year"
+  sensitivity: null
+  source: "Grinold (1983) Operations Research 31(3):407–431（经 Ruiz Manuel et al. 2025 转述，原文 UNVERIFIED）；DIMENSION 加算 2060/2070（转引 Brown 2020）"
+  report: "reports/规划期末处理方法综述.md §4.2–4.3；revision_master_plan.md L308–320"
+  decided: "D2_模型设定.md §1（延长到 2060 年检验：结果与永续一致）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "单位现值记录 156 → 216 行；2055 年 = 2050 年 × 0.8626；末年永续权重 W(2060) = 11.846；2052/2056/2060 年为 8,760 h"
+  model_entry: "model.py L43–48 extend_years（复制 2050 行到 2051–2060，用于 profiles、hydro、固定充电曲线）；L50–54 load_annuity（2051+ 单位现值 = 2050 值 × 1.03^-(y-2050)）；L234 价格 min(year, 2050)；L115–116 W2050 用 YEND；进入：敏感性"
+  notes: "已有 ext2060 结果（S2 NPV 85.8065 对 D2 85.8055）使用修正前的氢能造价，按 D2_模型设定.md §5 需重跑。由于 PLEXOS 方法不退役，该检验不能检验寿命假设。2050 年后生物质出售价为 NaN（问题 L8），无实际影响。"
+
+- id: foresight_base
+  name: 预见方式（基准）
+  value: "完全预见（perfect foresight），确定性；不做随机规划"
+  unit: "-"
+  sensitivity: null
+  source: null
+  report: "revision_master_plan.md L263–264"
+  decided: "2026-10-23 作者（完全预见为基准，近视和有限预见为检验，不做随机规划）"
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=match"
+  code_now: "完全预见"
+  model_entry: "单次 n.optimize.solve_model（L653）覆盖全部年份；进入：模型结构"
+  notes: ""
+
+- id: foresight_robustness
+  name: 预见方式检验（近视与有限预见）的实现
+  value: {myopic: "5 年窗口", rolling: "10 年前瞻、5 年锁定"}
+  unit: "-"
+  sensitivity: null
+  source: null
+  report: "revision_master_plan.md L263–264（results/foresight/）"
+  decided: 2026-10-28 作者同意分组建议（第 6 组）：预见方式检验在年金方法下进行，正文说明
+  status: confirmed
+  verified: "2026-10-28 mapping/grid_econ_map.yaml verdict=doc_only"
+  code_now: "D2（永续）下无法直接运行，与登记表一致"
+  model_entry: "src/rolling.py；model.py L449–455 fix_builds；L635 --fix-builds 与永续同时使用（且无 --h2-no-build-from）时 parser.error；进入：敏感性"
+  notes: "现有检验结果在年金法 + 截断框架（np_base）下得到（氢能首建年份三种预见方式相同）。D2 采用永续，代码禁止滚动窗口与永续同时使用，因此 D2 下无法直接重做，需作者决定检验框架。"
+
+- id: scenario_design
+  name: 情景定义（S0–S4 与 A0–CH 的对应）
+  value: {S0: BAU（不新建）, S1: 仅新能源, S2: 新能源 + 氢能, A0/B0/C0: S3（新能源 + EV）, AH/BH/CH: S4（新能源 + EV + 氢能）}
+  unit: "--scenario 取值与 inputs/S*_parameters.json"
+  sensitivity: {}
+  source: "原稿情景设计（S0–S4），返修按 R1.2 增加 A/B/C 三种控制方式"
+  report: "02_plan/审稿要求逐条清单.md；src/make_reg1_batch.py DESIGN"
+  decided: "原稿；2026-10 返修沿用"
+  status: confirmed
+  verified: "2026-10-28 mapping/code_inventory.yaml（反向盘点，原为 orphan）"
+  code_now: "--scenario S0–S4；inputs/S*_parameters.json 与 S*_annuity.json 决定可建设备与 EV/氢能对象"
+  model_entry: "--scenario；model.py build() 读取 S*_parameters.json（candidates、has_ev、has_h2）"
+  notes: "氢能价值 = NPV(xH) − NPV(x0)；交互项 I_B = H2_B − H2_A，I_C = H2_C − H2_A。"
+
+- id: re_vom
+  name: 风光与水电的可变运维成本
+  value: 0
+  unit: JPY/MWh
+  sensitivity: {}
+  source: "原稿 PLEXOS 输入（风光、水电 VO&M Charge 未设，即 0）；风光的运维成本以 FO&M 计入（re_fom）"
+  report: "params/mapping/code_inventory.md"
+  decided: "沿用原稿"
+  status: confirmed
+  verified: "2026-10-28 mapping/code_inventory.yaml（反向盘点，原为 orphan）"
+  code_now: "0（风光、水电 Generator 无 marginal_cost）"
+  model_entry: "model.py 中 solar、wind、hydro Generator 的 marginal_cost 未设"
+  notes: "弃电零成本，这也是电解槽辅助链路松弛和进出口毛流量不唯一的原因之一。"

@@ -1,0 +1,98 @@
+{
+ "REF": {
+  "value": 2024,
+  "line": 19
+ },
+ "PV_REF_GW": {
+  "value": 9.05,
+  "line": 20
+ },
+ "WIND_REF_GW": {
+  "value": 2.24,
+  "line": 20
+ },
+ "NUC_GW": {
+  "value": 0.825,
+  "line": 21
+ },
+ "NUC_CF": {
+  "value": 0.72,
+  "line": 21
+ },
+ "PRICE_FLOOR": {
+  "value": 0.01,
+  "line": 22
+ },
+ "DATC": {
+  "value": {
+   "2024": 0,
+   "2027": 0,
+   "2028": 1920,
+   "2030": 2720,
+   "2032": 3670,
+   "2050": 3670
+  },
+  "line": 26
+ },
+ "T_SPLIT": {
+  "value": 5500,
+  "line": 27
+ },
+ "SITES": {
+  "value": {
+   "off_oga_katagami": 315,
+   "off_happo_noshiro": 514,
+   "off_noshiro_mitane_oga": 415,
+   "off_yurihonjo": 730,
+   "off_aomori_south": 915,
+   "off_murakami_tainai": 684,
+   "off_yuza": 950
+  },
+  "line": 78
+ },
+ "SITES_total_MW": 4523,
+ "T_MIN_MW": 2491.2,
+ "pv_shape_cf_2024": 0.1361,
+ "onshore_shape_cf_2024": 0.2351,
+ "net_export_2024_TWh": 35.24,
+ "nuclear_MW": 594.0,
+ "plan_portfolio": {
+  "pv_GW": {
+   "2025": 9.82,
+   "2030": 12.95,
+   "2035": 16.16,
+   "2050": 33.8
+  },
+  "onshore_GW": {
+   "2025": 2.271,
+   "2030": 3.132,
+   "2035": 4.672,
+   "2050": 18.2
+  },
+  "offshore_GW": {
+   "2025": 0.139,
+   "2030": 2.608,
+   "2035": 4.553,
+   "2050": 8.8
+  },
+  "demand_TWh": {
+   "2025": 79.6,
+   "2030": 79.1,
+   "2035": 78.0,
+   "2050": 116.0
+  }
+ },
+ "validation": {
+  "corr": {
+   "2023": 0.682,
+   "2024": 0.753,
+   "2025": 0.75
+  },
+  "MAE": {
+   "2023": 2.556,
+   "2024": 2.233,
+   "2025": 2.082
+  }
+ },
+ "extra_export_TWh_2050": 15.76
+}

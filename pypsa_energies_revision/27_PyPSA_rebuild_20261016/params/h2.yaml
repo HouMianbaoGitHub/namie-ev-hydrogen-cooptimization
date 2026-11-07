@@ -1,0 +1,961 @@
+# =====================================================================
+# 参数登记表：氢能部分（电解槽、燃料电池、储氢罐）
+# energies-4608521 返修第一轮，浪江町 EV–氢能 PyPSA 主模型（D2 默认设定）
+# 生成日期：2026-10-28
+#
+# 本表记录"有依据的最终采用值"及其出处，不是代码现值。code_now 只供对照。
+# 规则：作者决定 > 报告建议；资料矛盾 = conflict；无依据 = no_source；
+#       待作者决定 = author_to_decide；有依据且已定 = confirmed。
+#
+# 资料清单（路径相对 ）
+#  作者决定
+#   revision_round1/02_plan/D2_模型设定.md（第 1 节设计意图；第 5 节检查记录，含 2026-10-28）
+#   revision_round1/02_plan/revision_master_plan.md（按日期追加，后者覆盖前者）
+#  报告（revision_round1/reports/）
+#   氢能设备造价核实.md（2026-10-19）
+#   电解槽燃料电池运维与寿命核实.md（2026-10-20）
+#   电解槽部分负荷效率与老化参数.md（2026-10-19）
+#   电解槽热备用与启动参数.md（2026-10-19）
+#   燃料电池效率核实.md（2026-10-19）
+#   R1_5_parameter_sources.md（2026-10-19，Items 4–8）
+#   新基准参数与实现审阅.md（2026-10-19，氢能部分）
+#   氢能消失原因审计.md（2026-10-20）
+#  代码核查
+#   revision_round1/02_plan/D2_settings/01_investment.md（2026-10-28）
+#   revision_round1/02_plan/D2_settings/02_hydrogen_ops.md（2026-10-28）
+#  模型入口（只读）
+#   27_PyPSA_rebuild_20261016/src/model.py（2026-10-28 起为 739 行版本，行号见各条 model_entry；原 722 行版本：argparse、PRESET_NEWBASE、PRESET_PLEXOS、
+#     OLD_CAPEX、H2_CAPEX、H2_FOM、H2_LIFE、UNIT_KW、H2_PHYS、EL_LIFE_PATH、H2_STACK、H2_FOM_V）
+#   27_PyPSA_rebuild_20261016/src/default_D2_args.txt
+#   27_PyPSA_rebuild_20261016/inputs/S2_parameters.json（原稿 PLEXOS 对象属性）
+#
+# 换算约定（来自造价报告）：150 JPY/USD，160 JPY/EUR；kJPY = 千円；LHV = 33.33 kWh/kg。
+# 记号：link MW = 电解槽链路输入口径（10 kg/h × 49.12 kWh/kg = 0.4912 MW/块）。
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# A. 造价（建设年造价；D2 = LOW 政策情景）
+# ---------------------------------------------------------------------
+- id: h2_el_capex
+  name: 碱性电解槽造价
+  value: {2025: 120, 2030: 52, 2040: 40, 2050: 30}
+  unit: kJPY/kW_e（按满负荷 549.2 kW/块换算为 65,904 / 28,558.4 / 21,968 / 16,476 kJPY/块，2026-10-28 起）
+  sensitivity:
+    low: {2025: 120, 2030: 52, 2040: 40, 2050: 30}
+    base: {2025: 300, 2030: 235, 2040: 190, 2050: 150}
+    high: {2025: 375, 2030: 285, 2040: 245, 2050: 205}
+  source: "LOW: 2025 = METI 水素・燃料電池戦略ロードマップ評価WG(2020-07)資料3 p.1, alkaline system 12万円/kW (manufacturer estimate, 2018); 2030 = METI/NEDO GI fund target 設備コスト5.2万円/kW (METI WG 資料3 p.1; NEDO GI WG 2023-08-23 資料6 pp.3,12 and 2025-07-07 資料3); 2050 = IRENA (2020) Table 6 p.65 '<USD 200/kW' and DEA AEC 100 MW 2050 lower bound; 2040 interpolated. BASE = DEA Technology Data Renewable fuels v0015 ch.80, datasheet '80 AEC 10 MW', EUR2025 1,849/1,458/1,182/949 per kW (Tables 10-13, pp.49-53); HIGH = IEA Commentary 2026-10-15 non-China USD 2,500/kW (2025), Argus/IEA GHR 2026 USD 1,900/kW (2030), DEA 10 MW 2050 upper 1,295 EUR/kW."
+  report: "reports/氢能设备造价核实.md §0 推荐值汇总表、§1.4"
+  decided: "2026-10-27 作者（D2：政策目标造价 = LOW 情景）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "D2 每块造价 ÷ 549.2 kW = 120/52/40/30 kJPY/kW，2025–2050 逐年插值与登记表相对误差 < 1e-6"
+  model_entry: "model.py L64-65 解析；L75 nv = _interp(pts,y)*1000*1（JPY/块）；L82 v = d*(nv+extra)；L464-465 costs = ann/1e6/bsc（bsc=1），buildvar*costs 进目标；进入：objective: 建设年每块投资现值（PLEXOS 方法，scale_annuity）"
+  notes: "LOW 是设备成本口径的政策目标，不含 EPC 和土建（报告 §1.3）。锚点年之间线性插值，2050 年后不变。每块造价原按 530 kW 换算，2026-10-28 起改按满负荷 549.2 kW（见 h2_el_block_kw_basis），与链路口径 491.2 kW、满负荷口径 549.2 kW 不一致，见 h2_el_block_kw_basis。原稿值 85/54/35/18 kJPY/kW（OLD_CAPEX，45,000/28,774/18,774/9,591 kJPY/块）仅作对照。"
+
+- id: h2_fc_capex
+  name: 固定式燃料电池造价
+  value: {2025: 180, 2030: 150, 2040: 113, 2050: 113}
+  unit: kJPY/kW_e（10 MW/块）
+  sensitivity:
+    low: {2025: 180, 2030: 150, 2040: 113, 2050: 113}
+    base: {2025: 350, 2030: 250, 2040: 190, 2050: 150}
+    high: {2025: 600, 2030: 375, 2040: 300, 2050: 250}
+  source: "LOW: U.S. DOE HFTO Multi-Year Program Plan 2024, Table 5.2 'Distributed Stationary Power' p.86: 2023 status 'Cost $1,200-2,500/kW' (lower bound), 2030 target '$1,000/kW', ultimate '$750/kW'. BASE: DOE 2023 status upper part, NEDO 2023 定置用FCロードマップ報告会 p.15 (日本 30万円/kW 2030), DEA El&DH ch.12 LT-PEMFC data sheet p.202 (0.8 M EUR/MW 2050, EUR2015). HIGH: Hanwha Daesan 50 MW PAFC 'cost USD 212 million' (≈636 kJPY/kW)."
+  report: "reports/氢能设备造价核实.md §0、§2.3"
+  decided: "2026-10-27 作者（D2：DOE 目标路径 = LOW）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "180/150/113/113 kJPY/kW，逐年一致（2035 = 131.5）"
+  model_entry: "model.py L67 col fuelcell 系数 UNIT_KW['fuelcell']=10000（L110）；L75 nv = kJPY/kW*1000*10000；L82；L464 /bsc（bsc=10，结果仍为每块 10 MW 的造价按 MW 分摊）；进入：objective: 建设年每块（10 MW）投资现值"
+  notes: "锚点年之间线性插值（2035 年 131.5），2050 年后不变。原稿 PLEXOS 为阶梯 250/150/80（inputs/h2_buildcost_original_plexos.csv）。FO&M 另见 h2_fc_fom。"
+
+- id: h2_tank_capex
+  name: 压缩储氢罐造价
+  value: {2025: 112, 2030: 96, 2040: 63, 2050: 54}
+  unit: kJPY/kg 工作容量（= 112,000 / 96,000 / 63,000 / 54,000 kJPY/t；1 t/块）
+  sensitivity:
+    low: {2025: 112, 2030: 96, 2040: 63, 2050: 54}
+    base: {2025: 150, 2030: 135, 2040: 100, 2050: 80}
+    high: {2025: 250, 2030: 200, 2040: 160, 2050: 136}
+  source: "LOW: Clean Hydrogen JU SRIA KPI, pressure vessel storage 700 EUR/kg (2024), 600 EUR/kg (2030); DEA Technology Data for Energy Storage v0011 ch.151, datasheet '151a Hydrogen Storage - Tanks', Type I vessel only 395/339 EUR/kg (2040/2050). BASE: same DEA datasheet, vessel + installation 957/845/619/509 EUR/kg. HIGH: DOE FCTO MYRDD 2015 Delivery Table 3.2.4 p.3.2-16, 430 bar 1,100 -> 600 $/kg (2007$, x1.51 to 2024$)."
+  report: "reports/氢能设备造价核实.md §0、§3.3"
+  decided: "2026-10-27 作者（D2：LOW）；D2_模型设定.md §1"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "112/96/63/54 kJPY/kg（= kJPY/t ÷ 1000），逐年一致（2035 = 79.5）"
+  model_entry: "model.py L67 col tank 系数 1；L75 nv = kJPY/t*1000；L82；L464（bsc=1）；进入：objective: 建设年每块（1 t）投资现值"
+  notes: "不含压缩机。模型的压缩电耗计入 49.12 kWh/kg，但没有压缩机造价；DEA 电解槽造价含 30→80 bar 压缩，DEA 储罐含压缩机的合计价要高得多（报告 §3.2）。按工作容量计价，模型储量下限为 0、无垫底气，口径是否与 SRIA/DEA 一致待确认（01_investment.md 待确认项）。原稿 59,024/48,816/29,512/29,512 kJPY/t 仅作对照。"
+
+# ---------------------------------------------------------------------
+# B. 固定运维费（FO&M）
+# ---------------------------------------------------------------------
+- id: h2_el_fom
+  name: 电解槽固定运维费
+  value: 0.02
+  unit: share of capex per year（不含换堆）
+  sensitivity: {low: 0.02, base: 0.04, high: 0.06, verified_excl_stack: 0.04}
+  source: "DEA Renewable fuels v0015 ch.80 datasheet '80 AEC 10 MW' FO&M 5.5/5/4/3.5 % (2025/2030/2040/2050), note P 'Stack replacement costs are not included'; Clean Hydrogen JU SRIA 2021-2027 Annex 2 Table 2 p.152 AEL O&M 50/43/35 EUR/(kg/d)/yr ≈ 4.0-4.4 %, KPI-3 'Potential stack replacements are not included in O&M cost'; DOE Program Record 24005 p.9 '5% of the total installed capital cost (without stack replacements)'; METI WG 資料3 p.1: 24,000 円/(Nm3/h)/yr (≈4 %, 2018), 2030 target 4,500 (≈2 %)."
+  report: "reports/氢能设备造价核实.md §1.4；reports/电解槽燃料电池运维与寿命核实.md §1.1、§4.2"
+  decided: 2026-10-28 作者同意分组建议（第 1 组）：取与政策造价配套的 LOW 2 %/年（不含换堆），按建设年造价计，永续（1/r）
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "去掉 --h2-stack-repl 后反算 (PV/d/nv − 1)×0.03 = 0.02000（2025–2050 全部年份）"
+  model_entry: "model.py L68 fom = parse_kv(args.h2_fom)；L80 extra = nv*fom/.03（永续，按建设年造价）；L82 v = d*(nv+extra)；进入：objective: 每块投资现值中的 FO&M 永续部分"
+  notes: "需要作者决定：(1) 与 LOW 造价配套取 LOW 2 %（01_investment.md 的比较口径），还是 (2) 按 2026-10-20 的决定'FOM/寿命与造价情景无关'取 verified 4 %（不含换堆）。按永续计，2 % 相当于造价的 66.7 %，4 % 相当于 133 %。若加入，需同时从现值中扣除原稿 c16，避免重复。"
+
+- id: h2_fc_fom
+  name: 燃料电池固定运维费
+  value: 0.03
+  unit: share of capex per year
+  sensitivity: {low: 0.03, base: 0.05, high: 0.07, verified_excl_stack: 0.04}
+  source: "DEA Technology Data El&DH ch.12 LT-PEMFC CHP (hydrogen) data sheet p.203, note C 'Fixed O&M costs are estimated to 5% of the investment cost'; SRIA Table 21 p.167 PEMFC O&M 5/3/2 EUR ct/kWh incl. stack replacement (KPI-2), ≈5 % of capex at 2,200 h/yr."
+  report: "reports/氢能设备造价核实.md §2.3；reports/电解槽燃料电池运维与寿命核实.md §2.2、§4.2"
+  decided: 2026-10-28 作者同意分组建议（第 1 组）：LOW 3 %/年，按建设年造价计，永续；取代原稿 9,600 円/kW·年
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "反算 0.03000（全部年份）；原稿 9,600 円/kW·年不再计入"
+  model_entry: "model.py L68、L80、L82（同上）；进入：objective: FO&M 永续部分"
+  notes: "造价报告表 0 中'现行 0.4 %?'有误：9,600 是每 kW，等于原稿 2025 年造价的 3.84 %、2040 年后的 12 %（01_investment.md M1）。若单列换堆（20 %/10 年），FOM 应取不含换堆的 4 %，否则重复。"
+
+- id: h2_tank_fom
+  name: 储氢罐固定运维费
+  value: 0.005
+  unit: share of capex per year
+  sensitivity: {low: 0.005, base: 0.01, high: 0.02}
+  source: "No reliable source (engineering judgement, UNVERIFIED). DEA Energy Storage datasheet 151a 'Fixed O&M [EUR/MW/year]' 638/532/532/425, note G (compressor maintenance and tank checks); unit ambiguous, ≈1.05 % if read per MWh stored."
+  report: "reports/氢能设备造价核实.md §3.3；reports/电解槽燃料电池运维与寿命核实.md §3"
+  decided: 2026-10-28 作者同意分组建议（第 1 组）：LOW 0.5 %/年（工程判断，正文说明）
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "反算 0.00500（全部年份）"
+  model_entry: "model.py L68、L80、L82；进入：objective: FO&M 永续部分"
+  notes: "即使作者决定加入，1 % 本身也只是工程判断，正文应如此说明。"
+
+# ---------------------------------------------------------------------
+# C. 寿命、电堆与更换
+# ---------------------------------------------------------------------
+- id: h2_el_system_life
+  name: 电解槽系统寿命（技术寿命；年金法中兼作经济寿命）
+  value: {2025: 20, 2030: 25, 2040: 30, 2050: 35}
+  unit: years（按建设年，线性插值后取整）
+  sensitivity: {low_cost_case: 30, high_cost_case: 20, alt_dea2025: 20}
+  source: "DEA Renewable fuels v0015 datasheet '80 AEC 10 MW', 'Technical lifetime of plant [years]' 20/25/30/30/35 (2025/2030/2035/2040/2050); p.59 'AEC increasing from ~20 years towards 25 years'. Cross-check: DOE Program Record 24005 Table 1 p.2 plant life 30 yr; IRENA 2020 p.43 'proven lifetimes of over 30 years'."
+  report: "reports/电解槽燃料电池运维与寿命核实.md §1.1、§1.3、§4.2；reports/氢能设备造价核实.md §1.4（20 年）"
+  decided: "2026-10-20 作者（--h2-om-set verified：寿命按建设年 20/25/30/35）；2026-10-28 作者：D2 维持 PLEXOS 方法，正文写明寿命在期内不起作用"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=doc_only"
+  code_now: "无（D2 中设备永不退役，也不计系统更换成本）"
+  model_entry: "EL_LIFE_PATH L125、tech_life() L128-133 只在年金法（L153-170、L440-444）调用；D2 investment_method = plexos（PRESET_PLEXOS L631），scale_annuity（L56-85）不含寿命；装机按 L446-448 累加、不退役；进入：不进入 D2"
+  notes: "早期报告（造价核实）取 20 年，运维报告 BASE 取 25 年；2026-10-20 的决定采用 DEA 按年份路径，前两者作历史值。PLEXOS 方法 + 永续 + 'Limit Capital Cost Perpetuity by Economic Life' 下，2050 年后的更换不计成本（10-22 讨论、10-28 记录）。"
+
+- id: h2_fc_system_life
+  name: 燃料电池系统寿命
+  value: 20
+  unit: years
+  sensitivity: {low_cost_case: 25, high_cost_case: 15}
+  source: "DEA El&DH ch.12 LT-PEMFC data sheet p.203: technical lifetime 10 yr (small units); NEDO 定置用FCロードマップ(2023) 表1.4.2-1 p.6: 耐久年数 約15年 (2030/2040); NEDO 報告会 p.15: EU 0.4-30 MW 15-20 yr; NLR TP-5400-91146 Table 12 p.23: plant life 40 yr. Report adopts 20 yr (mid-range)."
+  report: "reports/电解槽燃料电池运维与寿命核实.md §2.2、§4.2；reports/氢能设备造价核实.md §2.3"
+  decided: "2026-10-20 作者（verified 集：燃料电池 20 年）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=doc_only"
+  code_now: "无"
+  model_entry: "tech_life() L128-133（仅年金法）；D2 PLEXOS 方法不使用；原稿 S2_parameters.json Technical/Economic Life = 30 也未被代码读取；进入：不进入 D2"
+  notes: "20 年属于文献区间（10–40 年）的中间判断，正文应说明。"
+
+- id: h2_tank_life
+  name: 储氢罐寿命
+  value: 30
+  unit: years
+  sensitivity: {high_cost_case: 25}
+  source: "DEA Energy Storage datasheet 151a 'Technical lifetime [years]' 25 (2020), 30 (2030/2040/2050); DOE FCTO MYRDD 2015 Delivery Table 3.2.4 footnote ff p.3.2-16: high-pressure vessel life 30 yr."
+  report: "reports/电解槽燃料电池运维与寿命核实.md §3；reports/氢能设备造价核实.md §3.3"
+  decided: "2026-10-20 作者（verified 集：储罐 30 年）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=doc_only"
+  code_now: "无；30 年下 2025 年建成的储罐也不会在 2050 年前到寿命"
+  model_entry: "tech_life()（仅年金法）；进入：不进入 D2"
+  notes: ""
+
+- id: h2_el_stack_life
+  name: 电解槽电堆更换间隔
+  value: 15
+  unit: years
+  sensitivity: {low: 10, high: 20}
+  source: "Stack lifetime 60,000-90,000 h (IEA 2019 Future of Hydrogen Table 3 p.44; Schmidt et al. 2017 IJHE 42 Table 1); Matute et al. 2019 Table 2: 80,000 h (2017) / 90,000 h (2025); end of life at +10 % energy use (SRIA KPI-2; DEA p.28 footnote 1) -> 10 %/0.6 %/yr ≈ 17 yr."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§2.2–2.3；reports/电解槽燃料电池运维与寿命核实.md §1.3"
+  decided: "2026-10-30 作者：F6 设为新默认（见 default_F6）：电堆日历寿命 15 年（Buttler 2018 p.2450 AEL 8–15 年）；换堆间隔 = min(80,000 h ÷ 满负荷小时, 15 年)。原 40 年（2026-10-28）改为敏感性 stack40"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "15（老化平均年龄 7 年；换堆间隔 15 年，两处一致）"
+  model_entry: "model.py L347 age = (40−1)/2 = 19.5；L81 换堆间隔 L = 40；进入：electrolyzer 链路效率（L348，约束中的转换系数）；objective: 换堆永续现值"
+  notes: "15 年按 5,000 h/年推算。D2 S2 中电解槽满负荷当量约 2,000–2,150 h/年，15 年只相当于 30,000–60,000 h，低于文献电堆寿命（02_hydrogen_ops.md M3）。"
+
+- id: h2_fc_stack_life
+  name: 燃料电池电堆更换间隔
+  value: 10
+  unit: years
+  sensitivity: {high: 15}
+  source: "NEDO (2010) PEFC ロードマップ: 耐久性 9万時間（起動停止4000回）(2020/2030) ≈ 10 yr continuous; SRIA Table 21 KPI-1 '10-year system lifetime'; DOE FCTO MYRDD 2016 Table 3.4.14: 40,000-80,000 h (100 kW-3 MW CHP)."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§4.2"
+  decided: "2026-10-19 作者（新基准：stack life fc 10 yr）；D2_模型设定.md §1（e）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "10（两处一致）"
+  model_entry: "model.py L350 age = 4.5；L81 L = 10；进入：fuelcell 链路效率；objective: 换堆永续现值"
+  notes: "报告明确这是判断值（按小时计寿命在 ≤4,000 h/年时为 15–22 年，不起约束）。"
+
+- id: h2_el_stack_replacement_cost
+  name: 电解槽换堆成本
+  value: {share: 0.11, interval_years: 15}
+  unit: share of installed capex per replacement
+  sensitivity: {verified: 0.11, high: 0.15}
+  source: "DEA datasheet '80 AEC 10 MW' row '- hereof electrolyser stack' 10.8/11.3/12.1/12.8/14.7 % of total investment (2025-2050); DOE Program Record 24005 p.9 'replacement costs of 11% of the total installed capital costs ... every 40,000 hours'; DOE/NREL Record 19009 note 18: 15 %."
+  report: "reports/电解槽燃料电池运维与寿命核实.md §1.1、§4.1–4.3"
+  decided: "2026-10-30 作者：F6 设为新默认（见 default_F6）：每次 11 %，间隔 15 年（与 h2_el_stack_life 一致）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "--h2-stack-repl electrolyzer:0.11:15；永续口径 0.11/(1.03^15−1) = 0.197144"
+  model_entry: "model.py L69 stk = parse_kv；L81 extra += nv*0.11/(1.03^40 − 1)；进入：objective: 每块投资现值中的换堆永续部分"
+  notes: "份额 11 % 有依据（2026-10-20 verified 集已采用）；待定的是 D2 是否计入。若选'不换堆'，应把 el_stack_life 改为系统寿命，效率惩罚相应增大（运维报告 §4.3 第 1 条）。EPRI 2022 的 35–45 % 以系统设备成本为基数，不适用于装机造价口径。"
+
+- id: h2_fc_stack_replacement_cost
+  name: 燃料电池换堆成本
+  value: {share: 0.20, interval_years: 10}
+  unit: share of installed capex per replacement
+  sensitivity: {verified: 0.20, low_cost_case: 0.17, high_cost_case: 0.25}
+  source: "SRIA 2021-2027 Table 21 p.167: stack 400/240/150 EUR/kWe vs system CAPEX 1,900/1,200/900 EUR/kW -> 21/20/17 %."
+  report: "reports/电解槽燃料电池运维与寿命核实.md §2.2、§4.2"
+  decided: 2026-10-28 作者同意分组建议（第 1 组）：计入，每次 20 %（SRIA 上限口径），每 10 年，永续
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "反算 0.581537 = 0.20/(1.03^10−1)，全部年份一致"
+  model_entry: "model.py L81；进入：objective: 换堆永续部分"
+  notes: "SRIA CAPEX 不含电气 BoP，20 % 对装机造价是上限。"
+
+# ---------------------------------------------------------------------
+# D. 电解耗电口径
+# ---------------------------------------------------------------------
+- id: h2_el_sec_reference_53
+  name: 电解槽额定电耗参照值 53 kWh/kg 的口径
+  value: 53.0
+  unit: kWh/kg H2
+  sensitivity: {if_system_value: 53.0, if_stack_value_system_equiv: 57.0}
+  source: "Original PLEXOS input (FH2R / Asahi Kasei 10 MW reference, 53 kWh/kg). Treated as system value: part-load report derives a_lin = 47.12 from 'full load = 53'. Treated as stack value: DEA Renewable Fuels v0012 ch.86 Table 3 average AEC stack 52.3 kWh/kg; IRENA 2020 Table 6 alkaline stack 47-66 vs system 50-78 kWh/kg -> BoP ≈5-15 %, system ≈57. Other system values: SRIA Table 2 AEL 50/49/48 kWh/kg at nominal (AC input, 30 bar outlet, incl. cooling); Matute 2019 Table 2 system 52/50."
+  report: "reports/电解槽部分负荷效率与老化参数.md §3.1–3.3；reports/R1_5_parameter_sources.md Item 4c、[S13]；reports/新基准参数与实现审阅.md S9"
+  decided: 2026-10-28 作者同意分组建议（第 2 组）：按部分负荷报告的设计链，53 视为满负荷系统值（+压缩约 2 → 约 55），两种口径的矛盾在正文注明
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=doc_only"
+  code_now: "无（只是 a_lin = 47.12 的推导依据）"
+  model_entry: "PRESET_PLEXOS h2_electrolysis_mwh_per_kg = .053（L628）被 D2 --h2-electrolysis-mwh-per-kg 0.04912 覆盖；进入：不进入 D2"
+  notes: "部分负荷报告视 53 为系统值（满负荷含 BoP），R1_5 视为电堆值（系统约 57）。FH2R 实际口径和出口压力都没有公开资料。这一项决定 h2_el_linear_coeff 是否应上调约 8 %。"
+
+- id: h2_el_compression_energy
+  name: 压缩电耗（加在线性系数上）
+  value: 2.0
+  unit: kWh/kg H2
+  sensitivity: {from_3MPa: 1.5, from_atmospheric: 3.0}
+  source: "R1_5 Item 4a: ~3 MPa -> 20-45 MPa practical 1.0-2.0 kWh/kg (own isothermal calculation; DOE Record 9013 '1.05 kWh/kg H2' 20->350 bar); Item 4b: atmospheric -> 20-45 MPa 2.5-4.0 kWh/kg (DEA Energy Storage ch.151 '4 kWh/kgH2' to 200 bar; IRENA 2020 p.38 1->30 bar 3.5-4 % of LHV)."
+  report: "reports/R1_5_parameter_sources.md Items 4a/4b、§3 own calculation"
+  decided: "2026-10-19 作者（新基准：electrolysis curve + compression +2 kWh/kg）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "代码中不能单独分离；49.12 − 47.12 = 2.0；乘老化后实际 2.0×1.0468 = 2.09 kWh/kg（F5 及以前）；F6 δ_el = 1.0168，实际 2.03 kWh/kg（2026-11-01 清理）"
+  model_entry: "model.py L334 a_el；L339/L348 efficiency = hu/(a_el·δ_el)；进入：electrolyzer 链路效率（氢平衡约束）"
+  notes: "2.0 位于 3 MPa 入口情形的上端；FH2R 电解槽出口压力 UNVERIFIED（R1_5 §3 第 7 条），正文需写明入口压力假设（新基准审阅 S9）。老化系数乘在整个链路效率上，压缩电耗也随之放大 4.2 %（02_hydrogen_ops.md L4）。"
+
+- id: h2_el_linear_coeff
+  name: 电解槽线性电耗系数（链路效率的基础项）
+  value: 49.12
+  unit: kWh/kg H2（= 47.12 电堆线性项 + 2.0 压缩）
+  sensitivity: {}
+  source: "a_lin = 47.12 kWh/kg derived so that system SEC at full load = 53 kWh/kg with f = 0.02 and the two convex pieces (part-load report §3.1-3.2, check: 0.020 + 0.889 + 0.064 + 0.027 = 1.000 MW/MW); + 2.0 compression (R1_5 Item 4)."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§3.1–3.3；reports/新基准参数与实现审阅.md §8"
+  decided: "2026-10-19 作者（新基准）；D2_模型设定.md §1 写作'49.12 kWh/kg（含压缩与辅机）'"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "49.12 kWh/kg（= 0.04912 MWh/kg ×1000）"
+  model_entry: "model.py L334 a_el = 0.04912 MWh/kg；L339 efficiency = hu/a_el（t/MWh）；L348 老化覆盖；L475 容量 = 块数×10×a_el×可用率；进入：electrolyzer 链路效率与容量约束（L477）"
+  notes: "数值有依据，但其含义取决于 h2_el_sec_reference_53；D2 文档'含压缩与辅机'的写法与代码不符，见 h2_el_sec_basis。"
+
+- id: h2_efficiency_path
+  name: 电解与燃料电池效率随运行年份提高的路径（--el-sec-path、--fc-kg-path）；value 为 2026-10-29 原基准，F4 起默认改用 DEA v0015 路径
+  value: {el_full_load_system_kWh_per_kg: {2025: 54.92, 2030: 52.6, 2040: 50.6, 2050: 48.0}, el_linear_coeff_kWh_per_kg: {2025: 49.12, 2030: 47.04, 2040: 45.25, 2050: 42.93}, fc_kg_per_MWh: {2025: 60.6, 2030: 57.7, 2040: 54.6, 2050: 53.6}, fc_eff_LHV: {2025: 0.495, 2030: 0.52, 2040: 0.55, 2050: 0.56}}
+  unit: "kWh/kg（满负荷系统，含 2 kWh/kg 压缩，LHV）；kg/MWh"
+  sensitivity:
+    low: {el_full_load_system: {2025: 54.92, 2030: 54.0, 2040: 52.6, 2050: 51.0}, fc_eff_LHV: {2025: 0.495, 2030: 0.495, 2040: 0.50, 2050: 0.50}, roundtrip_2050_aged: 0.304}
+    high: {el_full_load_system: {2025: 54.92, 2030: 50.0, 2040: 48.0, 2050: 46.5}, fc_eff_LHV: {2025: 0.495, 2030: 0.55, 2040: 0.60, 2050: 0.60}, roundtrip_2050_aged: 0.400}
+  source: "revision_round1/reports/氢能效率路径出处.md：DEA Technology Data Renewable fuels AEC 100 MW 系统 57.7/56.7/53.6/51.0/47.6 kWh/kg（2020/25/30/40/50，不含 >30 bar 压缩）；US DOE MYPP 2024 Table 6.3 液碱 55→52(2026)→48（最终）；Clean Hydrogen JU SRIA Annex AEL 50/49/48、PEMFC 51–500 kWe 50/52/58 %（2020/24/30，BoL）；IEA GHR 2024 66→69 %（2023→2030）；IRENA 2020 2050 <45 kWh/kg；METI 2019 碱性 5.0→4.3 kWh/Nm3（2030，约 55.6→47.8 kWh/kg，表格排版待核对原文）；NEDO 2023 纯氢 PEFC 50–55 %→60 %(2030)；PyPSA technology-data v0.15.0 电解用 DEA AEC、燃料电池固定 0.5"
+  report: "revision_round1/reports/氢能效率路径出处.md；02_plan/revision_master_plan.md 2026-10-29 效率路径"
+  decided: "2026-10-29 作者同意：基准路径如 value（燃料电池 2050 取 56 %）；线性系数 = 满负荷值 ÷ 1.1181（部分负荷曲线与空载不变）；按运行年份赋值（全机队同一效率，对早建设备偏乐观，氢能 2040 年后才建故偏差小）；保留寿命平均劣化（×1.0468 / ×1.027）叠加在路径上"
+  status: confirmed
+  verified: "2026-10-29 回归（8 线程 Gurobi，每年 3 天）：不加选项 F3 S2 NPV 52.862230208575575 不变；路径设为各年等于 F3 值（54.92、60.6）时 NPV 逐位相同；基准路径 S2 optimal（60.982）、自检通过"
+  code_now: "model.py EL_FL_RATIO = 54.92/49.12；build() 中 ael_t、fk_t 按快照年份插值；电解效率 = hu/(ael_t·劣化)、VOM = 4/ael_t（円/kg 不变）、电解功率容量 = 块数×10 kg/h×ael_t×可用率；燃料电池效率 = 1/(fk_t·劣化)、功率容量 = 块数×10 MW 对应的 fk_t×可用率（燃料电池按 MW 计，块的电功率不变）"
+  model_entry: "model.py build()：electrolyzer/fuelcell 链路效率、electrolyzer marginal_cost、electrolyzer_year_capacity、fuelcell_year_capacity；进入：效率路径算例（effpath）"
+  notes: "电解块按产氢 10 kg/h 定义（造价按块），效率提高后每块耗电下降、按 kW 计的造价相应上升；燃料电池块按 10 MW 电输出定义。2 kWh/kg 压缩电耗不随年份下降（文献值不含压缩），已含在满负荷系统值中。summary 中按 a_el 常数换算的电解 MW（UNIT_KW、phys cap check）仍用 F3 常数，报告 MW 时用 2050 年 ael 换算。（2026-11-01 清理）F4 起（含 F5、F6）默认路径为 --el-sec-path 2025:59,2030:57,2040:56,2050:54（DEA v0015 AEC 10 MW + 压缩 2，见 default_F4）；value 中 54.92/52.6/50.6/48.0 的路径现作为 eff_hi 敏感性（sensitivity_F5_20261030、sensitivity_F6_20261030），燃料电池路径不变。"
+
+- id: default_F5
+  name: 默认设定 F5（2026-10-30 起，同日被 default_F6 取代，历史记录）：F4 + 全技术年金、截断到 2050 年（年金法残值）
+  value: "F4 全部设定（碱性电解、--el-sec-path 2025:59,2030:57,2040:56,2050:54、--fc-kg-path 2025:60.6,2030:57.7,2040:54.6,2050:53.6）+ --all-annuity --no-perpetuity：所有新建设备（风电、光伏、电解槽、燃料电池、储罐）按有限寿命年金计成本，到寿命退役；年金只计到 2050 年，2050 年按一年计，未计入的年金即残值"
+  unit: "-"
+  sensitivity: "截断到 2060 年（--extend-to 2060）；永续年金（去掉 --no-perpetuity）；F4 的 PLEXOS 方法 + 永续（default_D2_args_F4_20261030.txt）"
+  source: "all_annuity_method、end_treatment_robustness（PyPSA 多期规划 Type II 与 GenX 的截断年金口径）；default_F4"
+  report: "02_plan/D2_模型设定.md §1、§2；02_plan/revision_master_plan.md 2026-10-30 默认 F5"
+  decided: "2026-10-30 作者：所有投资设备都用年金制（不再用 PLEXOS 一次性投资 + 寿命后免费继续），这样不同设备寿命不同的问题自然解决；不用永续年金：氢能只在规划期最后几年才建，说明有意义的部分落在规划期之外，要用永续就须把规划期延到 2070 年左右，但参数与不确定性不允许；规划期 2025–2050 与数据、技术参数范围和日本 2050 碳中和一致，故默认截断到 2050 年，截断到 2060 年为对照"
+  status: confirmed
+  verified: "--all-annuity 回归见 all_annuity_method（不加选项 NPV 不变；截断 3 天测试 optimal）；F3 效率下的截断 2050 九情景中 S1、S2、C0、CH 已求解（allann atrunc）"
+  code_now: "src/default_D2_args.txt（F4 存 default_D2_args_F4_20261030.txt，F3 存 default_D2_args_F3_20261029.txt）"
+  model_entry: "model.py investment_pv all_annuity 分支、vintage_pv（PERP=False）、build() vintage 容量约束；W2050 = 1.03^-(2050-2024)"
+  notes: "论文中的理由写规划期与数据范围，不写'使氢能早建'。S0 无新建，但截断改变 2050 年运行权重，须重算。"
+
+- id: default_F4
+  name: 默认设定 F4（2026-10-29 起，已被 default_F5、default_F6 取代，历史记录）：F3 + 碱性电解 + 效率随运行年份提高（电解用 DEA v0015）
+  value: "F3 全部设定不变（PLEXOS 方法 + 永续、118 MW、无建设上限、碱性电解运行参数：最低负荷 0.20、冷启动 1 h、启停成本 0、劣化 0.24 %/年、电堆 40 年/11 %、FO&M 2 %），加 --el-sec-path 2025:59,2030:57,2040:56,2050:54（满负荷系统 kWh/kg，DEA v0015 AEC 10 MW 57/55/54/52 + 压缩 2）与 --fc-kg-path 2025:60.6,2030:57.7,2040:54.6,2050:53.6（燃料电池 49.5→56 % LHV）"
+  unit: "-"
+  sensitivity: "h2_efficiency_path 原基准（DEA v0012 形状 54.92/52.6/50.6/48.0）；PEM 整套与 AEL 加严（h2_tech_sensitivity_20261029）；全技术年金（all_annuity_method）"
+  source: "h2_efficiency_path、h2_tech_sensitivity_20261029；revision_round1/reports/氢能效率路径出处.md、碱性与PEM电解对比.md"
+  report: "02_plan/D2_模型设定.md §1、§2；02_plan/revision_master_plan.md 2026-10-29 默认 F4"
+  decided: "2026-10-29 作者：采用碱性假设（不加严），把效率提升作为默认，电解电耗用 DEA 新版（v0015）；尽快建立默认模型，先跑基准情景，再做敏感性"
+  status: confirmed
+  verified: "default_D2_args.txt = default_D2_args_F3_20261029.txt + 上述两项；同参数的 S2、CH 已在 h2tech 批次（deav15）求解，optimal、自检通过"
+  code_now: "src/default_D2_args.txt（F3 原文件存 default_D2_args_F3_20261029.txt；make_timing_batch.py 的历史批次改读 F3 文件）"
+  model_entry: "同 h2_efficiency_path"
+  notes: "S0、S1、A0、B0、C0 无氢能，F4 与 F3 结果相同（reg1 d2__*）；需新求解 AH、BH；S2、CH 即 h2tech deav15__S2/CH。"
+
+- id: h2_tech_sensitivity_20261029
+  name: 电解技术与效率敏感性（在 h2_efficiency_path 基准上，S2、CH）
+  value:
+    dea_v0015_sec: {el_full_load_system_kWh_per_kg: {2025: 59, 2030: 57, 2040: 56, 2050: 54}, fc: "同 h2_efficiency_path 基准"}
+    pem: {capex_kJPY_per_10kgph_block: {2025: 143550, 2030: 37323, 2040: 28710, 2050: 21532}, el_full_load_system_kWh_per_kg: {2025: 57.4, 2030: 53.6, 2040: 50.6, 2050: 47.5}, el_min_load: 0.10, h2_startup_hours: 0, stack: {share: 0.15, years: 32}, el_degradation_per_yr: 0.003, el_stack_life_for_average: 32, el_fom: 0.02}
+    ael_strict: {el_min_load: 0.30, el_startup_cost_JPY_per_MW: 8944}
+  unit: "-"
+  sensitivity: null
+  source: "revision_round1/reports/碱性与PEM电解对比.md §3–4：DEA Technology Data Renewable fuels v0015（2026-08）ch.80 AEC 10 MW 系统 57/55/54/52 kWh/kg + 2 kWh/kg 压缩；PEM：DEA v0015/v0012 PEMEC、SRIA 2024、IRENA 2020、DOE MYPP 2024、Matute 2019（造价 250→65→50→37.5 千円/kW，2040–2050 为 agent 推算；出口 30 bar 省压缩约 0.5 kWh/kg 为推算）；AEL 最低负荷 0.30 = DEA 2025 AEC 电堆值（Table 5, p.40）；启停磨损 8,944 JPY/MW = 登记表附录 b 现有值"
+  report: "revision_round1/reports/碱性与PEM电解对比.md；02_plan/revision_master_plan.md 2026-10-29 技术敏感性"
+  decided: "2026-10-29 作者同意：基准按碱性（FH2R）建模，参数不改；跑三组敏感性（新版 DEA 电耗、PEM 整套、AEL 加严），各 S2、CH"
+  status: confirmed
+  verified: "全部为现有命令行选项组合（--el-sec-path、--capex-electrolyzer、--el-min-load、--h2-startup-hours、--h2-stack-repl、--el-degradation、--el-stack-life、--el-startup-cost），无代码改动；上一次回归与 check_all 见 h2_efficiency_path"
+  code_now: "make_timing_batch.py SET=h2tech：F3 + h2_efficiency_path 基准 + 各组改动"
+  model_entry: "同 h2_efficiency_path；进入：技术敏感性算例"
+  notes: "PEM 组 --h2-startup-hours 0 只影响电解（F3 --fc-startup-hours 0 已单独设定）；PEM 每块 10 kg/h 的电功率随 SEC 变化，造价按块输入。PEM 启停成本取 0（与基准一致）。"
+
+- id: h2_el_sec_basis
+  name: 电解耗电的最终口径（49.12 是线性项还是系统总值）
+  value: {linear_coeff: 49.12, full_load_system: 54.92, unit: kWh/kg}
+  unit: kWh/kg H2
+  sensitivity:
+    as_coded_unaged: {x035_min: 51.93, x050: 52.64, x070: 53.12, full_load: 54.92}
+    as_coded_aged_lifetime_avg: {x035_min: 54.36, full_load: 57.49}
+    alt_49_12_as_full_load_system: {linear_coeff: 43.93, full_load: 49.12}
+  source: "Code chain (02_hydrogen_ops.md §1.1): full-load SEC = 49.12 x (1 + 0.02 + 0.2038 x (1 - 0.5185)) = 49.12 x 1.1181 = 54.92 kWh/kg; minimum at x = 0.35: 51.93; with lifetime-average ageing x1.042 (old stack life 15 yr): 57.23 / 54.11; with D2 from 2026-10-28 (0.24 %/yr, stack life 40 yr) x1.0468: 57.49 / 54.36. D2 base S2 average SEC >= 56.7 kWh/kg. Part-load report design chain: 53 (system, full load) + 2 compression ≈ 55."
+  report: "revision_round1/02_plan/D2_settings/02_hydrogen_ops.md M1、§1.4；reports/新基准参数与实现审阅.md §3、S9"
+  decided: 2026-10-28 作者同意分组建议（第 2 组）：保持现公式，49.12 为线性项，满负荷系统电耗约 54.9 kWh/kg（含 BoP 与压缩）；文档与正文改为报告满负荷值和实际平均值
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "未老化：x=0.35 51.93，0.50 52.64，0.70 53.12，1.00 54.92 kWh/kg；老化（δ_el = 1.0468）：x=0.35 54.36，1.00 57.49。（2026-11-01 清理）以上为 F3 常数电耗与 40 年电堆的口径；F6 默认：--h2-electrolysis-mwh-per-kg 0.04912 仍是基础线性项（映射检查对象），但运行年份的满负荷值由 --el-sec-path 覆盖为 59/57/56/54 kWh/kg（线性项 = 满负荷值 ÷ 1.1181，2025 年 52.77），寿命平均老化 δ_el = 1 + 0.0024 × 7 = 1.0168（电堆 15 年）"
+  model_entry: "model.py L519-525 extra ≥ 0.02u + s_j(p − b_j·(u−su))；L348 效率；SEC(x) = a_el·δ_el·(1 + extra(x)/x)；进入：氢平衡与电平衡（el_eff_aux 链路，L352-355、L516-525）"
+  notes: "代码与部分负荷报告的设计链（满负荷 53 + 压缩 2 ≈ 55）一致，多半只是 D2 文档措辞问题。若作者本意是 49.12 为满负荷系统总值，线性系数应改为 49.12/1.118 ≈ 43.93，曲线斜率按 kWh/kg 重新换算，模型对氢偏不利约 12–16 %（02_hydrogen_ops.md M1）。正文应报告实际平均 SEC，不应只写 49.12。"
+
+- id: h2_el_full_load_input_factor
+  name: 满负荷总输入与链路输入之比（×1.118）
+  value: 1.1181
+  unit: dimensionless
+  sensitivity: {}
+  source: "Derived: 1 + f + s2_cum x (1 - b2_intercept) = 1 + 0.02 + 0.2038 x 0.4815 = 1.1181 (新基准审阅 §2.2; 02_hydrogen_ops.md §1.1)."
+  report: "reports/新基准参数与实现审阅.md §2.2、S2"
+  decided: "2026-10-19（新基准审阅修正：UC 能耗与成本按满负荷口径 ×1.118）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "1.11813"
+  model_entry: "派生：1 + 0.02 + max_j s_j(1 − b_j)（L519-525 在 x = 1）；进入：无独立入口（派生量）"
+  notes: "用途：把以额定电功率给出的参数（热备用、启动能耗、启动成本、空载）换到链路 MW 口径；把块容量从 491.2 kW 换到 549.2 kW。空载 0.02 没有乘该系数，见 h2_el_noload。"
+
+- id: h2_el_noload
+  name: 电解槽空载（无负荷 BoP）电耗
+  value: 0.02
+  unit: MW per MW committed（链路 MW 口径）
+  sensitivity: {low: 0.01, high_shunt_current: 0.05}
+  source: "Matute et al. 2019 IJHE 44:17431, 'assumed as 2% of the electrolyser system's rated power' (multi-MW); Baumhof et al. 2023 PowerTech 'values between 1-5% of the electrolyzer full load capacity'; Matute et al. 2021: multi-MW 'around 2%'."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§1.3；reports/电解槽热备用与启动参数.md §1.1"
+  decided: "2026-10-19 作者（新基准：no-load 2%）；D2_模型设定.md §1（c）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0.02 MW/MW 投运链路容量（u 以链路 MW 计，含启动中容量），= 满负荷总输入的 1.79 %"
+  model_entry: "model.py L519 base = 0.02·electrolyzer_committed；L521 extra ≥ base；L520 无 --h2-uc 时报错；进入：constraint: el_eff_noload / el_eff_piece_j（附加耗电，经 el_eff_aux 进入电平衡）"
+  notes: "文献以满负荷总输入为基数；代码以链路 MW 为基数，相当于满负荷总输入的 1.79 %。按'额定输入 2 %'应设 0.0224（02_hydrogen_ops.md L3）。0.05 敏感性代表加压装置杂散电流主导（Sakas 2022/2024）。"
+
+- id: h2_el_partload_curve
+  name: 电解槽部分负荷凸曲线
+  value: {breakpoints: [0.35, 0.70], extra_slope_kwh_per_kg: [5.19, 4.82], cli: "0.35:0.1057,0.5185:0.2038"}
+  unit: "负荷率（相对投运容量）；kWh/kg 附加斜率；CLI 为 x 截距:累计附加 MW/MW"
+  sensitivity: {single_breakpoint: {b: 0.40, s: 7.42, a_lin: 47.49}}
+  source: "Fit in part-load report §3.2: stack consumption 12 % higher at full load than at 25 % load, between Baumhof et al. 2023 Fig.1(a) (+12.7 % full load vs peak) and Pöyhönen et al. 2025 Energy 322:135602 (52 -> 47 kWh/kg from 100 % to 20 % load, +10.6 %); U-shape with minimum near 30 % load per IRENA 2020 p.45 ('peaks at this level')."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§1.2、§3"
+  decided: "2026-10-19 作者（新基准：electrolysis curve）；D2_模型设定.md §1（c）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "斜率 0.1057×49.12 = 5.192、(0.2038−0.1057)×49.12 = 4.819 kWh/kg；两段交点 x = 0.7001"
+  model_entry: "model.py L522-525；ref = u − su（L524，--model-fixes、--h2-uc 且 h2_startup_hours > 0）；进入：constraint: el_eff_piece_0/1"
+  notes: "设计系统曲线（53 口径）：20 % 52.4、35 % 50.2、100 % 53.0 kWh/kg；模型（含压缩）各点约高 1.9。事后统计 L687–691 仍以装机容量为参照，与约束不一致（02_hydrogen_ops.md M2），只影响诊断量。曲线不随老化放大（报告建议放大，量级小）。"
+
+- id: h2_el_water_vom
+  name: 电解槽水费（可变运维）
+  value: 4
+  unit: JPY/kg H2（名义）
+  sensitivity: {}
+  source: "No source found. Value 4 comes from the original PLEXOS 'VO&M Charge' of 'Power to H2 Facility'."
+  report: "reports/新基准参数与实现审阅.md A6；reports/氢能消失原因审计.md C6"
+  decided: 2026-10-28 作者同意分组建议（第 2 组）：沿用原稿 4 円/kg，注明无一手出处、影响可忽略
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=mismatch"
+  code_now: "81.43 円/MWh 输入；每 MWh 实际产氢 1/(a_el·δ_el) kg，故 = 4×δ_el = 4.187 円/kg H2"
+  model_entry: "model.py L339 marginal_cost = (4/a_el)/1e6 百万円/MWh 链路输入（硬编码，不读 S2_parameters.json 的 VO&M Charge = 4）；进入：objective: 电解槽链路运行费（按 snapshot 权重贴现）"
+  notes: "审阅认为按 10–15 L/kg 和日本工业用水价格估算量级合理，但没有出处；影响可忽略（0.08 JPY/kWh）。"
+
+# ---------------------------------------------------------------------
+# E. 老化
+# ---------------------------------------------------------------------
+- id: h2_el_degradation
+  name: 电解槽电堆老化率
+  value: 0.0024
+  unit: fractional increase in kWh/kg per year of stack age
+  sensitivity: {low: 0.004, high: 0.010, at_D2_operating_hours: [0.0025, 0.0047]}
+  source: "Clean Hydrogen JU SRIA 2021-2027 Annex 2 Table 2 p.152: AEL degradation 0.12/0.11/0.10 %/1,000 h (2020/2024/2030), KPI-6; x 5,000 h/yr = 0.6 %/yr. EPRI (2022) Technology Brief 3002025148: '1% annual performance loss in continuous baseload operation' (sensitivity 1.0 %/yr)."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§2.1、§2.3；D2_settings/02_hydrogen_ops.md M3"
+  decided: 2026-10-28 作者同意分组建议（第 2 组）：按运行小时计，SRIA 0.12 %/1,000 h × D2 满负荷当量约 2,000 h/年 = 0.24 %/年；重跑后若运行小时明显变化需复核
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0.0024/年；寿命平均系数 δ_el = 1.0468（电堆 40 年，F5 及以前）；F6 电堆 15 年，平均年龄 7 年，δ_el = 1.0168（2026-11-01 清理）"
+  model_entry: "model.py L346-348 efficiency_t = hu/(a_el·(1 + 0.0024·19.5))；进入：electrolyzer 链路效率（氢平衡约束）"
+  notes: "老化按运行小时发生。0.6 %/年假设 5,000 h/年；D2 S2 中电解槽运行 2,800–3,950 h/年、满负荷当量约 2,000–2,150 h/年（2040 年后），按此折算为 0.25–0.47 %/年，寿命平均系数应为 1.017–1.033 而不是 1.042（02_hydrogen_ops.md M3；D2 §5 列入修改清单）。作者需决定：按实际小时重算，或在正文说明'取保守值'。方向对氢不利，影响约 1–2.5 % SEC。"
+
+- id: h2_fc_degradation
+  name: 燃料电池老化率
+  value: 0.006
+  unit: fractional increase in kg/MWh per year of stack age
+  sensitivity: {high: 0.012}
+  source: "SRIA 2021-2027 Table 21 p.167: PEMFC degradation 0.4 (2020 SoA) / 0.2 / 0.2 %/1,000 h (2024/2030), KPI-6; 0.2 %/1,000 h x 3,000 h/yr = 0.6 %/yr; DOE FCTO MYRDD 2016 Table 3.4.13: 0.3 %/1,000 h (2020 target)."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§4.1–4.2"
+  decided: "2026-10-19 作者（新基准）；D2_模型设定.md §1（e）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "δ_fc = 1.027 → 62.24 kg/MWh（48.2 % LHV）"
+  model_entry: "model.py L349-351 efficiency_t = 1/(fk·(1 + 0.006·4.5))；进入：fuelcell 链路效率"
+  notes: "报告注明'FC 年运行小时明显不同时应重算'。本地没有 base__S2 的 link_input，FC 实际运行小时尚未核对（02_hydrogen_ops.md Q2）。"
+
+- id: h2_degradation_method
+  name: 老化的实现方式（寿命平均）
+  value: lifetime_average
+  unit: "age = (stack_life − 1)/2：电解槽 7 年（电堆寿命 15 年，F6 2026-10-30 起；F5 为 19.5 年），燃料电池 4.5 年"
+  sensitivity: {alternative: "sawtooth from 2025 (old default)"}
+  source: "Part-load report §3.4 point 3: lifetime-average uplift r·L/2 as a simpler alternative to vintage tracking; 新基准审阅 A5: use lifetime average (el +4.2 %, fc +2.7 %) to avoid the 2050 perpetuity locking a sawtooth point."
+  report: "reports/电解槽部分负荷效率与老化参数.md §3.4；reports/新基准参数与实现审阅.md S4、A5"
+  decided: "2026-10-19（新基准审阅修正：lifetime-average stack degradation）；D2 默认参数"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "lifetime_average；平均年龄 电解槽 7 年、燃料电池 4.5 年"
+  model_entry: "model.py L347、L350 age = (stack_life − 1)/2；进入：链路效率"
+  notes: "报告建议老化只乘电堆项，不乘压缩和空载；代码乘在整个链路上，满负荷多约 0.33 kWh/kg（0.6 %），可在文中说明（02_hydrogen_ops.md L4）。平均老化隐含按 stack_life 换堆、效率复原，与换堆成本是否计入相关联（见 h2_el_stack_replacement_cost）。"
+
+# ---------------------------------------------------------------------
+# F. 运行约束（a：机组组合；b：热备用与启动）
+# ---------------------------------------------------------------------
+- id: h2_uc_enabled
+  name: 线性松弛机组组合（a）
+  value: true
+  unit: boolean
+  sensitivity: {no_uc: false}
+  source: "Hua, Baldick & Wang (2018) IEEE TPWRS 33(2):2272-2281, doi:10.1109/TPWRS.2017.2735026 (convex relaxation of UC in expansion planning); Palmintier & Webster (2014) IEEE TPWRS 29(3):1089-1098."
+  report: "reports/R1_5_parameter_sources.md Item 9"
+  decided: "2026-10-19 作者（新基准含 UC）；2026-10-27 作者：a 保留在 D2 基准"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "true"
+  model_entry: "model.py L487-515（u、su 变量与约束）；进入：constraints: *_p_le_committed、*_min_load、*_committed_le_capacity、*_startup_def"
+  notes: "2026-10-27 作者认为 a、b 均非审稿人要求；a 仍保留在 D2，b 移到附录。实际上 a 中只有'1 h 不产氢的冷启动 + 空载 + 以投运容量为参照的曲线'起作用（02_hydrogen_ops.md L1）。"
+
+- id: h2_el_min_load
+  name: 电解槽最低负荷
+  value: 0.20
+  unit: fraction of committed productive capacity
+  sensitivity: {low: 0.15}
+  source: "IRENA (2020) Table 6 p.65 alkaline 'Load range 15%-100%'; Baumhof et al. 2023 'around 15-20% of the nominal power'; DEA Renewable Fuels ch.86 Table 4 AEC load range 15-100 %; Brauns & Turek 2020 Processes 8:248 '10 to 25%'; Schmidt et al. 2017 Table 1 '10-40 %'."
+  report: "reports/电解槽部分负荷效率与老化参数.md §0.2、§1.4；reports/R1_5_parameter_sources.md Item 7"
+  decided: "2026-10-19 作者（新基准）；D2_模型设定.md §1（a）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0.2 × 投运且已产氢的链路容量"
+  model_entry: "model.py L501 p ≥ 0.2·(u − su/hw)；进入：constraint: electrolyzer_min_load"
+  notes: "LP 会把负荷率推到效率最高的 0.35 附近，20 % 下限基本不起约束（02_hydrogen_ops.md L1）。"
+
+- id: h2_el_startup_hours
+  name: 电解槽冷启动不产氢时长
+  value: 1
+  unit: hours
+  sensitivity: {}
+  source: "DEA Renewable Fuels ch.86 Table 4: AEC cold start-up '< 80' min; IRENA 2020 Table 6: alkaline cold start '< 50 minutes'; Wang et al. 2024 RSER 203:114779 Table 3: AWE cold start 30-60 min."
+  report: "reports/R1_5_parameter_sources.md Item 7；reports/电解槽热备用与启动参数.md §0、§2.1"
+  decided: "2026-10-19 作者（新基准：el cold start 1 h）；D2_模型设定.md §1（a）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "1 h（type=int；>1 也只按 1 h 实现）"
+  model_entry: "model.py L497 sh_k；L500-501 p ≤ u − su/hw；进入：constraint: electrolyzer_p_le_committed"
+  notes: "文献 30–80 min，取整小时属于偏保守（新基准审阅 S11）。代码只实现 1 h，>1 h 也按 1 h（A8）。"
+
+- id: h2_el_standby_power
+  name: 电解槽热备用功率（b）
+  value: 0.0224
+  unit: MW per MW（链路 MW 口径）
+  sensitivity: {appendix_base: 0.0224, low: 0.0112, high: 0.056}
+  source: "Literature value for the appendix: Matute et al. 2019 'assumed as 2% of the electrolyser system's rated power' (multi-MW); Baumhof et al. 2023 '1-5%'; Matute et al. 2021 80 kW: 5 %. 0.0224 = 2 % x 1.118 (link-MW basis)."
+  report: "reports/电解槽热备用与启动参数.md §0、§1.1"
+  decided: "2026-10-30 作者：F6 设为新默认（见 default_F6）：热备用 2 %（×1.118 = 0.0224，Matute 2019；Baumhof 2023）进基准。原 2026-10-27 为 0"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0.0224"
+  model_entry: "model.py L490-496（s_k = 0 时不建 standby 变量）；L356 h2_aux 不建；进入：无（为 0）"
+  notes: "附录研究（2026-10-24/25 standby 系列）用 1 %/2 %/5 %（×1.118）。启动磨损为 0 时热备用不起作用。"
+
+- id: h2_el_startup_energy
+  name: 电解槽冷启动能耗（b）
+  value: 0
+  unit: MWh per MW started（链路 MW 口径）
+  sensitivity: {appendix_base: 0.168, low: 0.056, high: 0.503}
+  source: "No direct literature value; engineering estimate 0.15 MWh/MW (range 0.05-0.45) from sensible heat with heat capacity 9 MJ/(K·MW) (Qiu et al. 2026 IJHE 259:156155, industrial calibration) to 24-27 MJ/(K·MW) (Qi et al. 2023 Appl. Energy 332:120551), ΔT = 65 K. 0.168 = 0.15 x 1.118."
+  report: "reports/电解槽热备用与启动参数.md §0、§2"
+  decided: "2026-10-27 作者：b 不进基准（0），放附录"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0"
+  model_entry: "model.py L491、L507（e_k = 0）；L356 h2_aux 不建；进入：无（为 0）"
+  notes: "附录值是工程估算，不是文献直接值，正文须写明。"
+
+- id: h2_el_startup_cost
+  name: 电解槽启停磨损成本（b）
+  value: 1118
+  unit: JPY per MW started
+  sensitivity: {high: 8944, low: 0}
+  source: "Raheli et al. 2023 Comput. Chem. Eng. 179:108450 'cold-startup cost of K^su = €50' (1 MW, from Varela 2021); Baumhof 2023, Saretta 2023 €50-100/MW; stack-replacement / allowed cold starts (3,000-5,000, Matute 2021) estimate 8,600-20,300 JPY/MW. Base 8,000 JPY/MW x 1.118 = 8,944."
+  report: "reports/电解槽热备用与启动参数.md §0；reports/新基准参数与实现审阅.md §8"
+  decided: "2026-10-30 作者：F6 设为新默认（见 default_F6）：1,000 JPY/MW（额定口径，×1.118 = 1,118）= 电堆费 ÷ 约 5,000 次冷启动，按 F5 造价（reports/电解槽UC参数核实.md）；8,944 为上限敏感性。原 2026-10-27 为 0"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "1118"
+  model_entry: "model.py L510、L515；进入：objective（系数 0）"
+  notes: "附录研究表明启动磨损是 b 中的关键项：磨损为 0 时电解槽规模约翻倍（master plan 2026-10-25）。Varela 2021 原始取值 UNVERIFIED。"
+
+- id: h2_el_ramp
+  name: 电解槽爬坡限制
+  value: 1.0
+  unit: p.u. of capacity per hour（≥1 即不限制）
+  sensitivity: {}
+  source: "IRENA 2020 §2.5: ramping 'completed in less than one second'; DEA Renewable Fuels ch.86 Table 4: power response '< 1-5' s; R1_5 Item 7: 'No hourly ramp limit'."
+  report: "reports/R1_5_parameter_sources.md Item 7；reports/新基准参数与实现审阅.md A1"
+  decided: "2026-10-19 作者（新基准：ramp 1 p.u./h）；D2 参数"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "1.0（不限制）"
+  model_entry: "model.py L511-514 |Δp| ≤ 1·C；进入：constraint: electrolyzer_ramp_up/down（冗余：0 ≤ p ≤ C 时恒成立）"
+  notes: "设计意图是'不限制'；传 2 可跳过冗余约束（02_hydrogen_ops.md L2）。"
+
+- id: h2_fc_min_load
+  name: 燃料电池最低负荷
+  value: 0
+  unit: fraction of committed capacity
+  sensitivity: {lp_default: 0}
+  source: "No source for 0.20. Related: EPA CHP Catalog (2015/2017) Fuel Cells 'efficiency ... relatively steady down to one-third to one-quarter of rated capacity' (supports ~25-33 % as a reasonable minimum); R1_5 Item 8 recommends 0 in the LP; DEA ch.12 'close to 0% nominal load without significant loss of efficiency'."
+  report: "reports/R1_5_parameter_sources.md Item 8；reports/新基准参数与实现审阅.md §8（FC 0.2 没有来源）"
+  decided: "2026-10-30 作者：F6 设为新默认（见 default_F6）：燃料电池不施加 UC（现代 PEM 启停影响小；reports/燃料电池UC与换堆参数核实.md）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0"
+  model_entry: "model.py L504 p_fc ≥ 0.2·u（fc_startup_hours = 0）；进入：constraint: fuelcell_min_load（u 无成本，不起作用）"
+  notes: "数值按作者 D2 设定填写，但没有文献依据。燃料电池的 u 没有任何成本或能耗，LP 可取 u = p，该约束完全不起作用（02_hydrogen_ops.md L1；新基准审阅 S1）。建议正文写'不施加'或删去燃料电池 UC。"
+
+- id: h2_fc_startup_hours
+  name: 燃料电池启动时长
+  value: 0
+  unit: hours
+  sensitivity: {}
+  source: "DOE stationary FC technical targets (small 1-25 kW): start-up from 20 °C '10 min' (2015 status); Panasonic 2021 pure-H2 5 kW: about 1 min to start, about 7 min to rated."
+  report: "reports/R1_5_parameter_sources.md Item 8；reports/电解槽热备用与启动参数.md §0"
+  decided: "2026-10-19 作者（新基准：fc-startup-hours 0）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0"
+  model_entry: "model.py L497（fc_startup_hours = 0 非 None）→ L503-504；进入：constraint: fuelcell_p_le_committed（无启动损失）"
+  notes: "PAFC/SOFC 的小时级启动时间 UNVERIFIED，不引用。"
+
+- id: h2_fc_ramp
+  name: 燃料电池爬坡限制
+  value: 1.0
+  unit: p.u. of capacity per hour（≥1 即不限制）
+  sensitivity: {}
+  source: "DOE stationary FC targets: transient response 10 %-90 % in 5 min (2015 status), 2 min target; R1_5 Item 8 'no hourly ramp limit'."
+  report: "reports/R1_5_parameter_sources.md Item 8"
+  decided: "2026-10-19 作者（新基准：ramp 1）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "1.0"
+  model_entry: "model.py L511-514；进入：constraint（冗余）"
+  notes: ""
+
+- id: h2_fc_standby_startup
+  name: 燃料电池待机功率、启动能耗与启停成本
+  value: {standby: 0, startup_energy: 0, startup_cost: 0}
+  unit: "MW/MW；MWh/MW；JPY/MW"
+  sensitivity: {standby: 0.006}
+  source: "Panasonic FC-5KLR1HS: standby (no load) <= 30 W / 5,000 W (0.6 %); start-up energy ≈ 0; NEDO 2010 PEFC roadmap durability 90,000 h incl. 4,000 start-stops -> wear cost 0 at <= 1 start/day."
+  report: "reports/电解槽热备用与启动参数.md §0（PEFC 各行）"
+  decided: "2026-10-27 作者：b 不进基准"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "{0, 0, 0}"
+  model_entry: "argparse 默认 --fc-standby-power 0、--fc-startup-energy 0、--fc-startup-cost 0（L634；PRESET_PLEXOS 未设）；L490-510；进入：无（均为 0）"
+  notes: "报告推荐待机 0.6 % 只在有待机状态时才有意义；D2 不建待机状态。"
+
+# ---------------------------------------------------------------------
+# G. 可用率
+# ---------------------------------------------------------------------
+- id: h2_el_availability
+  name: 电解槽可用率
+  value: 0.97
+  unit: capacity derating factor
+  sensitivity: {low: 0.95}
+  source: "Colella, James & Moton (2014) DOE AMR PD102 (H2A PEM case study): 'Production Equipment Availability Factor (%)' = 97 % for all cases."
+  report: "reports/R1_5_parameter_sources.md Item 5、[S14]"
+  decided: "2026-10-19 作者（新基准 availability 97/95 %）；D2_模型设定.md §1（d）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0.97 → 0.4765 MW 链路/块；老化后实际产氢 10×0.97/1.0468 = 9.27 kg/h/块（F5 及以前）；F6 为 10×0.97/1.0168 = 9.54 kg/h/块（2026-11-01 清理）"
+  model_entry: "model.py L473、L475 C = 块数×10 kg/h×a_el×0.97；L477、L505；进入：constraint: electrolyzer_year_capacity、electrolyzer_committed_le_capacity（每小时容量降额）"
+  notes: "实现为容量降额，不是停机事件，经济上相当于造价 ×1/0.97。DEA ch.86 数据表中的强迫/计划停运率未核对（UNVERIFIED）。"
+
+- id: h2_fc_availability
+  name: 燃料电池可用率
+  value: 0.95
+  unit: capacity derating factor
+  sensitivity: {low: 0.90, high: 0.97}
+  source: "DOE Technical Targets for Fuel Cell Systems for Stationary (CHP) Applications, medium systems 100 kW-3 MW: 'System availability' 95 % (2015 status), 99 % (2020 target); EPA CHP Catalog Section 6: 'more than 90 percent availability'; PAFC 400 kW 90-95 %."
+  report: "reports/R1_5_parameter_sources.md Item 5、[S15]、[S16]"
+  decided: "2026-10-19 作者（新基准）；D2_模型设定.md §1（d）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "氢输入容量 ×0.95；因老化不进容量，每 MW 装机最大电出力 = 0.95/1.027 = 0.925 MW"
+  model_entry: "model.py L474、L476 C = cap(fuelcell)×60.6×hu×0.95（t/h 氢输入）；L478、L505；进入：constraint: fuelcell_year_capacity（以氢输入计）"
+  notes: "SRIA Table 21 给 51–500 kWe PEMFC 可用率 98 %，可作高端敏感性旁证。"
+
+# ---------------------------------------------------------------------
+# H. 燃料电池效率
+# ---------------------------------------------------------------------
+- id: h2_fc_kg_per_mwh
+  name: 燃料电池耗氢（未老化）
+  value: 60.6
+  unit: kg H2 per MWh_e（= 49.5 % LHV，AC 净）
+  sensitivity: {low_eff_45pct: 66.7, high_eff_60pct: 50.0, report_base_50pct: 60.0, tech_progress_path: {2025: 60.0, 2030: 54.5, 2040: 50.0}}
+  source: "HyAxiom PureCell Model 400 Hydrogen data sheet FCM107865 Rev. B (2023-05): 'Electrical Efficiency ... LHV 50', hydrogen input 26.4 kg/h at 440 kW (= 60.0 kg/MWh), note 1 'Average performance during 1st year of operation'; Doosan brochure Model 400 Hydrogen 'Electricity 49%'; DEA El&DH ch.12 LT-PEMFC 50 % (2020/2030/2050); NEDO 2023 定置用FCロードマップ 表1.4.2-1: 純水素PEFC 現在 50-55 %."
+  report: "reports/燃料电池效率核实.md §1、§5.2–5.3"
+  decided: "沿用原稿 60.6（报告：与基准 60.0 相差 1 %，可以保留）；D2 未改"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "60.6 kg/MWh（49.5 % LHV）；老化后 62.24 kg/MWh（48.2 %）"
+  model_entry: "argparse 默认 --fc-kg-per-mwh 60.6（L634；PRESET_PLEXOS 与 D2 均未设）；L340 fk = 60.6×hu；L345 efficiency = 1/fk；L351 老化；进入：fuelcell 链路效率（电平衡/氢平衡）与容量（L476）"
+  notes: "主结果用常数（不随投产年份变化）。60 % 对应 NEDO 2030 目标和 DOE MW 级 2027 里程碑；45 % 对应 DEA 2015 值与寿命期衰减。"
+
+- id: h2_fc_partload
+  name: 燃料电池部分负荷效率
+  value: constant
+  unit: 无曲线（耗氢率与负荷无关）
+  sensitivity: {}
+  source: "No verifiable MW-scale pure-H2 PEFC part-load curve found; EPA CHP Catalog: system efficiency 'relatively steady down to one-third to one-quarter of rated capacity'; DEA ch.12: 'close to 0% nominal load without significant loss of efficiency'."
+  report: "reports/电解槽部分负荷效率与老化参数.md §4.2；reports/燃料电池效率核实.md §2.3"
+  decided: "2026-10-19 新基准（燃料电池不加曲线）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "constant"
+  model_entry: "model.py 无燃料电池曲线参数或约束（只有 --el-curve）；进入：—"
+  notes: "PEFC 部分负荷效率通常高于额定点，常数假设偏保守。"
+
+# ---------------------------------------------------------------------
+# I. 储氢罐
+# ---------------------------------------------------------------------
+- id: h2_tank_standing_loss
+  name: 储氢罐泄漏率
+  value: 0
+  unit: fraction per day
+  sensitivity: {s1: 0.001, s2: 0.01}
+  source: "DEA Technology Data for Energy Storage ch.151 (2020): 'Type I, II and III tanks have metallic casing or liner, and therefore have almost negligible permeability' and 'the usage of Type I steel tanks makes these standby losses negligible'. Non-zero %/day values: no source (author assumption, UNVERIFIED)."
+  report: "reports/R1_5_parameter_sources.md Item 6、[S12]；reports/新基准参数与实现审阅.md S8"
+  decided: "2026-10-20 作者（默认改为 0，0.1 %/天作敏感性）；D2_模型设定.md §1（0.1 %/天、1 %/天为敏感性）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0"
+  model_entry: "model.py L335 h2_loss = 1 − (1−0)^(1/24) = 0；L338 standing_loss；进入：Store 能量平衡"
+  notes: "敏感性取值没有文献依据，只能写作假设；0.1 %/天相当于 30.6 %/年。"
+
+- id: h2_tank_initial_inventory
+  name: 储氢罐初始库存
+  value: 0
+  unit: t
+  sensitivity: {}
+  source: "Original PLEXOS 'H2 Storage Tank' Opening Inventory = 0 (inputs/S2_parameters.json)."
+  report: "D2_settings/02_hydrogen_ops.md §1.3"
+  decided: "沿用原稿"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "0 t"
+  model_entry: "model.py L338 e_initial=0, e_cyclic=False（硬编码）；S2_parameters.json Opening Inventory = 0；进入：Store 初始能量"
+  notes: ""
+
+- id: h2_tank_terminal_condition
+  name: 储氢期末条件（稳态末年，f）
+  value: "e(2050 年末) = e(2049 年末)"
+  unit: constraint
+  sensitivity: {old: "e(2050 年末) = 0"}
+  source: "新基准审阅 E1: with the 2050 perpetuity weight 15.92, 'end at zero' lets 2049 stock be valued ~33x; fix = steady final year."
+  report: "reports/新基准参数与实现审阅.md E1；reports/氢能消失原因审计.md §2.2"
+  decided: "2026-10-19（审阅修正，--model-fixes）；D2_模型设定.md §1（f）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "e(2050 最后一时) = e(2049 最后一时)"
+  model_entry: "model.py L551-555 hydrogen_steady_final_year（否则 L556 e(end)=0）；进入：constraint: hydrogen_steady_final_year"
+  notes: "审计实测影响：氢价值 −0.23 十亿円。"
+
+# ---------------------------------------------------------------------
+# J. 建设单位与 kW 口径
+# ---------------------------------------------------------------------
+- id: h2_el_block_size
+  name: 电解槽建设单位（块）
+  value: 10
+  unit: kg H2/h per block
+  sensitivity: {}
+  source: "Original PLEXOS 'Power to H2 Facility' Max Operating Level = 10 (inputs/S2_parameters.json)."
+  report: "D2_settings/02_hydrogen_ops.md §1.1、§1.4"
+  decided: "沿用原稿；LP 连续建设，块只是计量单位"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "10 kg/h/块（名义；老化与可用率后实际 9.27 kg/h）"
+  model_entry: "TECH['electrolyzer'] = ('Power to H2 Facility','Max Operating Level')（L20）；S2_parameters.json = 10；cap() L466（bsc = 1）；进入：容量约束 L475-477"
+  notes: ""
+
+- id: h2_el_block_kw_basis
+  name: 电解槽每块的电功率口径（造价换算与容量报告）
+  value: 549.2
+  unit: kW per block
+  sensitivity: {link_nominal: 491.2, capex_conversion_530: 530.0, full_load_input: 549.2, full_load_input_x_avail: 532.7}
+  source: "491.2 = 10 kg/h x 49.12 kWh/kg (link capacity); 530 = 10 x 53 (original PLEXOS SEC; UNIT_KW['electrolyzer']); 549.2 = 491.2 x 1.1181 (full-load total input incl. no-load and curve); x 0.97 availability = 532.7."
+  report: "D2_settings/01_investment.md L1；D2_settings/02_hydrogen_ops.md §1.4、L6；reports/氢能设备造价核实.md §4 第 5 条；reports/氢能消失原因审计.md Q1"
+  decided: 2026-10-28 作者同意分组建议（第 2 组）：统一为满负荷输入 549.2 kW/块，造价 = 千円/kW × 549.2
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "D2 四个锚点每块造价 ÷ 登记表 kJPY/kW = 549.2；10×49.12×1.11813 = 549.23 kW"
+  model_entry: "D2 造价参数；UNIT_KW['electrolyzer'] = 549.2（L110，仅年金法）；物理上 10×a_el×F = 549.23 kW；进入：objective（经造价换算）"
+  notes: "造价 120 kJPY/kW 若指额定满负荷输入（DEA、METI 口径），块造价应为 120 × 549.2 = 65,904 kJPY；按 530 计相当于比设计低 3.5 %；按 491.2 计相当于高 7.9 %。作者需选一种口径，使造价换算与正文报告的 MW 一致。"
+
+- id: h2_fc_block_size
+  name: 燃料电池建设单位（块）
+  value: 10
+  unit: MW_e per block
+  sensitivity: {}
+  source: "Original PLEXOS 'FH2R Fuel Cell Power Station Hydrogen' Max Capacity = 10 (inputs/S2_parameters.json)."
+  report: "D2_settings/02_hydrogen_ops.md §1.2"
+  decided: "沿用原稿"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "10 MW_e/块"
+  model_entry: "TECH['fuelcell'] Max Capacity = 10（S2_parameters.json）；BSC fuelcell = 10（L429）；进入：容量约束 L476"
+  notes: ""
+
+- id: h2_tank_block_size
+  name: 储氢罐建设单位（块）
+  value: 1
+  unit: t H2 working capacity per block
+  sensitivity: {}
+  source: "Original PLEXOS 'H2 Storage Tank' Max Inventory = 1000 kg (inputs/S2_parameters.json)."
+  report: "D2_settings/02_hydrogen_ops.md §1.3"
+  decided: "沿用原稿"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "1 t/块"
+  model_entry: "TECH['tank'] Max Inventory = 1000 kg；L530 stores ≤ cap(tank)×hu；进入：constraint: tank_year_capacity"
+  notes: "储罐无充放功率上限；压缩电耗已含在电解耗电中。"
+
+# ---------------------------------------------------------------------
+# K. 上限
+# ---------------------------------------------------------------------
+- id: h2_physical_caps
+  name: 氢能物理上限（数值安全界）
+  value: {electrolyzer_MW_link: 2000, fuelcell_MW: 500, tank_t: 10000}
+  unit: "MW（电解槽为链路口径，= 4,071.66 块，满负荷口径约 2,236 MW）；MW；t"
+  sensitivity: {}
+  source: "Modelling bound, not literature: introduced 2026-10-19 for numerics when hydrogen build limits are removed (revision_master_plan.md 2026-10-19 numerics); summary 'physical_cap_check' reports binding status."
+  report: "D2_settings/02_hydrogen_ops.md §1.5；reports/氢能消失原因审计.md C9"
+  decided: "2026-10-19（数值处理）"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "电解槽 4,071.66 块（链路 2,000 MW，满负荷 2,236 MW）；燃料电池 50 块；储罐 10,000 t"
+  model_entry: "H2_PHYS L121；L434 phys_units；L437 年上限、L462-463 总上限；L338/L339/L345 组件 p_nom/e_nom；L662-664 binding 检查；进入：constraints: annual_build 上界、total_build_*"
+  notes: "不是物理或场地上限的文献值，只是不起约束的数值界；每次结果都应检查 binding = false。"
+
+- id: h2_build_caps
+  name: 氢能建设上限（年上限与总上限）
+  value: null
+  unit: blocks（D2 不设上限）
+  sensitivity:
+    original_plexos_site_limited:
+      annual: {electrolyzer: 10, fuelcell: 10, tank: 4}
+      total: {electrolyzer: 50, fuelcell: 30, tank: 50}
+      process_capacity_kg_per_h: 1000
+  source: "Sensitivity values: original PLEXOS inputs (inputs/S2_parameters.json: Max Units Built in Year / Max Units Built; 'Power to H2 Process' Capacity = 1000). No literature or siting source found for these limits."
+  report: "revision_round1/02_plan/revision_master_plan.md 2026-10-18 04:05、2026-10-19 DECISION；D2_settings/02_hydrogen_ops.md §1.5"
+  decided: "2026-10-19 作者（上限无文献依据，移出基准）；2026-10-27 作者：D2 无年上限与总上限，上限作 R2.6 敏感性"
+  status: confirmed
+  verified: "2026-10-28 mapping/h2_map.yaml verdict=match"
+  code_now: "无上限（只剩物理上限）"
+  model_entry: "model.py L336、L432-436：h2s = h2a = inf → 年上限与总上限均取物理上限；进入：（无原稿上限）"
+  notes: "value 为 null 表示不设上限（作者决定），不是缺少依据。敏感性中的原稿上限本身没有出处，正文只能写'原稿设定'。"
+
+- id: h2_offsite_sale
+  name: 氢气外售
+  value: 0
+  unit: "JPY/kg（0 = 不外售）"
+  sensitivity: {}
+  source: "研究设定：氢能只作为本地电力储能（电—氢—电），不对外销售"
+  report: "params/mapping/code_inventory.md"
+  decided: "原稿与返修均不外售"
+  status: confirmed
+  verified: "2026-10-28 mapping/code_inventory.yaml（反向盘点，原为 orphan）"
+  code_now: "--h2-sale-price 0（argparse 默认），不建 h2_sale 发电机"
+  model_entry: "--h2-sale-price、--h2-sale-max-kgph；model.py h2_sale Generator"
+  notes: ""
+
+- id: h2_fc_vom
+  name: 燃料电池可变运维成本
+  value: 0
+  unit: JPY/MWh
+  sensitivity: {}
+  source: "原稿 PLEXOS 输入 FH2R Fuel Cell VO&M Charge = 0；燃料电池运维以 FO&M（h2_fc_fom）与换堆（h2_fc_stack_replacement_cost）计入"
+  report: "params/mapping/code_inventory.md"
+  decided: "沿用原稿"
+  status: confirmed
+  verified: "2026-10-28 mapping/code_inventory.yaml（反向盘点，原为 orphan）"
+  code_now: "0（fuelcell 链路 marginal_cost 未设）"
+  model_entry: "model.py fuelcell Link 的 marginal_cost"
+  notes: ""
+
+- id: sensitivity_F5_20261030
+  name: F5 敏感性第一批（审稿人要求 + 稳健性，74 个算例；历史记录，含氢组已在 sensitivity_F6_20261030 重跑，无氢组 S1、C0 仍被 F6 沿用）
+  value:
+    ev: {coh4_t05: "--ev-cohorts 4 --ev-cohort-theta 0.5", coh4_t10: "--ev-cohorts 4 --ev-cohort-theta 1（不可行，已知）", coh3_t05: "--ev-cohorts 3 --ev-cohort-theta 0.5", coh3_t075: "--ev-cohorts 3 --ev-cohort-theta 0.75", v2g6: 6, v2g10: 10, evcap080: 0.8, part: [0.25, 0.75, 1.0], chg6_kW: 6}
+    h2: {minload030: 0.30, startcost_JPY_per_MW: 8944, pem: "同 h2_tech_sensitivity_20261029 pem（fc 路径用 F5）", leak_per_day: [0.001, 0.01], avail090: {el: 0.90, fc: 0.90}, eff_hi: {el_sec: {2025: 54.92, 2030: 52.6, 2040: 50.6, 2050: 48.0}}, eff_lo: {el_sec: {2025: 59, 2050: 59}, fc_kg_per_MWh: {2025: 60.6, 2050: 60.6}}, capex_scale: [0.7, 1.3]}
+    system: {joint090: "renewable, EV availability, price x0.9", market_MW: [100, 150], price_scale: [0.9, 1.1], wind_scale: 0.75, netcharge: {import_adder: 2, export_deduction: 1}, aperp: "去掉 --no-perpetuity"}
+  unit: "-"
+  sensitivity: null
+  source: "revision_round1/02_plan/审稿要求逐条清单.md；F4 版清单（2026-10-29 对话）按 F5 重排；PEM 与 AEL 参数见 h2_tech_sensitivity_20261029；高效率路径 = h2_efficiency_path 原基准；启停成本 8,944 = 登记表附录 b"
+  report: "revision_round1/02_plan/F5_敏感性清单.md"
+  decided: "2026-10-30 作者：先做敏感性清单，然后跑敏感性"
+  status: confirmed
+  verified: "全部为现有命令行选项（--ev-cohorts/--ev-cohort-theta、--v2g-cost-jpy-per-kwh、--ev-capacity-scale、--ev-participation、--ev-charger-kw、--el/fc-min-load、--el-startup-cost、--h2-standing-loss-per-day、--el/fc-availability、--el-sec-path、--fc-kg-path、--capex-*、--renewable-scale、--ev-availability-scale、--price-scale、--wind-scale、--market-limit-mw、--import-adder-jpy-per-kwh、--export-deduction-jpy-per-kwh、--no-perpetuity），无代码改动"
+  code_now: "make_timing_batch.py SET=sensf5（F5 + 各组改动）；bigmem C:/CodexRuns/energies4608521_sensF5_20261030"
+  model_entry: "各选项对应的 model.py 位置不变"
+  notes: "只影响氢能的组跑 S2、CH，只影响 EV 的组跑 C0、CH，全系统组跑 S1、S2、C0、CH；未跑的情景沿用 F5 基准。2026-10-30 更正：evcap080、joint090、chg6 必须用同参数生成的固定充电曲线（ev.yaml 固定曲线条目）——evcap080 用 fixed_fleet_charging_newbase_soh08、joint090 用 _av09、chg6 用新生成的 _chg6（build_fixed_profile.py 新增 --charger-kw；默认 10 kW 时与 newbase 曲线逐点相同；6 kW 曲线无下限/出发违规）；原 8 个算例改名 *_fail1（joint090 被模型检查拦下未运行，evcap080/chg6 用错曲线），由 run_sensF5d.ps1 重跑。joint090 不含 A 情景（固定充电曲线不能缩放在网率）。第二批 LHS 20 组 x 4 情景待第一批检查后确定。"
+
+- id: sensitivity_F5_load_tank_20261030
+  name: F5 补充敏感性：本地需求 ±10%（R2.2）与储罐容量上限（R2.6）
+  value: {load_scale: [0.9, 1.1], tank_max_t: 43}
+  unit: "load_scale: 非 EV 本地负荷倍数（全部小时、全部年份）；tank_max_t: 2050 年在役储罐上限（t）"
+  sensitivity: null
+  source: "R2.2 点名'需求'、R2.6 点名'储罐容量约束'（revision_round1/02_plan/意见_位置对照表.md）；43 t ≈ F5 S2 2050 年储罐 86.7 t 的 50%，S2、CH 用同一绝对上限"
+  report: "revision_round1/02_plan/F5_敏感性清单.md（补充）"
+  decided: "2026-10-30 作者：两个都补（需求扰动和储罐容量约束）"
+  status: confirmed
+  verified: "新选项 --load-scale（df.load_MW 乘以倍数，在价格缩放同一位置；自给率、孤岛约束随之一致）与 --tank-max-t（installed_units[tank] ≤ 上限，所有年份）；默认 1 与 0（关闭）时 NPV 不变（回归见 revision_master_plan.md）"
+  code_now: "model.py 新增 --load-scale、--tank-max-t；make_timing_batch.py SET=sensf5（load090/load110 × S1/S2/C0/CH，tank043 × S2/CH）"
+  model_entry: "model.py 数据准备段 df['load_MW']；build() 中 total_build 之后的 tank_max_t 约束"
+  notes: "需求扰动只改非 EV 本地负荷；EV 出行需求不变（EV 参与率、在网率另有敏感性）。LHS 第二批加入 load_scale。"
+
+- id: f6_candidate_20261030
+  name: 候选默认 F6（试算；2026-10-30 已采纳为 default_F6，历史记录）：F5 + 电解槽启停磨损与热备用 + 电解槽电堆日历寿命 15 年；燃料电池不施加 UC
+  value: {el_startup_cost_JPY_per_MW_code: 1118, el_standby_power: 0.0224, el_stack_repl: "electrolyzer:0.11:15", el_stack_life_for_average: 15, fc_min_load: 0}
+  unit: "启停成本 JPY/MW·次（代码按满负荷输入口径 ×1.118；额定口径 1,000）；热备用 MW/MW（代码口径，额定 2 %）；换堆 份额:间隔年"
+  sensitivity: "启停成本 8,944（DEA BASE / Matute 电堆费口径，上限）；换堆间隔 10 年、40 年（F5 现状）；冷启动耗电 0.168 MWh/MW（工程估算，只作敏感性）"
+  source: "revision_round1/reports/电解槽UC参数核实.md：启停成本 = 电堆费（造价 11 %）÷ 约 5,000 次允许冷启动（EPRI 2022 Table 2 p.2；Matute 2021 p.3/Table 1；Brauns 2020 p.15），按 F5 造价 2025/30/40/50 为 2,640/1,140/880/660 JPY/MW，取常数 1,000；热备用 2 %（Matute 2019；Baumhof p.2；RVO 2021；Buttler 2018 p.2449）；电堆日历寿命 15 年（Buttler 2018 p.2450 '8–15 years for AEL'；EPRI p.1；RVO；Fraunhofer p.57），换堆间隔 = min(80,000 h ÷ 满负荷小时, 15 年)；燃料电池：reports/燃料电池UC与换堆参数核实.md（DEA El&DH ch.12 p.202–203；SRIA Table 21；PyPSA-Eur、GenX 不对燃料电池做 UC）"
+  report: "revision_round1/reports/电解槽UC参数核实.md；燃料电池UC与换堆参数核实.md"
+  decided: "2026-10-30 作者：燃料电池启停影响小，可忽略 UC；电解槽为碱性，先登记并试算 F6 候选（S2、AH、CH），再决定是否改默认"
+  status: confirmed
+  verified: "全部为现有命令行选项（--el-startup-cost、--el-standby-power、--h2-stack-repl、--el-stack-life、--fc-min-load），无代码改动；3 天冒烟测试见 revision_master_plan.md"
+  code_now: "make_timing_batch.py SET=f6test；bigmem C:/CodexRuns/energies4608521_f6test_20261030"
+  model_entry: "model.py UC 块（启停成本、热备用 warm = u + hs）；h2_unit_annual_cost（寿命内换堆 t = 15, 30）；老化平均年龄 (15−1)/2 = 7"
+  notes: "S1、A0、C0 无氢能，与 F5 相同。换堆提高成本、老化降低效率惩罚（δ 1.0468 → 1.0168），方向相反。原 startcost 敏感性（8,944、无热备用）高估启停影响。"
+
+- id: default_F6
+  name: 默认参数 F6（2026-10-30 起；src/default_D2_args.txt）
+  value: "F5 + --el-startup-cost 1118 --el-standby-power 0.0224 --h2-stack-repl electrolyzer:0.11:15,fuelcell:0.20:10 --el-stack-life 15 --fc-min-load 0"
+  unit: "命令行参数"
+  sensitivity: "F5 保存为 src/default_D2_args_F5_20261030.txt；F4 为 default_D2_args_F4_20261030.txt"
+  source: "f6_candidate_20261030；试算 results/f6test_20261030（S2、AH、CH）：氢能价值 0.70 → 0.54，挤出比例 0.77 → 0.74，故事不变"
+  report: "revision_round1/reports/电解槽UC参数核实.md；燃料电池UC与换堆参数核实.md；revision_master_plan.md 2026-10-30"
+  decided: "2026-10-30 作者：'F6 作为新默认'"
+  status: confirmed
+  verified: "check_all.py"
+  code_now: "src/default_D2_args.txt"
+  model_entry: "所有批次经 make_timing_batch.py 读取"
+  notes: "单项登记已同步：h2_el_startup_cost、h2_el_standby_power、h2_el_stack_life、h2_el_stack_replacement_cost、h2_fc_min_load、h2_degradation_method"
+
+- id: sensitivity_F6_20261030
+  name: F6 敏感性批次（sensF5 各组改在 F6 基准上，只跑含氢情景）
+  value: "make_timing_batch.py sensf6：58 个算例；H2 与全系统组跑 S2、CH，EV 组只跑 CH；S1、C0 沿用 sensF5（F6 只改氢能参数，无氢情景结果相同）"
+  unit: "算例"
+  sensitivity: "相对 sensF5 的调整：去掉 coh4_t10（已知不可行）；minload030 只改电解槽（F6 燃料电池不施加 UC）；pem 换堆间隔封顶 15 年、启停成本 0；startcost = 8,944（热备用沿用 F6）；新增 stack10、stack40（电堆间隔 10/40 年）、startenergy（冷启动耗电 0.168 MWh/MW，工程估算）"
+  source: "revision_round1/02_plan/F5_敏感性清单.md；default_F6"
+  report: "revision_round1/02_plan/F5_敏感性清单.md（F6 补充节）"
+  decided: "2026-10-30 作者：F6 作为新默认"
+  status: confirmed
+  verified: "check_all.py"
+  code_now: "bigmem C:/CodexRuns/energies4608521_sensF6_20261030；基准 C:/CodexRuns/energies4608521_f6_20261030（九情景 × 截断 2050/2060）"
+  model_entry: "命令行选项，无代码改动"
+  notes: "交互项 I_S = (CH−C0) − (S2−S1)，其中 S1、C0 取自 sensF5 同名组（H2 组与 EV 组取 F5 基准）"
+
+- id: lhs_F6_20261031
+  name: F6 拉丁超立方联合抽样（R2.2、R2.4、R2.6）
+  value: "make_lhs_f6.py：40 个样本（种子 20261031）× S1、S2、A0、AH、C0、CH = 240 个算例；9 个参数：电价 ×0.9–1.1、风电 ×0.8–1.1、接口 100–150 MW、非 EV 负荷 ×0.9–1.1、氢能造价（电解槽、燃料电池、储罐）×0.7–1.3、电解电耗路径 ×0.89–1.09（2050 年 48–59 kWh/kg）、燃料电池耗氢路径 ×0.95–1.13（2050 年 51–60.6 kg/MWh）、EV 参与率 0.25–1.0、V2G 损耗成本 0–10 円/kWh"
+  unit: "算例"
+  sensitivity: "范围取自 sensitivity_F6_20261030 各单因素组（price090/110、wind075、mkt100/150、load090/110、capex070/130、eff_hi/eff_lo、part025–100、v2g6/10）；风电上限 1.1 为作者补充（单因素只向下测）；均匀分布，不是概率预测"
+  source: "revision_round1/02_plan/F5_敏感性清单.md；default_F6"
+  report: "results/lhsF6_20261031/lhs_samples.csv"
+  decided: "2026-10-31 作者：同意跑 LHS（每样本含 A0、AH，以便逐样本计算 EV 灵活性与挤出比例）"
+  status: confirmed
+  verified: "check_all.py"
+  code_now: "bigmem C:/CodexRuns/energies4608521_lhsF6_20261031（run_lhsF6.ps1，全机并行上限 22）"
+  model_entry: "命令行选项，无代码改动"
+  notes: "充电桩功率、EV 在网率不进 LHS（需逐样本重建固定充电曲线），由单因素组 chg6、joint090 覆盖"
+
+- id: sensitivity_review_F6_20261101
+  name: 模拟审稿后补充敏感性（B1 氢能造价盈亏平衡、B2 电价形状），F6 基准
+  value: "make_timing_batch.py revf6：20 个算例。B1（S2、CH）：capex110、capex120（三项氢能造价 ×1.1/×1.2）；fom4（电解槽与燃料电池 FO&M 4 %，储罐 0.5 %）；capexmid（登记表 base 造价：电解槽 300/235/190/150 kJPY/kW ×549.2 kW/块、燃料电池 350/250/190/150 kJPY/kW、储罐 150/135/100/80 kJPY/t，FO&M 4 %/5 %/1 %）。B2（S1、S2、A0、AH、C0、CH）：spread070（价格序列每年均价不变、价差 ×0.7，inputs/tohoku_price_plan_ref2024_spread070.parquet，src/make_price_variants.py）；curt2x（--series-curtail-scale 2，区域弃电率 ×2，截到 1）"
+  unit: "算例"
+  sensitivity: "B1 回答'氢能是否建设依赖政策目标造价'（h2_el_capex LOW 档）；B2 回答'电价只做了水平 ±10%，未检验形状'；curt2x 使 2050 年出口降额小时的平均降额由 6.9 % 增至约 13.7 %，量级对应 OCCTO 区域弃电率展望 26.8–32.7 %（模型现值 14.8 %）"
+  source: "revision_round1/04_manuscript/PRE_SUBMISSION_REVIEW_2026-11-01.md 优先事项 B1、B2；h2_el_capex、h2_fc_capex、h2_tank_capex、h2_el_fom、h2_fc_fom、h2_tank_fom 的 sensitivity.base"
+  report: "revision_round1/04_manuscript/PRE_SUBMISSION_REVIEW_2026-11-01.md"
+  decided: "2026-11-01 作者：'好的 可以继续算'（按模拟审稿建议跑 B1、B2）"
+  status: confirmed
+  verified: "check_all.py；全部为现有命令行选项（--capex-*、--h2-fom、--price-series、--series-curtail-scale），无模型代码改动；spread070 价格文件各年均价与原序列相同（2050 年 7.570），标准差 ×0.70"
+  code_now: "bigmem C:/CodexRuns/energies4608521_revF6_20261101（run_revF6.ps1）；新输入需上传到 inputs/"
+  model_entry: "命令行选项，无代码改动"
+  notes: "S1、C0 在 B1 中不变（只改氢能参数），沿用 F6 基准；B2 改变全系统，六个情景全部重算。"
+  result: "2026-11-01 全部 20 个 optimal、check_passed（results/revF6_20261101/revF6_summary.csv）。ΔH(S)：capex110 0.245、capex120 0.085、fom4 0.180、capexmid 0（不建）；比例 ΔH(C)/ΔH(S) 0.69/0.59/0.68。spread070：ΔH(S/A/C) ≈ 0，CH 不建电解槽，C0−A0 2.90→2.16。curt2x：ΔH(A) 0.542、ΔH(C) 0.404、I_C −0.138（2050 出口 0.72→0.67 TWh，但弃电小时均价 0.01 JPY/kWh）。写入正文 2.9、3.5、4.2，SI S9.3（表 S9.5），回复信 R2.2b(4)、R2.6a；摘要按作者意见不改。"
+
+- id: sensitivity_a0_F6_20261107
+  name: 补算 A0，使改变无序充电曲线的敏感性组能给出 EV 灵活性 C0−A0
+  value: "make_timing_batch.py a0f6：4 个算例。evcap080、chg6、joint090 的 A0（用各组已重建的无序充电曲线），另加基准 A0 作复现校验（F6check）。"
+  unit: "算例"
+  sensitivity: "回答 R1.5（电池可用容量 80% 时 EV 增量价值是否仍为正）；chg6、joint090 补全同类缺口。A0 不含氢能，F5 与 F6 的氢参数差异不影响它，所以可与 sensF5 的 C0 对比。"
+  source: "revision_round1/06_mock_review_20261104/external_agents_20261107（模拟审稿，多份报告要求补算）；E3 回复信原写未重算"
+  report: "revision_round1/06_mock_review_20261104/external_agents_20261107"
+  decided: "2026-11-07 作者：'如果时间不长，当然可以跑了'（基准 A0 约 3.5 分钟）"
+  status: confirmed
+  verified: "check_all.py --remote；全部为现有命令行选项，无模型代码改动；曲线文件 soh08、chg6、av09 已在 bigmem"
+  code_now: "bigmem C:/CodexRuns/energies4608521_a0F6_20261107（run_a0F6.ps1）"
+  model_entry: "命令行选项，无代码改动"
+  notes: "只补 A0，不补 AH，所以这三组仍没有同车队交互 I_C。"
+  result: "2026-11-07 四个全部 optimal、check_passed（results/a0F6_20261107）。F6check 目标值与基准 A0 一致；C0−A0：evcap080 2.69、chg6 2.50、joint090 2.37（基准 2.90）。"

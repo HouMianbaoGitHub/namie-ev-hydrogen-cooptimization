@@ -1,0 +1,28 @@
+parameter,metric,prcc
+Price level,I_C,-0.8516279585125195
+Price level,ratio,0.4497170117159808
+Price level,EV_flex_CA,0.7154976437612534
+Wind output,I_C,0.2138644700858403
+Wind output,ratio,-0.3308756449584772
+Wind output,EV_flex_CA,-0.0060392473729258
+Interface capacity,I_C,-0.1323667178060091
+Interface capacity,ratio,0.3199850785132782
+Interface capacity,EV_flex_CA,-0.0767357980412496
+Non-EV demand,I_C,-0.016122920508669
+Non-EV demand,ratio,-0.0030136760329234
+Non-EV demand,EV_flex_CA,0.0330778449659541
+H$_2$ capital cost,I_C,0.9585115742663968
+H$_2$ capital cost,ratio,-0.910384467242122
+H$_2$ capital cost,EV_flex_CA,-0.0373404469264798
+Electrolyzer consumption,I_C,0.3311816329898491
+Electrolyzer consumption,ratio,-0.1799718085552508
+Electrolyzer consumption,EV_flex_CA,-0.0426806175060001
+Fuel-cell consumption,I_C,0.7533856868695287
+Fuel-cell consumption,ratio,-0.3391320783820564
+Fuel-cell consumption,EV_flex_CA,-0.2495888779306229
+EV participation,I_C,-0.6830722539563024
+EV participation,ratio,-0.9167521730361258
+EV participation,EV_flex_CA,0.970162007394578
+V2G wear cost,I_C,0.516895665675956
+V2G wear cost,ratio,0.7402645663755086
+V2G wear cost,EV_flex_CA,-0.913594934139215

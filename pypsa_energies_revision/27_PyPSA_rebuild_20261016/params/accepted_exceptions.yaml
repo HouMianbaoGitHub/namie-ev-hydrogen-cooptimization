@@ -1,0 +1,5 @@
+# Known, accepted differences between the registry and the effective model values.
+# check_all.py treats these as PASS (with a note). Add an entry only with a reason and a date.
+- id: h2_el_water_vom
+  reason: "水费按未老化电耗换算为每 MWh 输入，老化后实际为 4.19 円/kg（登记 4 円/kg，+4.7 %）；影响约 0.08 円/kWh，可忽略"
+  accepted: 2026-10-28

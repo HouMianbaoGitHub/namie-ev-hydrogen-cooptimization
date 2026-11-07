@@ -1,0 +1,142 @@
+{
+ "n": {
+  "en": "40",
+  "zh": "40"
+ },
+ "parameters": {
+  "en": "the price level (×0.9–1.1), wind output (×0.8–1.1), interface capacity (100–150 MW), non-EV demand (×0.9–1.1), hydrogen capital cost (×0.7–1.3), the specific consumption of the electrolyzer (×0.89–1.09) and of the fuel cell (×0.95–1.13), EV participation (25–100%) and the V2G wear cost (0–10 JPY/kWh)",
+  "zh": "电价水平（×0.9–1.1）、风电出力（×0.8–1.1）、接口容量（100–150 MW）、非EV需求（×0.9–1.1）、氢能造价（×0.7–1.3）、电解槽单位耗电（×0.89–1.09）和燃料电池单位耗氢（×0.95–1.13）、EV参与率（25–100%）以及V2G损耗成本（0–10 JPY/kWh）"
+ },
+ "n_built": {
+  "en": "38",
+  "zh": "38"
+ },
+ "n_not_built": {
+  "en": "2",
+  "zh": "2"
+ },
+ "not_built_dH": {
+  "en": "ΔH(A) < 0.01 billion JPY",
+  "zh": "ΔH(A) < 0.01 十亿日元"
+ },
+ "n_IC_neg": {
+  "en": "38",
+  "zh": "38"
+ },
+ "IC_median": {
+  "en": "−0.10",
+  "zh": "−0.10"
+ },
+ "IC_range": {
+  "en": "−0.59 to −0.01",
+  "zh": "−0.59 至 −0.01"
+ },
+ "IC_share_median": {
+  "en": "23%",
+  "zh": "23%"
+ },
+ "ratio_median": {
+  "en": "0.77",
+  "zh": "0.77"
+ },
+ "ratio_range": {
+  "en": "0.06–0.93",
+  "zh": "0.06–0.93"
+ },
+ "n_large": {
+  "en": "26",
+  "zh": "26"
+ },
+ "ratio_range_large": {
+  "en": "0.44–0.93",
+  "zh": "0.44–0.93"
+ },
+ "dH_A_median": {
+  "en": "0.52",
+  "zh": "0.52"
+ },
+ "dH_A_range": {
+  "en": "0.00–2.71",
+  "zh": "0.00–2.71"
+ },
+ "EV_CA_median": {
+  "en": "3.00",
+  "zh": "3.00"
+ },
+ "EV_CA_range": {
+  "en": "1.03–6.66",
+  "zh": "1.03–6.66"
+ },
+ "n_EV_gt_H": {
+  "en": "40",
+  "zh": "40"
+ },
+ "el_change_median": {
+  "en": "−12%",
+  "zh": "−12%"
+ },
+ "el_change_range": {
+  "en": "−75% to −3%",
+  "zh": "−75% 至 −3%"
+ },
+ "el_reduce_range": {
+  "en": "3%–75%",
+  "zh": "3%–75%"
+ },
+ "el_reduce_median": {
+  "en": "12%",
+  "zh": "12%"
+ },
+ "IC_share_negative": {
+  "en": "interaction negative in all 38 of the 40 samples in which hydrogen is built, crowding-out ratio median 0.77",
+  "zh": "40组中建设氢能的38组交互项全部为负，挤出比例中位数为0.77"
+ },
+ "prcc_top": {
+  "en": "hydrogen capital cost (+0.96), price level (−0.85), fuel-cell consumption (+0.75) and EV participation (−0.68)",
+  "zh": "氢能造价（+0.96）、电价水平（−0.85）、燃料电池单位耗氢（+0.75）和EV参与率（−0.68）"
+ },
+ "prcc_ratio_top": {
+  "en": "EV participation (−0.92), hydrogen capital cost (−0.91) and V2G wear cost (+0.74)",
+  "zh": "EV参与率（−0.92）、氢能造价（−0.91）和V2G损耗成本（+0.74）"
+ },
+ "prcc_EV_top": {
+  "en": "EV participation (+0.97) and V2G wear cost (−0.91)",
+  "zh": "EV参与率（+0.97）和V2G损耗成本（−0.91）"
+ },
+ "h2_fifo_range": {
+  "en": "1.79–2.97 days",
+  "zh": "1.79–2.97天"
+ },
+ "h2_fifo_median": {
+  "en": "2.19",
+  "zh": "2.19"
+ },
+ "h2_1to7_range": {
+  "en": "52.5%–61.3%",
+  "zh": "52.5%–61.3%"
+ },
+ "h2_gt28_max": {
+  "en": "6.7%",
+  "zh": "6.7%"
+ },
+ "h2_gt168h_max": {
+  "en": "3.1%",
+  "zh": "3.1%"
+ },
+ "h2_quarter_max": {
+  "en": "0.6%",
+  "zh": "0.6%"
+ },
+ "ev_intraday_range": {
+  "en": "63.9%–82.1%",
+  "zh": "63.9%–82.1%"
+ },
+ "ev_fifo_range": {
+  "en": "0.54–1.39 days",
+  "zh": "0.54–1.39天"
+ },
+ "n_h2_series": {
+  "en": "76",
+  "zh": "76"
+ }
+}

@@ -1,0 +1,562 @@
+{
+ "effective_args_D2": {
+  "market_limit_mw": 118.0,
+  "grid_max_mw": 0.0,
+  "grid_capex_jpy_per_kw": 105000.0,
+  "grid_fom": 0.019,
+  "grid_life": 28.0,
+  "grid_wacc": 0.03,
+  "grid_start_year": 2031,
+  "import_adder_jpy_per_kwh": 0.0,
+  "export_deduction_jpy_per_kwh": 0.0,
+  "renewable_scale": 1,
+  "wind_scale": 1.0,
+  "price_scale": 1,
+  "series_curtail_scale": 1.0,
+  "investment_method": "plexos",
+  "no_perpetuity": true,
+  "perpetuity": false,
+  "extend_to": 2050,
+  "wacc": 0.03,
+  "re_fom_jpy_per_kw": 1000.0,
+  "days_per_year": 0,
+  "tsam_segments": 0,
+  "price_wind_beta": 0.0,
+  "price_wind_beta_path": null,
+  "export_curtail_share": 0.0,
+  "export_curtail_share_path": null,
+  "end_year": null,
+  "only_year": null,
+  "import_limit_mw": null,
+  "self_sufficiency": 0.0,
+  "island_days": 0.0
+ },
+ "PERP": false,
+ "W2050": 0.4637,
+ "W2050_closed_form_check": 15.9202,
+ "W2050_equals_sum_2050_to_inf": 15.9202,
+ "share_2050_in_operating_weight": 0.0259,
+ "discount_2025_ops": 0.9709,
+ "wind_per_kW_by_year": {
+  "2025": {
+   "pv_kJPY_per_kW": 326.708,
+   "per_kW_build_year": 326.708,
+   "buildcost_csv": 293.353,
+   "fom_part": 33.355,
+   "unchanged_by_scale_annuity": true
+  },
+  "2030": {
+   "pv_kJPY_per_kW": 242.7,
+   "per_kW_build_year": 281.356,
+   "buildcost_csv": 248.0,
+   "fom_part": 33.356,
+   "unchanged_by_scale_annuity": true
+  },
+  "2035": {
+   "pv_kJPY_per_kW": 180.826,
+   "per_kW_build_year": 243.015,
+   "buildcost_csv": 209.659,
+   "fom_part": 33.357,
+   "unchanged_by_scale_annuity": true
+  },
+  "2040": {
+   "pv_kJPY_per_kW": 135.178,
+   "per_kW_build_year": 210.602,
+   "buildcost_csv": 177.245,
+   "fom_part": 33.357,
+   "unchanged_by_scale_annuity": true
+  },
+  "2050": {
+   "pv_kJPY_per_kW": 76.432,
+   "per_kW_build_year": 160.033,
+   "buildcost_csv": 126.677,
+   "fom_part": 33.356,
+   "unchanged_by_scale_annuity": true
+  }
+ },
+ "wind_buildcost_geometric_2030_2040": {
+  "min_ratio": 0.966968,
+  "max_ratio": 0.966968
+ },
+ "wind_fom_part_range": [
+  33.355,
+  33.358
+ ],
+ "solar_per_kW_by_year": {
+  "2025": {
+   "pv_kJPY_per_kW": 222.501,
+   "per_kW_build_year": 222.501,
+   "buildcost_csv": 189.145,
+   "fom_part": 33.355,
+   "unchanged_by_scale_annuity": true
+  },
+  "2030": {
+   "pv_kJPY_per_kW": 177.142,
+   "per_kW_build_year": 205.356,
+   "buildcost_csv": 172.0,
+   "fom_part": 33.356,
+   "unchanged_by_scale_annuity": true
+  },
+  "2035": {
+   "pv_kJPY_per_kW": 141.203,
+   "per_kW_build_year": 189.765,
+   "buildcost_csv": 156.409,
+   "fom_part": 33.357,
+   "unchanged_by_scale_annuity": true
+  },
+  "2040": {
+   "pv_kJPY_per_kW": 112.703,
+   "per_kW_build_year": 175.588,
+   "buildcost_csv": 142.231,
+   "fom_part": 33.357,
+   "unchanged_by_scale_annuity": true
+  },
+  "2050": {
+   "pv_kJPY_per_kW": 72.104,
+   "per_kW_build_year": 150.97,
+   "buildcost_csv": 117.614,
+   "fom_part": 33.356,
+   "unchanged_by_scale_annuity": true
+  }
+ },
+ "solar_buildcost_geometric_2030_2040": {
+  "min_ratio": 0.981175,
+  "max_ratio": 0.981175
+ },
+ "solar_fom_part_range": [
+  33.355,
+  33.358
+ ],
+ "roof_per_kW_by_year": {
+  "2025": {
+   "pv_kJPY_per_kW": 298.749,
+   "per_kW_build_year": 298.749,
+   "buildcost_csv": 265.394,
+   "fom_part": 33.355,
+   "unchanged_by_scale_annuity": true
+  },
+  "2030": {
+   "pv_kJPY_per_kW": 230.624,
+   "per_kW_build_year": 267.356,
+   "buildcost_csv": 234.0,
+   "fom_part": 33.356,
+   "unchanged_by_scale_annuity": true
+  },
+  "2035": {
+   "pv_kJPY_per_kW": 178.342,
+   "per_kW_build_year": 239.676,
+   "buildcost_csv": 206.32,
+   "fom_part": 33.357,
+   "unchanged_by_scale_annuity": true
+  },
+  "2040": {
+   "pv_kJPY_per_kW": 138.174,
+   "per_kW_build_year": 215.271,
+   "buildcost_csv": 181.914,
+   "fom_part": 33.357,
+   "unchanged_by_scale_annuity": true
+  },
+  "2050": {
+   "pv_kJPY_per_kW": 83.475,
+   "per_kW_build_year": 174.777,
+   "buildcost_csv": 141.421,
+   "fom_part": 33.356,
+   "unchanged_by_scale_annuity": true
+  }
+ },
+ "roof_buildcost_geometric_2030_2040": {
+  "min_ratio": 0.975135,
+  "max_ratio": 0.975135
+ },
+ "roof_fom_part_range": [
+  33.355,
+  33.358
+ ],
+ "fom_1000_over_r_kJPY": 33.333,
+ "fom_1000_over_r_x_8766_over_8760": 33.356,
+ "h2_rows_changed_by_scale_annuity": 78,
+ "ext2060_rows": 216,
+ "ext2060_wind_2055_over_2050": 0.862609,
+ "ext2060_W": 0.345,
+ "grid_pv_per_MW_2031_D2_args": {
+  "million_JPY": 94.579,
+  "crf": 0.05329,
+  "annual_million_JPY_per_MW": 7.5908
+ },
+ "grid_pv_per_MW_2031_registry": {
+  "million_JPY": 94.579,
+  "crf": 0.05329,
+  "annual_million_JPY_per_MW": 7.5908
+ },
+ "S0_interface_and_fleet": {
+  "import_p_nom": 118.0,
+  "export_p_nom": 118.0,
+  "plexos_file_market": 150.0,
+  "fixed_solar_MW": 103.0,
+  "fixed_wind_MW": 38.0,
+  "new_limits": {
+   "wind": {
+    "total_MW": 0,
+    "per_year_MW": 0
+   },
+   "solar": {
+    "total_MW": 0,
+    "per_year_MW": 0
+   },
+   "roof": {
+    "total_MW": 0,
+    "per_year_MW": 0
+   }
+  },
+  "hydro_MW": 1.0,
+  "newUtilityPV_units": null,
+  "lifetimes": {
+   "wind": [
+    null,
+    null
+   ],
+   "solar": [
+    null,
+    null
+   ],
+   "roof": [
+    null,
+    null
+   ]
+  }
+ },
+ "S1_interface_and_fleet": {
+  "import_p_nom": 118.0,
+  "export_p_nom": 118.0,
+  "plexos_file_market": 150.0,
+  "fixed_solar_MW": 103.0,
+  "fixed_wind_MW": 38.0,
+  "new_limits": {
+   "wind": {
+    "total_MW": 1200.0,
+    "per_year_MW": 120.0
+   },
+   "solar": {
+    "total_MW": 400.0,
+    "per_year_MW": 40.0
+   },
+   "roof": {
+    "total_MW": 60.0,
+    "per_year_MW": 0.4
+   }
+  },
+  "hydro_MW": 1.0,
+  "newUtilityPV_units": 0.0,
+  "lifetimes": {
+   "wind": [
+    30.0,
+    30.0
+   ],
+   "solar": [
+    30.0,
+    30.0
+   ],
+   "roof": [
+    30.0,
+    30.0
+   ]
+  }
+ },
+ "S2_interface_and_fleet": {
+  "import_p_nom": 118.0,
+  "export_p_nom": 118.0,
+  "plexos_file_market": 150.0,
+  "fixed_solar_MW": 103.0,
+  "fixed_wind_MW": 38.0,
+  "new_limits": {
+   "wind": {
+    "total_MW": 1200.0,
+    "per_year_MW": 120.0
+   },
+   "solar": {
+    "total_MW": 400.0,
+    "per_year_MW": 40.0
+   },
+   "roof": {
+    "total_MW": 60.0,
+    "per_year_MW": 0.4
+   }
+  },
+  "hydro_MW": 1.0,
+  "newUtilityPV_units": 0.0,
+  "lifetimes": {
+   "wind": [
+    30.0,
+    30.0
+   ],
+   "solar": [
+    30.0,
+    30.0
+   ],
+   "roof": [
+    30.0,
+    30.0
+   ]
+  }
+ },
+ "S3_interface_and_fleet": {
+  "import_p_nom": 118.0,
+  "export_p_nom": 118.0,
+  "plexos_file_market": 150.0,
+  "fixed_solar_MW": 103.0,
+  "fixed_wind_MW": 38.0,
+  "new_limits": {
+   "wind": {
+    "total_MW": 1200.0,
+    "per_year_MW": 120.0
+   },
+   "solar": {
+    "total_MW": 400.0,
+    "per_year_MW": 40.0
+   },
+   "roof": {
+    "total_MW": 60.0,
+    "per_year_MW": 0.4
+   }
+  },
+  "hydro_MW": 1.0,
+  "newUtilityPV_units": 0.0,
+  "lifetimes": {
+   "wind": [
+    30.0,
+    30.0
+   ],
+   "solar": [
+    30.0,
+    30.0
+   ],
+   "roof": [
+    30.0,
+    30.0
+   ]
+  }
+ },
+ "S4_interface_and_fleet": {
+  "import_p_nom": 118.0,
+  "export_p_nom": 118.0,
+  "plexos_file_market": 150.0,
+  "fixed_solar_MW": 103.0,
+  "fixed_wind_MW": 38.0,
+  "new_limits": {
+   "wind": {
+    "total_MW": 1200.0,
+    "per_year_MW": 120.0
+   },
+   "solar": {
+    "total_MW": 400.0,
+    "per_year_MW": 40.0
+   },
+   "roof": {
+    "total_MW": 60.0,
+    "per_year_MW": 0.4
+   }
+  },
+  "hydro_MW": 1.0,
+  "newUtilityPV_units": 0.0,
+  "lifetimes": {
+   "wind": [
+    30.0,
+    30.0
+   ],
+   "solar": [
+    30.0,
+    30.0
+   ],
+   "roof": [
+    30.0,
+    30.0
+   ]
+  }
+ },
+ "price_missing_snapshots": 0,
+ "snapshots": 227904,
+ "hours_per_year_sample": {
+  "2025": 8760,
+  "2028": 8784,
+  "2050": 8760
+ },
+ "nan_after_mapping": 0,
+ "pv_cf_by_year": {
+  "2025": 15.854,
+  "2028": 15.856,
+  "2050": 15.854
+ },
+ "wind_cf_by_year": {
+  "2025": 32.325,
+  "2028": 32.285,
+  "2050": 32.325
+ },
+ "pv_flh_2025": 1388.8,
+ "wind_flh_2025": 2831.6,
+ "ninja_file_cf_8784h": {
+  "pv": 15.856,
+  "wind": 32.285
+ },
+ "wind_scale_075_cf_2025": 24.243,
+ "wind_pu_max": 0.991,
+ "pv_diurnal_peak_hour": 11,
+ "parquet_solar_pu_vs_namie_pv_2024.csv": {
+  "n": 8784,
+  "max_abs_diff": 0.0,
+  "cf_raw": 15.856
+ },
+ "parquet_wind_pu_vs_namie_h80_wind_2024.csv": {
+  "n": 8784,
+  "max_abs_diff": 0.0,
+  "cf_raw": 32.285
+ },
+ "parquet_wind_pu_vs_namie_wind_2024.csv": {
+  "n": 8784,
+  "max_abs_diff": 0.06399999999999995,
+  "cf_raw": 34.486
+ },
+ "mean_price_by_year": {
+  "2025": 11.434,
+  "2030": 10.685,
+  "2035": 9.7,
+  "2040": 9.254,
+  "2045": 8.317,
+  "2050": 7.566
+ },
+ "price_min_file": 0.01,
+ "price_min_model": 0.01,
+ "floor_hours_model": {
+  "2025": 266,
+  "2030": 271,
+  "2040": 1162,
+  "2050": 2783
+ },
+ "price_file_identical_to_price_model_output": true,
+ "curt_rate_mean_hourly_by_year_pct": {
+  "2025": 0.306,
+  "2030": 0.283,
+  "2035": 0.806,
+  "2040": 1.99,
+  "2050": 6.886
+ },
+ "curt_hours_not_at_floor": 0,
+ "export_pmax_min": 0.278223333108891,
+ "export_lost_MWh_cap_by_year": {
+  "2025": 3160.8,
+  "2040": 20624.1,
+  "2050": 71181.7
+ },
+ "summary_curtail_pct_of_VRE": {
+  "2025": 1.17,
+  "2030": 0.924,
+  "2035": 2.327,
+  "2040": 5.319,
+  "2050": 14.782
+ },
+ "summary_mean_price": {
+  "2025": 11.434,
+  "2030": 10.684,
+  "2035": 9.701,
+  "2040": 9.254,
+  "2045": 8.319,
+  "2050": 7.57
+ },
+ "summary_hours_floor": {
+  "2025": 266,
+  "2030": 271,
+  "2040": 1162,
+  "2050": 2786
+ },
+ "summary_extra_export_TWh_2050": 15.76,
+ "load_GWh_by_year": {
+  "2025": 50.622,
+  "2030": 62.266,
+  "2035": 78.455,
+  "2040": 86.549,
+  "2045": 94.067,
+  "2050": 109.118
+ },
+ "load_peak_MW": {
+  "y2025": 7.62,
+  "y2050": 16.42
+ },
+ "load_csv_2024_GWh": 50.266,
+ "load_csv_2050_GWh": 109.118,
+ "load_csv_nonzero_nodes": [
+  "Namie JR Center Residential",
+  "Commercial Area",
+  "Fujihashi Industrial Park"
+ ],
+ "load_2050_over_2025_ratio": {
+  "min": 2.1555,
+  "max": 2.1555
+ },
+ "hydro_monthly_2025_GWh": [
+  0.4464,
+  0.5952,
+  0.5208,
+  0.5952,
+  0.6696,
+  0.744,
+  0.744,
+  0.744,
+  0.744,
+  0.6696,
+  0.6696,
+  0.5952
+ ],
+ "hydro_annual_GWh": 7.7376,
+ "hydro_achievable_GWh_1MW": 7.6896,
+ "hydro_years_identical": true,
+ "biomass": {
+  "link_p_nom_input_GJ_per_h": 20.0,
+  "efficiency_MWh_per_GJ": 0.1,
+  "output_MW": 2.0,
+  "heat_rate_GJ_per_MWh": 10,
+  "stock_initial_GJ": 10000,
+  "max_energy_GWh": 1.0,
+  "e_nom_GJ": 100000,
+  "holding_JPY_per_GJ_yr": 10,
+  "sale_price_2025": 22.9,
+  "sale_price_2050": 33.3,
+  "sale_price_2051_exists": false
+ },
+ "model_py_lines": {
+  "W2050": 116,
+  "annuity_factor": 119,
+  "load_annuity": 50,
+  "scale_annuity": 56,
+  "grid_pv_per_mw": 94,
+  "renewable_profile": 277,
+  "price_series": 283,
+  "wind_scale": 293,
+  "discount": 353,
+  "W2050_ops": 354,
+  "fixed_solar": 367,
+  "fixed_wind": 368,
+  "import_gen": 376,
+  "export_gen": 378,
+  "market": 374,
+  "gmax": 375,
+  "hydro_gen": 373,
+  "hydro_month": 680,
+  "biomass_store": 381,
+  "biomass_link": 382,
+  "build_upper": null,
+  "total_build": 541,
+  "costs": 544,
+  "grid_block": 621,
+  "grid_obj": 628,
+  "holding": 660,
+  "preset_plexos": 703,
+  "perp_set": 715,
+  "fix_guard": 718,
+  "extend_years": 43,
+  "investment_pv": 206,
+  "wind_cap": 547,
+  "solar_cap": 551,
+  "beta": 298,
+  "share": 314,
+  "fuel_price": 383
+ }
+}

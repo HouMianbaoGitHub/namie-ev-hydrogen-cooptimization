@@ -1,0 +1,80 @@
+{
+ "sector": "industrial",
+ "model": "XGBoost-Optimized, one model per industry, 80/20 random split, seed 42",
+ "data": "SII BEMS 2022, medium-size high-voltage (中規模・高圧小口) buildings, 10,000 samples per industry",
+ "script_metric_definition": "MAPE only on test points >= max(5 kW, 0.1 x median) with prediction >= half that and relative error < 10; sample-weighted mean over industries",
+ "features_note": "uses observed load lags 1-24 h and 168 h and rolling statistics (one-step-ahead)",
+ "MAPE_script_pct": 7.165791853047459,
+ "MAPE_all_pct": 8.092494439805,
+ "WAPE_pct": 5.920492933141673,
+ "RMSE_kW": 4.519499397694735,
+ "MAE_kW": 2.467091808660679,
+ "R2": 0.9745330741604499,
+ "n_test": 7564,
+ "by_industry": [
+  {
+   "industry": "卸売業，小売業",
+   "n_samples": 10000,
+   "MAPE_script_pct": 5.9731160867659705,
+   "n_test": 1946,
+   "n_test_zero": 0,
+   "MAPE_all_pct": 5.973116086786575,
+   "MAPE_nonzero_pct": 5.973116086786575,
+   "WAPE_pct": 5.435277287970803,
+   "RMSE_kW": 4.731244712422,
+   "MAE_kW": 2.96686258663989,
+   "R2": 0.9733477005828006
+  },
+  {
+   "industry": "製造業",
+   "n_samples": 10000,
+   "MAPE_script_pct": 11.134303200002735,
+   "n_test": 1883,
+   "n_test_zero": 0,
+   "MAPE_all_pct": 14.27970731183378,
+   "MAPE_nonzero_pct": 14.27970731183378,
+   "WAPE_pct": 8.618158252053242,
+   "RMSE_kW": 6.399077860762386,
+   "MAE_kW": 3.036813788317773,
+   "R2": 0.9733881527976432
+  },
+  {
+   "industry": "公務(他に分類されるものを除く)",
+   "n_samples": 10000,
+   "MAPE_script_pct": 6.537472743604223,
+   "n_test": 1754,
+   "n_test_zero": 0,
+   "MAPE_all_pct": 7.052319476055365,
+   "MAPE_nonzero_pct": 7.052319476055365,
+   "WAPE_pct": 6.120007894496354,
+   "RMSE_kW": 2.1390182090659833,
+   "MAE_kW": 1.2674766634861718,
+   "R2": 0.9633012113786608
+  },
+  {
+   "industry": "生活関連サービス業，娯楽業",
+   "n_samples": 10000,
+   "MAPE_script_pct": 5.018275381816907,
+   "n_test": 1981,
+   "n_test_zero": 0,
+   "MAPE_all_pct": 5.0648348845442746,
+   "MAPE_nonzero_pct": 5.0648348845442746,
+   "WAPE_pct": 3.508528298046291,
+   "RMSE_kW": 4.808656808528568,
+   "MAE_kW": 2.597214196198881,
+   "R2": 0.9880952318826951
+  }
+ ],
+ "universal_model_holdout": {
+  "note": "one-step-ahead with observed lags; the Namie run feeds back its own predictions",
+  "n_test": 7923,
+  "n_test_zero": 0,
+  "MAPE_all_pct": 5.623836918564332,
+  "MAPE_nonzero_pct": 5.623836918564332,
+  "WAPE_pct": 3.98452188566632,
+  "RMSE_kW": 3.509534459660029,
+  "MAE_kW": 2.151772573742619,
+  "R2": 0.9885685958677906
+ },
+ "runtime_s": 50
+}
