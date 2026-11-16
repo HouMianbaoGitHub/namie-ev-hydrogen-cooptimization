@@ -1,0 +1,11 @@
+,value
+fit_hours_FY2023_2025,26304.0
+curve_bins,50.0
+curve_tn_min_MW,2500.0
+curve_tn_max_MW,14750.0
+curve_price_min,0.01
+curve_price_max,16.715
+T_MIN_MW,2491.151
+net_export_2024_TWh,35.2386
+other_fixed_2024_TWh,17.4447
+demand_2024_TWh,78.8593

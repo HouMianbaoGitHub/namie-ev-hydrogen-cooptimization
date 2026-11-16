@@ -1,0 +1,148 @@
+theme,group,label,metric,value,baseline
+EV fleet,coh3_t05,"EV cohorts 3, θ = 0.5",dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,coh3_t05,"EV cohorts 3, θ = 0.5",dH_C,0.4067693966432344,0.4031066679691264
+EV fleet,coh3_t05,"EV cohorts 3, θ = 0.5",I_C,-0.1332042902566002,-0.1368670189307081
+EV fleet,coh3_t05,"EV cohorts 3, θ = 0.5",ratio,0.7533133678765542,0.7465302064689365
+EV fleet,coh3_t05,"EV cohorts 3, θ = 0.5",EV_flex_CA,2.784631712404945,2.8973038542821428
+EV fleet,coh3_t075,"EV cohorts 3, θ = 0.75",dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,coh3_t075,"EV cohorts 3, θ = 0.75",dH_C,0.4118593593542812,0.4031066679691264
+EV fleet,coh3_t075,"EV cohorts 3, θ = 0.75",I_C,-0.1281143275455534,-0.1368670189307081
+EV fleet,coh3_t075,"EV cohorts 3, θ = 0.75",ratio,0.7627396840740526,0.7465302064689365
+EV fleet,coh3_t075,"EV cohorts 3, θ = 0.75",EV_flex_CA,2.6166569885450315,2.8973038542821428
+EV fleet,coh4_t05,"EV cohorts 4, θ = 0.5",dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,coh4_t05,"EV cohorts 4, θ = 0.5",dH_C,0.4070543677616314,0.4031066679691264
+EV fleet,coh4_t05,"EV cohorts 4, θ = 0.5",I_C,-0.1329193191382032,-0.1368670189307081
+EV fleet,coh4_t05,"EV cohorts 4, θ = 0.5",ratio,0.753841117886065,0.7465302064689365
+EV fleet,coh4_t05,"EV cohorts 4, θ = 0.5",EV_flex_CA,2.772537140562761,2.8973038542821428
+EV fleet,v2g6,V2G wear 6 JPY/kWh,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,v2g6,V2G wear 6 JPY/kWh,dH_C,0.4248993277257469,0.4031066679691264
+EV fleet,v2g6,V2G wear 6 JPY/kWh,I_C,-0.1150743591740877,-0.1368670189307081
+EV fleet,v2g6,V2G wear 6 JPY/kWh,ratio,0.7868889503954032,0.7465302064689365
+EV fleet,v2g6,V2G wear 6 JPY/kWh,EV_flex_CA,2.3080226562274646,2.8973038542821428
+EV fleet,v2g10,V2G wear 10 JPY/kWh,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,v2g10,V2G wear 10 JPY/kWh,dH_C,0.4589724451448802,0.4031066679691264
+EV fleet,v2g10,V2G wear 10 JPY/kWh,I_C,-0.0810012417549543,-0.1368670189307081
+EV fleet,v2g10,V2G wear 10 JPY/kWh,ratio,0.8499903907910606,0.7465302064689365
+EV fleet,v2g10,V2G wear 10 JPY/kWh,EV_flex_CA,1.8640285031103476,2.8973038542821428
+EV fleet,evcap080,EV usable capacity 0.8,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,evcap080,EV usable capacity 0.8,dH_C,0.4155248604904855,0.4031066679691264
+EV fleet,evcap080,EV usable capacity 0.8,I_C,-0.124448826409349,-0.1368670189307081
+EV fleet,evcap080,EV usable capacity 0.8,ratio,0.7695279799209281,0.7465302064689365
+EV fleet,evcap080,EV usable capacity 0.8,EV_flex_CA,2.68557828786917,2.8973038542821428
+EV fleet,part025,EV participation 25%,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,part025,EV participation 25%,dH_C,0.4671327071163773,0.4031066679691264
+EV fleet,part025,EV participation 25%,I_C,-0.0728409797834572,-0.1368670189307081
+EV fleet,part025,EV participation 25%,ratio,0.8651027234277633,0.7465302064689365
+EV fleet,part025,EV participation 25%,EV_flex_CA,1.5142847445193937,2.8973038542821428
+EV fleet,part075,EV participation 75%,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,part075,EV participation 75%,dH_C,0.3444808600056817,0.4031066679691264
+EV fleet,part075,EV participation 75%,I_C,-0.1954928268941529,-0.1368670189307081
+EV fleet,part075,EV participation 75%,ratio,0.6379586049525096,0.7465302064689365
+EV fleet,part075,EV participation 75%,EV_flex_CA,4.182719149987179,2.8973038542821428
+EV fleet,part100,EV participation 100%,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,part100,EV participation 100%,dH_C,0.2882753738316097,0.4031066679691264
+EV fleet,part100,EV participation 100%,I_C,-0.2516983130682249,-0.1368670189307081
+EV fleet,part100,EV participation 100%,ratio,0.5338692992369551,0.7465302064689365
+EV fleet,part100,EV participation 100%,EV_flex_CA,5.383181480920179,2.8973038542821428
+EV fleet,chg6,Charger 6 kW,dH_S,0.5399736868998346,0.5399736868998346
+EV fleet,chg6,Charger 6 kW,dH_C,0.4342711673504951,0.4031066679691264
+EV fleet,chg6,Charger 6 kW,I_C,-0.1057025195493395,-0.1368670189307081
+EV fleet,chg6,Charger 6 kW,ratio,0.8042450546873641,0.7465302064689365
+EV fleet,chg6,Charger 6 kW,EV_flex_CA,2.5018665042507138,2.8973038542821428
+Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,dH_S,0.5399571084598591,0.5399736868998346
+Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,dH_C,0.4030963811728867,0.4031066679691264
+Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,I_C,-0.1368607272869724,-0.1368670189307081
+Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,ratio,0.7465340762392301,0.7465302064689365
+Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",dH_S,0.2871761817405058,0.5399736868998346
+Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",dH_C,0.2038294122085062,0.4031066679691264
+Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",I_C,-0.0833467695319996,-0.1368670189307081
+Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",ratio,0.7097713012727767,0.7465302064689365
+Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,dH_S,0.4661534478080256,0.5399736868998346
+Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,dH_C,0.3465832567808817,0.4031066679691264
+Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,I_C,-0.1195701910271438,-0.1368670189307081
+Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,ratio,0.7434960706836045,0.7465302064689365
+Hydrogen technology and operation,stack10,Stack life 10 yr,dH_S,0.4918914294457224,0.5399736868998346
+Hydrogen technology and operation,stack10,Stack life 10 yr,dH_C,0.3653794646613661,0.4031066679691264
+Hydrogen technology and operation,stack10,Stack life 10 yr,I_C,-0.1265119647843562,-0.1368670189307081
+Hydrogen technology and operation,stack10,Stack life 10 yr,ratio,0.7428051045188698,0.7465302064689365
+Hydrogen technology and operation,stack40,Stack life 40 yr,dH_S,0.5825809420496455,0.5399736868998346
+Hydrogen technology and operation,stack40,Stack life 40 yr,dH_C,0.4395720683515591,0.4031066679691264
+Hydrogen technology and operation,stack40,Stack life 40 yr,I_C,-0.1430088736980863,-0.1368670189307081
+Hydrogen technology and operation,stack40,Stack life 40 yr,ratio,0.7545253142079273,0.7465302064689365
+Hydrogen technology and operation,pem,PEM electrolysis,dH_S,0.3095593155773244,0.5399736868998346
+Hydrogen technology and operation,pem,PEM electrolysis,dH_C,0.2203173189451064,0.4031066679691264
+Hydrogen technology and operation,pem,PEM electrolysis,I_C,-0.0892419966322179,-0.1368670189307081
+Hydrogen technology and operation,pem,PEM electrolysis,ratio,0.7117127731537242,0.7465302064689365
+Hydrogen technology and operation,leak01,H$_2$ loss 0.1%/day,dH_S,0.53469051633693,0.5399736868998346
+Hydrogen technology and operation,leak01,H$_2$ loss 0.1%/day,dH_C,0.3986073625086277,0.4031066679691264
+Hydrogen technology and operation,leak01,H$_2$ loss 0.1%/day,I_C,-0.1360831538283022,-0.1368670189307081
+Hydrogen technology and operation,leak01,H$_2$ loss 0.1%/day,ratio,0.7454917383600072,0.7465302064689365
+Hydrogen technology and operation,leak10,H$_2$ loss 1%/day,dH_S,0.4916185848999532,0.5399736868998346
+Hydrogen technology and operation,leak10,H$_2$ loss 1%/day,dH_C,0.3624433191594463,0.4031066679691264
+Hydrogen technology and operation,leak10,H$_2$ loss 1%/day,I_C,-0.1291752657405069,-0.1368670189307081
+Hydrogen technology and operation,leak10,H$_2$ loss 1%/day,ratio,0.7372449502355678,0.7465302064689365
+Hydrogen technology and operation,avail090,Availability 90%,dH_S,0.3707020712361881,0.5399736868998346
+Hydrogen technology and operation,avail090,Availability 90%,dH_C,0.2683320983881003,0.4031066679691264
+Hydrogen technology and operation,avail090,Availability 90%,I_C,-0.1023699728480878,-0.1368670189307081
+Hydrogen technology and operation,avail090,Availability 90%,ratio,0.7238483925738195,0.7465302064689365
+Hydrogen technology and operation,eff_hi,High H$_2$ efficiency,dH_S,0.6038886620815873,0.5399736868998346
+Hydrogen technology and operation,eff_hi,High H$_2$ efficiency,dH_C,0.4536200639120835,0.4031066679691264
+Hydrogen technology and operation,eff_hi,High H$_2$ efficiency,I_C,-0.1502685981695037,-0.1368670189307081
+Hydrogen technology and operation,eff_hi,High H$_2$ efficiency,ratio,0.7511650613682128,0.7465302064689365
+Hydrogen technology and operation,eff_lo,Low H$_2$ efficiency,dH_S,0.2522008126967066,0.5399736868998346
+Hydrogen technology and operation,eff_lo,Low H$_2$ efficiency,dH_C,0.1760088603645258,0.4031066679691264
+Hydrogen technology and operation,eff_lo,Low H$_2$ efficiency,I_C,-0.0761919523321807,-0.1368670189307081
+Hydrogen technology and operation,eff_lo,Low H$_2$ efficiency,ratio,0.6978917255758084,0.7465302064689365
+Hydrogen technology and operation,tank043,Tank capped at 43 t,dH_S,0.4638760850084367,0.5399736868998346
+Hydrogen technology and operation,tank043,Tank capped at 43 t,dH_C,0.3609789924682118,0.4031066679691264
+Hydrogen technology and operation,tank043,Tank capped at 43 t,I_C,-0.1028970925402248,-0.1368670189307081
+Hydrogen technology and operation,tank043,Tank capped at 43 t,ratio,0.7781797857969904,0.7465302064689365
+Hydrogen capital cost,capex070,H$_2$ capex ×0.7,dH_S,2.49565758429916,0.5399736868998346
+Hydrogen capital cost,capex070,H$_2$ capex ×0.7,dH_C,2.0892409951715862,0.4031066679691264
+Hydrogen capital cost,capex070,H$_2$ capex ×0.7,I_C,-0.4064165891275735,-0.1368670189307081
+Hydrogen capital cost,capex070,H$_2$ capex ×0.7,ratio,0.8371505002591509,0.7465302064689365
+Hydrogen capital cost,capex130,H$_2$ capex ×1.3,dH_S,0.015473992096787,0.5399736868998346
+Hydrogen capital cost,capex130,H$_2$ capex ×1.3,dH_C,0.0043612829746848,0.4031066679691264
+Hydrogen capital cost,capex130,H$_2$ capex ×1.3,I_C,-0.0111127091221021,-0.1368670189307081
+Hydrogen capital cost,capex130,H$_2$ capex ×1.3,ratio,0.2818460128068937,0.7465302064689365
+"System, prices and demand",price090,Price ×0.9,dH_S,0.2055398717728529,0.5399736868998346
+"System, prices and demand",price090,Price ×0.9,dH_C,0.1451164240719755,0.4031066679691264
+"System, prices and demand",price090,Price ×0.9,I_C,-0.0604234477008773,-0.1368670189307081
+"System, prices and demand",price090,Price ×0.9,ratio,0.7060256621758876,0.7465302064689365
+"System, prices and demand",price110,Price ×1.1,dH_S,1.0546134025319631,0.5399736868998346
+"System, prices and demand",price110,Price ×1.1,dH_C,0.8167817131780595,0.4031066679691264
+"System, prices and demand",price110,Price ×1.1,I_C,-0.2378316893539036,-0.1368670189307081
+"System, prices and demand",price110,Price ×1.1,ratio,0.7744844804902852,0.7465302064689365
+"System, prices and demand",wind075,Wind output ×0.75,dH_S,0.5893975893418002,0.5399736868998346
+"System, prices and demand",wind075,Wind output ×0.75,dH_C,0.4392889394164072,0.4031066679691264
+"System, prices and demand",wind075,Wind output ×0.75,I_C,-0.1501086499253929,-0.1368670189307081
+"System, prices and demand",wind075,Wind output ×0.75,ratio,0.7453185207407714,0.7465302064689365
+"System, prices and demand",mkt100,Interface 100 MW,dH_S,0.4726594729073738,0.5399736868998346
+"System, prices and demand",mkt100,Interface 100 MW,dH_C,0.3367452437873695,0.4031066679691264
+"System, prices and demand",mkt100,Interface 100 MW,I_C,-0.1359142291200044,-0.1368670189307081
+"System, prices and demand",mkt100,Interface 100 MW,ratio,0.7124478892087303,0.7465302064689365
+"System, prices and demand",mkt150,Interface 150 MW,dH_S,0.6607527539407556,0.5399736868998346
+"System, prices and demand",mkt150,Interface 150 MW,dH_C,0.5218255117301922,0.4031066679691264
+"System, prices and demand",mkt150,Interface 150 MW,I_C,-0.1389272422105634,-0.1368670189307081
+"System, prices and demand",mkt150,Interface 150 MW,ratio,0.7897439830829371,0.7465302064689365
+"System, prices and demand",netcharge,Network charges on trade,dH_S,0.2215159228610943,0.5399736868998346
+"System, prices and demand",netcharge,Network charges on trade,dH_C,0.1123162112156563,0.4031066679691264
+"System, prices and demand",netcharge,Network charges on trade,I_C,-0.1091997116454379,-0.1368670189307081
+"System, prices and demand",netcharge,Network charges on trade,ratio,0.5070344820588192,0.7465302064689365
+"System, prices and demand",load090,Local demand ×0.9,dH_S,0.5371171879044638,0.5399736868998346
+"System, prices and demand",load090,Local demand ×0.9,dH_C,0.4009351449856382,0.4031066679691264
+"System, prices and demand",load090,Local demand ×0.9,I_C,-0.1361820429188256,-0.1368670189307081
+"System, prices and demand",load090,Local demand ×0.9,ratio,0.7464574845386476,0.7465302064689365
+"System, prices and demand",load110,Local demand ×1.1,dH_S,0.5427605500605139,0.5399736868998346
+"System, prices and demand",load110,Local demand ×1.1,dH_C,0.4051662304739594,0.4031066679691264
+"System, prices and demand",load110,Local demand ×1.1,I_C,-0.1375943195865545,-0.1368670189307081
+"System, prices and demand",load110,Local demand ×1.1,ratio,0.7464916719330214,0.7465302064689365
+"System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",dH_S,0.2143369860201289,0.5399736868998346
+"System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",dH_C,0.1543603588445918,0.4031066679691264
+"System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",I_C,-0.059976627175537,-0.1368670189307081
+"System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",ratio,0.720176026129692,0.7465302064689365
+"System, prices and demand",joint090,"Wind/PV, EV availability, price ×0.9",EV_flex_CA,2.372274734804215,2.8973038542821428
+End of horizon (different basis),aperp,Perpetual annuity,dH_S,4.632986652481257,0.5399736868998346
+End of horizon (different basis),aperp,Perpetual annuity,dH_C,3.614547263115135,0.4031066679691264
+End of horizon (different basis),aperp,Perpetual annuity,I_C,-1.0184393893661223,-0.1368670189307081
+End of horizon (different basis),aperp,Perpetual annuity,ratio,0.7801764896471948,0.7465302064689365

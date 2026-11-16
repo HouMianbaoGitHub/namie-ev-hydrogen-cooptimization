@@ -1,0 +1,4 @@
+FY,mean_actual,mean_pred,MAE,RMSE,corr,daily_mean_corr,VF_solar_actual,VF_solar_pred,VF_wind_actual,VF_wind_pred,hours_below5_actual,hours_below5_pred
+2023,11.333,12.462,2.556,3.404,0.682,0.476,0.694,0.767,0.929,0.984,8.584,2.994
+2024,12.693,11.5,2.233,3.036,0.753,0.632,0.724,0.764,0.996,0.984,4.726,3.596
+2025,11.39,11.17,2.082,2.899,0.75,0.631,0.702,0.703,0.961,0.997,5.514,7.363
