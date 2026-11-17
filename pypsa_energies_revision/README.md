@@ -38,6 +38,14 @@ python fetch_ninja.py wind namie_h80 37.494 140.993 2024 height=80
 python make_ninja_profile.py          # writes inputs/namie_renewables_ninja_2024.parquet
 ```
 
+## Market data
+
+The hourly price series in `inputs.zip` was built with `price_model/` from public data that are not redistributed here:
+
+- JEPX day-ahead spot market results (system and area prices): <https://www.jepx.jp/electricpower/market-data/spot/>
+- Tohoku Electric Power Network, area supply and demand data: <https://setsuden.nw.tohoku-epco.co.jp/download.html>
+- TEPCO Power Grid, area supply and demand data: <https://www.tepco.co.jp/forecast/html/area_jukyu-j.html>
+
 ## Running the model
 
 ```bash
