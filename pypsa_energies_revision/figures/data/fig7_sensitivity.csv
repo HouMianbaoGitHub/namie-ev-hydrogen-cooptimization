@@ -53,10 +53,10 @@ Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,dH_S,0.5
 Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,dH_C,0.4030963811728867,0.4031066679691264
 Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,I_C,-0.1368607272869724,-0.1368670189307081
 Hydrogen technology and operation,minload030,Electrolyzer min. load 30%,ratio,0.7465340762392301,0.7465302064689365
-Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",dH_S,0.2871761817405058,0.5399736868998346
-Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",dH_C,0.2038294122085062,0.4031066679691264
-Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",I_C,-0.0833467695319996,-0.1368670189307081
-Hydrogen technology and operation,startcost,"Start-up cost 8,000 JPY/MW",ratio,0.7097713012727767,0.7465302064689365
+Hydrogen technology and operation,startcost,"Start-up cost 8000 JPY/MW",dH_S,0.2871761817405058,0.5399736868998346
+Hydrogen technology and operation,startcost,"Start-up cost 8000 JPY/MW",dH_C,0.2038294122085062,0.4031066679691264
+Hydrogen technology and operation,startcost,"Start-up cost 8000 JPY/MW",I_C,-0.0833467695319996,-0.1368670189307081
+Hydrogen technology and operation,startcost,"Start-up cost 8000 JPY/MW",ratio,0.7097713012727767,0.7465302064689365
 Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,dH_S,0.4661534478080256,0.5399736868998346
 Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,dH_C,0.3465832567808817,0.4031066679691264
 Hydrogen technology and operation,startenergy,Cold-start energy 0.15 MWh/MW,I_C,-0.1195701910271438,-0.1368670189307081

@@ -338,7 +338,7 @@ def fig3():
             ax.text(
                 xs[i + 1],
                 hi + 0.25,
-                f'{dv:+.2f}',
+                f'{dv:+.2f}'.replace('-', '−'),
                 ha='center',
                 va='bottom',
                 fontsize=6.8,

@@ -24,7 +24,7 @@ GROUPS = [
     (EV, 'part100', 'EV participation 100%'),
     (EV, 'chg6', 'Charger 6 kW'),
     (H2, 'minload030', 'Electrolyzer min. load 30%'),
-    (H2, 'startcost', 'Start-up cost 8,000 JPY/MW'),
+    (H2, 'startcost', 'Start-up cost 8000 JPY/MW'),
     (H2, 'startenergy', 'Cold-start energy 0.15 MWh/MW'),
     (H2, 'stack10', 'Stack life 10 yr'),
     (H2, 'stack40', 'Stack life 40 yr'),
